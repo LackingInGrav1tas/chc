@@ -53,7 +53,7 @@ variable = 5; #5#
 immutable variable = 5; #5#
 variable = 3; #ERROR#
 ```
-The variable types currently supported by CHC are: string and numbers
+The variable types currently supported by CHC are: string, booleans, and numbers
 
 **FUNCTIONS:**
 input:
@@ -68,7 +68,7 @@ run("this will be sent to CMD");
 Supported macros:
 ```
 @sec #second of the minute#
-@min #minute of the day#
+@min #minute of the hour#
 @hour #hour of the day#
 @mday #day of the month#
 @yday #day of the year#
