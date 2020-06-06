@@ -1,5 +1,5 @@
 # chc
-A simple interpreter. My first real attmept, so keep that in mind.
+A simple interpreter. My first real attemept, so keep that in mind.
 CHC is a simple interpreted language which supports class and functions systems. It utilizes strict evaluation and is written completely in C++
 
 **SYNTAX**
