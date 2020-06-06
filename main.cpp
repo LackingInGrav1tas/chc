@@ -33,12 +33,12 @@ int main(int argc, char** argv) {
     std::vector<Token> one = lex(argv[1], &error_occurred);
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);
-    int ret = 0;
+    int exit_status = 0;
     if (!error_occurred) {
-        ret = runtime(two, c);
+        exit_status = runtime(two, c);
     } else {
         std::cout << "RUNTIME TERMINATED\n";
-        ret = 1;
+        exit_status = 1;
     }
     auto end = std::chrono::steady_clock::now();
     //if the user added the postfix command "i"
@@ -72,5 +72,5 @@ int main(int argc, char** argv) {
         std::cout << "INFO COMPLETED";
         infofile.close();
     }
-    return ret;
+    return exit_status;
 }
