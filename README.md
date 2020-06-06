@@ -53,7 +53,7 @@ variable = 5; #5#
 immutable variable = 5; #5#
 variable = 3; #ERROR#
 ```
-The variable types currently supported by CHC are: string and int
+The variable types currently supported by CHC are: string and numbers
 
 **FUNCTIONS:**
 input:
