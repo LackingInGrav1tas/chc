@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "header.hpp"
 
-std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "var", "while", "new", "run", "define", "immutable" };
+std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "var", "while", "new", "run", "define", "immutable", "do", "hash" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -15,8 +15,7 @@ std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '
 
 std::vector<char> important_characters = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';' };
 
-std::vector<char> doubleable = { '=', '+', '-', '/', '*' };
-
+std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 
 std::vector<Token> lex(std::string f, bool *error_occurred) {
     std::ifstream file(f);

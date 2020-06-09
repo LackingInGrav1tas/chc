@@ -7,8 +7,7 @@
 #include <chrono>
 #include "header.hpp"
 
-std::ifstream::pos_type filesize(const char* filename)
-{
+std::ifstream::pos_type filesize(const char* filename) {
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
     return in.tellg(); 
 }
@@ -17,8 +16,8 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "LEFT_PAREN", "RIGHT_PAR
                                       "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
-                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "NEW", "RUN", "DEFINE", "IMMUTABLE"};
-
+                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "NEW", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH"};
+//g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
     bool c = false;
@@ -35,7 +34,10 @@ int main(int argc, char** argv) {
     std::vector<std::vector<Token>> two = statementize(one);
     int exit_status = 0;
     if (!error_occurred) {
-        exit_status = runtime(two, c);
+        std::vector<std::string> n;
+        std::vector<std::string> v;
+        std::vector<std::string> i;
+        exit_status = runtime(two, n, v, i, c);
     } else {
         std::cout << "RUNTIME TERMINATED\n";
         exit_status = 1;
@@ -57,6 +59,7 @@ int main(int argc, char** argv) {
         infofile << "Date/time of compilation: " << dt;
         std::cout << "compilation time...\n";
         infofile << "Time taken for compilation: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n\n";
+        std::cout << "bef";
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
@@ -65,6 +68,7 @@ int main(int argc, char** argv) {
             typespo += TokenList[current.typ()] + "  ";
             if (current.typ() == SEMICOLON) {typespo += "\n";}
         }
+        std::cout << "past";
         std::cout << "token printout...\n";
         infofile << tokenspo << "\n\n";
         std::cout << "type printout...\n";
