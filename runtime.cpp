@@ -115,12 +115,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 Token second_argument = final[4];
                 Token third_argument = final[5];
                 whilecontents.pop_back();
-                for (auto nebraska = whilecontents.begin(); nebraska != whilecontents.end(); nebraska++) {
-                    std::vector<Token> kansas = *nebraska;
-                    for (auto arkansas = kansas.begin(); arkansas != kansas.end(); arkansas++) {
-                        Token iowa = *arkansas;
-                    }
-                }
                 int stop = 0;
                 while (evaluate(first_argument, second_argument, third_argument, names, values)) {//fix eval
                     stop++;
