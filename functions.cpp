@@ -124,6 +124,8 @@ Type keyword(std::string full) {
         ret = DO;
     } else if (full == "hash") {
         ret = HASH;
+    } else if (full == "sleep") {
+        ret = SLEEP;
     }
     return ret;
 }
@@ -249,9 +251,11 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
             if (in(token.str(), ops)) {
                 return token.str();
             } else {
-                //error( token, std::string("Scoping Error: " + token.str() + " not found."));
-                //*error_occurred = true;
-                return token.str();
+                if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9') {
+                    *error_occurred = true;
+                } else {
+                    return token.str();
+                }
             }
         } else {
             std::string value = varvalues[found.second];

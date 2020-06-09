@@ -16,7 +16,7 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "LEFT_PAREN", "RIGHT_PAR
                                       "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
-                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "NEW", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH"};
+                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "NEW", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH", "SLEEP"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;

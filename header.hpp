@@ -24,7 +24,7 @@ enum Type {
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
   PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, NEW, RUN,
-  DEFINE, IMMUTABLE, DO, HASH
+  DEFINE, IMMUTABLE, DO, HASH, SLEEP
                                            
 };
 

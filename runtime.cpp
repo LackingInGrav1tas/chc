@@ -118,7 +118,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 int stop = 0;
                 while (evaluate(first_argument, second_argument, third_argument, names, values)) {//fix eval
                     stop++;
-                    if (stop == 10) {
+                    if (stop == 100) {
                         return 1;
                     }
                     bool d;
@@ -126,6 +126,30 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     if (result == 1) {
                         return 1;
                     }
+                }
+            } else if (current.typ() == SLEEP) {
+                Token next = *std::next(inner);
+                if (next.typ() != LEFT_PAREN) {
+                    error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
+                    return 1;
+                } else {
+                    int n = std::next(inner) - stmt.begin();
+                    auto nd = std::next(inner);
+                    for (n; stmt[n].typ() != RIGHT_PAREN; n++) {
+                        nd++;
+                    }
+                    std::vector<Token> segmented(std::next(inner), nd);
+                    bool err = false;
+                    std::string solved = solve(segmented, names, values, &err);
+                    if (err) {
+                        error(current, "Run-time Error: Evauation Error");
+                        return 1;
+                    }
+                    if (solved.at(0) == '"') {
+                        error(current, "Run-time Error: Improper argument.");
+                        return 1;
+                    }
+                    Sleep(std::stod(solved));
                 }
             }
         }
