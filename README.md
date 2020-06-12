@@ -55,9 +55,10 @@ variable = 5; #5#
 immutable variable = 5; #5#
 variable = 3; #ERROR#
 ```
-The variable types currently supported by CHC are: string and int
+The variable types currently supported by CHC are: string, bool, num
 
 FUNCTIONS:
+
 input:
 ```
 string_variable = input("this will print out, then take user input.");
@@ -66,7 +67,14 @@ run:
 ```
 run("this will be sent to CMD");
 ```
+print:
+```
+print("This will be sent to standard output.");
+```
+etc.
+
 MACROS:
+
 Supported macros:
 ```
 @sec #second of the minute#
