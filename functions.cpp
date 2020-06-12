@@ -110,8 +110,6 @@ Type keyword(std::string full) {
         ret = WHILE;
     } else if (full == "run") {
         ret = RUN;
-    } else if (full == "new") {
-        ret = NEW;
     } else if (full == "define") {
         ret = DEFINE;
     } else if (full == "immutable") {
@@ -252,7 +250,7 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                 if (in(token.str(), ops)) {
                     return token.str();
                 } else {
-                    if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9') {
+                    if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false") {
                         *error_occurred = true;
                     } else {
                         return token.str();

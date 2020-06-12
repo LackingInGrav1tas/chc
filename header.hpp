@@ -23,7 +23,7 @@ enum Type {
 
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
-  PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, NEW, RUN,
+  PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, RUN,
   DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK
                                            
 };
@@ -210,6 +210,8 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
 
 std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool c);
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred);
 
-bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values);
+bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
+
+bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);

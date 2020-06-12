@@ -151,12 +151,21 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                 }
                 std::vector<Token> final = *outer;
-                Token first_argument = final[3];
-                Token second_argument = final[4];
-                Token third_argument = final[5];
+                std::vector<Token> perams;
+                int ps = 0;
+                for (auto token = final.begin(); token != final.end(); token++) {
+                    if (ps > 0 && !((*token).typ() == RIGHT_PAREN) && ps == 1) {
+                        perams.push_back(*token);
+                    }
+                    if ((*token).typ() == LEFT_PAREN) {
+                        ps++;
+                    } else if ((*token).typ() == RIGHT_PAREN) {
+                        ps--;
+                    }
+                }
                 whilecontents.pop_back();
                 int stop = 0;
-                while (evaluate(first_argument, second_argument, third_argument, names, values, error_occurred)) {//fix eval
+                while (boolsolve(perams, names, values, error_occurred)) {//fix eval
                     stop++;
                     if (stop == 100) {
                         error(current, "Terminate after control finds repeating while loop, limit: 100");
@@ -206,9 +215,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
             } else if (current.typ() == BREAK) {
                 return 47;
-            }
-            if (error_occurred) {
-                return 1;
             }
         }
     }

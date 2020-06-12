@@ -221,7 +221,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
 }
 
 bool isOp(Token token) {
-    if (token.typ() == GREATER || token.typ() == GREATER_EQUAL || token.typ() == LESS || token.typ() == LESS_EQUAL || token.typ() == EXC_EQUAL) {
+    if (token.typ() == GREATER || token.typ() == GREATER_EQUAL || token.typ() == LESS || token.typ() == LESS_EQUAL || token.typ() == EXC_EQUAL || token.typ() == EQUAL_EQUAL) {
         return true;
     } else {
         return false;
@@ -266,7 +266,7 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
         }
         segments.push_back(current_segment);
         current_segment.clear();
-
+        /*
         std::cout << "segments.size(): " << segments.size() << std::endl << "segments: [";
         for (auto i = segments.begin(); i != segments.end(); i++) {
             std::cout << (*i).back().str() << ", ";
@@ -276,7 +276,7 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
             std::cout << (*i).str() << ", ";
         }
         std::cout <<  "]\n\n";
-        
+        */
         //split each segment by their operator into a 3 vectors, (lhs, op, rhs)
         for (auto segment = segments.begin(); segment != segments.end(); segment++) {
             int times = 0;
@@ -299,7 +299,7 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
                 } else {
                     std::cout << "WTF!!! how could this have happened!\n";
                 }
-            }
+            }/*
             std::cout << "lhs.size(): " << lhs.size() << std::endl << "lhs: [";
             for (auto i = lhs.begin(); i != lhs.end(); i++) {
                 std::cout << (*i).str() << ", ";
@@ -309,6 +309,20 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
                 std::cout << (*i).str() << ", ";
             }
             std::cout <<  "]\nop: " << op.str() << "\n\n";
+            */
+            if (rhs.empty()) {
+                //std::cout << "rhs.empty()\n";
+                if (lhs[0].typ() == TFALSE || getVarVal(lhs[0], names, values, error_occurred) == "false" || getVarVal(lhs[0], names, values, error_occurred) == "0" || getVarVal(lhs[0], names, values, error_occurred) == R"("")" || getVarVal(lhs[0], names, values, error_occurred) == "") {
+                    //std::cout << "0\n";
+                    final.push_back(false);
+                } else {
+                    //std::cout << "1 " << lhs[0].str() << "\n";
+                    final.push_back(true);
+                }
+            } else {
+                //std::cout << evaluate( lhs[0], op, rhs[0], names, values, error_occurred ) << "\n";
+                final.push_back( evaluate( lhs[0], op, rhs[0], names, values, error_occurred ) );
+            }
         }
 
         while (final.size() > 1) {
@@ -331,16 +345,18 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
         return final[0];
     }
 }
-
+/*
 int main() {
-    Token a("1", 0, 0, NUMBER, "");
-    Token b(">", 0, 0, GREATER, "");
-    Token c("0", 0, 0, NUMBER, "");
+    Token a("i", 0, 0, IDENTIFIER, "");
+    Token b("<", 0, 0, LESS, "");
+    Token c("5", 0, 0, NUMBER, "");
     Token d("and", 0, 0, AND, "");
-    Token e("true", 0, 0, TTRUE, "");
-    std::vector<std::string> n;
-    std::vector<std::string> v;
-    std::vector<Token> all = { a, b, c, d, e };
+    Token e("v", 0, 0, IDENTIFIER, "");
+    Token f("==", 0, 0, LESS, "");
+    Token g("1", 0, 0, NUMBER, "");
+    std::vector<std::string> n = { "i", "v" };
+    std::vector<std::string> v = { "1", "1" };
+    std::vector<Token> all = { a, b, c, d, e, f, g };
     bool okey = true;
-    std::cout << boolsolve(all, n, v, &okey) << std::endl;
-}
+    std::cout << boolsolve(all, n, v, &okey) << "\nend" << std::endl;
+}*/
