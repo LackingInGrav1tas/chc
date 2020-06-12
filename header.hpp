@@ -24,7 +24,7 @@ enum Type {
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
   PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, NEW, RUN,
-  DEFINE, IMMUTABLE, DO, HASH, SLEEP
+  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK
                                            
 };
 
@@ -53,7 +53,8 @@ class Token {
     Assoc associativity;
     SType syhtype;
     std::vector<std::string> right = { "^" };
-    std::vector<std::string> operators = { "+", "-", "/", "*", "%", "(", ")", "^" };
+    std::vector<std::string> operators = { "+", "-", "/", "*", "%", "(", ")", "^", ">", "<", "<=", "=<",
+                                           ">=", "=>", "!", "!=" };
     public:
         Token(std::string init_lexeme="", int init_line=0, int init_column=0, Type init_type=BLANK, std::string init_lin="") {
             lexeme = init_lexeme;
@@ -61,6 +62,14 @@ class Token {
             type = init_type;
             column = init_column;
             lin = init_lin;
+            precedence_lookup.insert(std::pair<std::string, int>(">", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("<", 2));
+            precedence_lookup.insert(std::pair<std::string, int>(">=", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("<=", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("=>", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("=<", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("!=", 2));
+            precedence_lookup.insert(std::pair<std::string, int>("!", 2));
             precedence_lookup.insert(std::pair<std::string, int>("+", 2));
             precedence_lookup.insert(std::pair<std::string, int>("-", 2));
             precedence_lookup.insert(std::pair<std::string, int>("/", 3));

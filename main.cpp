@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> n;
         std::vector<std::string> v;
         std::vector<std::string> i;
-        exit_status = runtime(two, n, v, i, c);
+        exit_status = runtime(two, n, v, i, &error_occurred);
     } else {
         std::cout << "RUNTIME TERMINATED\n";
         exit_status = 1;
@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
         infofile << "Date/time of compilation: " << dt;
         std::cout << "compilation time...\n";
         infofile << "Time taken for compilation: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n\n";
-        std::cout << "bef";
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
@@ -68,7 +67,6 @@ int main(int argc, char** argv) {
             typespo += TokenList[current.typ()] + "  ";
             if (current.typ() == SEMICOLON) {typespo += "\n";}
         }
-        std::cout << "past";
         std::cout << "token printout...\n";
         infofile << tokenspo << "\n\n";
         std::cout << "type printout...\n";

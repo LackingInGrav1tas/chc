@@ -57,7 +57,7 @@ std::stack<Token> shunting_yard_algorithm(std::stack<Token> input_stack) {
     return output_stack;
 }
 /*
-int main() {
+int main() {/*
     Token a("3", TERMINAL);
     Token b("+", OPERATOR);
     Token c("4", TERMINAL);
@@ -72,32 +72,14 @@ int main() {
     Token l("^", OPERATOR);
     Token m("2", TERMINAL);
     Token n("^", OPERATOR);
-    Token o("3", TERMINAL);/*
-    Token a("A", TERMINAL);
-    Token b("+", OPERATOR);
-    Token c("B", TERMINAL);
-    Token d("*", OPERATOR);
-    Token e("C", TERMINAL);
-    Token f("-", OPERATOR);
-    Token g("D", TERMINAL);
-    Token h("^", OPERATOR);
-    Token i("4", TERMINAL);
-    Token j("*", OPERATOR);
-    Token k("6", TERMINAL);
-    Token l("^", OPERATOR);
-    Token m("2", TERMINAL);
-    Token n("-", OPERATOR);
     Token o("3", TERMINAL);* /
+    Token a("!", OPERATOR);
+    Token b("(", OPERATOR);
+    Token c("i", TERMINAL);
+    Token d("!=", OPERATOR);
+    Token e("true", TERMINAL);
+    Token f(")", OPERATOR);
     std::stack<Token> input;// = { a, b, c, d, e, f, g, h, i, j, k, l, m, n, o };
-    input.push(o);
-    input.push(n);
-    input.push(m);
-    input.push(l);
-    input.push(k);
-    input.push(j);
-    input.push(i);
-    input.push(h);
-    input.push(g);
     input.push(f);
     input.push(e);
     input.push(d);

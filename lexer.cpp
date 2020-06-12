@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "header.hpp"
 
-std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "var", "while", "new", "run", "define", "immutable", "do", "hash", "sleep" };
+std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "var", "while", "new", "run", "define", "immutable", "do", "hash", "sleep", "break" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -46,17 +46,39 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
                 std::string literal = "";
                 current_char++;
                 literal += '"';
+                bool r = false;
                 for (current_char; *current_char != '"'; current_char++) {
                     literal += *current_char;
                     col++;
+                    if (col >= line.length()) {
+                        *error_occurred == true;
+                        r = true;
+                        break;
+                    }
                 }
                 literal += '"';
                 Token tok(literal, row, col, STRING, line);
+                if (r) {
+                    error(tok, "Compile-time Error: Unending string.");
+                }
                 tokens.push_back(tok);
             } else if (*current_char == '#') {//it's a comment
                 current_char++;
+                bool r = false;
+                std::string literal = "#";
                 for (current_char; *current_char != '#'; current_char++) {
+                    literal += *current_char;
                     col++;
+                    if (col >= line.length()) {
+                        *error_occurred == true;
+                        r = true;
+                        break;
+                    }
+                }
+                literal += '#';
+                Token tok(literal, row, col, ERR, line);
+                if (r) {
+                    error(tok, "Compile-time Error: Unending comment.");
                 }
             } else if (in(*current_char, important_characters)) {
                 if (!current_token.empty()) {

@@ -8,7 +8,7 @@
 #include <windows.h>
 #include "header.hpp"
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool c) {
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred) {
     for (auto outer = statements.begin(); outer < statements.end(); outer++) {
         std::vector<Token> stmt = *outer;
         int size = 0;
@@ -52,8 +52,19 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 } else {
                     int n = std::next(inner) - stmt.begin();
                     auto nd = std::next(inner);
-                    for (n; stmt[n].typ() != RIGHT_PAREN; n++) {
+                    int nested = 0;
+                    while (true) {
                         nd++;
+                        n++;
+                        if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
+                            break;
+                        } else {
+                            if (stmt[n].typ() == LEFT_PAREN) {
+                                nested++;
+                            } else if (stmt[n].typ() == RIGHT_PAREN) {
+                                nested--;
+                            }
+                        }
                     }
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
@@ -75,8 +86,19 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 } else {
                     int n = std::next(inner) - stmt.begin();
                     auto nd = std::next(inner);
-                    for (n; stmt[n].typ() != RIGHT_PAREN; n++) {
+                    int nested = 0;
+                    while (true) {
                         nd++;
+                        n++;
+                        if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
+                            break;
+                        } else {
+                            if (stmt[n].typ() == LEFT_PAREN) {
+                                nested++;
+                            } else if (stmt[n].typ() == RIGHT_PAREN) {
+                                nested--;
+                            }
+                        }
                     }
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
@@ -96,8 +118,8 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     error(next, "Run-time Error: Expected a left bracket token. None were provided.");
                     return 1;
                 }
-                Token dowhile;
-                std::vector<std::vector<Token>> whilecontents;
+                Token dowhile;//here
+                std::vector<std::vector<Token>> whilecontents;/*
                 outer++;
                 while (dowhile.str() != "while") {
                     std::vector<Token> line = *outer;
@@ -109,6 +131,24 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     } else if (dowhile.str() != "while") {
                         outer++;
                     }
+                }*/
+                int nested = 0;
+                Token fis;
+                while (true) {
+                    outer++;
+                    std::vector<Token> line = *outer;
+                    dowhile = line[1];
+                    fis = line[0];
+                    whilecontents.push_back(line);
+                    if (dowhile.typ() == WHILE && nested == 0) {
+                        break;
+                    } else {
+                        if (fis.typ() == DO) {
+                            nested++;
+                        } else if (dowhile.typ() == WHILE) {
+                            nested--;
+                        }
+                    }
                 }
                 std::vector<Token> final = *outer;
                 Token first_argument = final[3];
@@ -116,15 +156,17 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 Token third_argument = final[5];
                 whilecontents.pop_back();
                 int stop = 0;
-                while (evaluate(first_argument, second_argument, third_argument, names, values)) {//fix eval
+                while (evaluate(first_argument, second_argument, third_argument, names, values, error_occurred)) {//fix eval
                     stop++;
                     if (stop == 100) {
+                        error(current, "Terminate after control finds repeating while loop, limit: 100");
                         return 1;
                     }
-                    bool d;
-                    int result = runtime(whilecontents, names, values, immutables, d);
+                    int result = runtime(whilecontents, names, values, immutables, error_occurred);
                     if (result == 1) {
                         return 1;
+                    } else if (result == 47) {
+                        break;
                     }
                 }
             } else if (current.typ() == SLEEP) {
@@ -135,8 +177,19 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 } else {
                     int n = std::next(inner) - stmt.begin();
                     auto nd = std::next(inner);
-                    for (n; stmt[n].typ() != RIGHT_PAREN; n++) {
+                    int nested = 0;
+                    while (true) {
                         nd++;
+                        n++;
+                        if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
+                            break;
+                        } else {
+                            if (stmt[n].typ() == LEFT_PAREN) {
+                                nested++;
+                            } else if (stmt[n].typ() == RIGHT_PAREN) {
+                                nested--;
+                            }
+                        }
                     }
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
@@ -151,6 +204,11 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     Sleep(std::stod(solved));
                 }
+            } else if (current.typ() == BREAK) {
+                return 47;
+            }
+            if (error_occurred) {
+                return 1;
             }
         }
     }
