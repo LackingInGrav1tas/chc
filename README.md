@@ -78,7 +78,7 @@ MACROS:
 Supported macros:
 ```
 @sec #second of the minute#
-@min #minute of the day#
+@min #minute of the hour#
 @hour #hour of the day#
 @mday #day of the month#
 @yday #day of the year#
