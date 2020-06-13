@@ -220,14 +220,6 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
     }
 }
 
-bool isOp(Token token) {
-    if (token.typ() == GREATER || token.typ() == GREATER_EQUAL || token.typ() == LESS || token.typ() == LESS_EQUAL || token.typ() == EXC_EQUAL || token.typ() == EQUAL_EQUAL) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred) {
     if (tokens.size() == 1) {
         if (getVarVal(tokens[0], names, values, error_occurred) == "true") {

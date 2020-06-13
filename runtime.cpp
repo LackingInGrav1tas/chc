@@ -118,20 +118,8 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     error(next, "Run-time Error: Expected a left bracket token. None were provided.");
                     return 1;
                 }
-                Token dowhile;//here
-                std::vector<std::vector<Token>> whilecontents;/*
-                outer++;
-                while (dowhile.str() != "while") {
-                    std::vector<Token> line = *outer;
-                    dowhile = line[1];
-                    whilecontents.push_back(line);
-                    if (outer == statements.end()) {
-                        error(current, "Run-time Error: Do...While loop has no while ending.");
-                        return 1;
-                    } else if (dowhile.str() != "while") {
-                        outer++;
-                    }
-                }*/
+                Token dowhile;
+                std::vector<std::vector<Token>> whilecontents;
                 int nested = 0;
                 Token fis;
                 while (true) {
@@ -140,13 +128,13 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     dowhile = line[1];
                     fis = line[0];
                     whilecontents.push_back(line);
-                    if (dowhile.typ() == WHILE && nested == 0) {
+                    if (fis.typ() == RIGHT_BRACE && nested == 0) {
                         break;
                     } else {
-                        if (fis.typ() == DO) {
-                            nested++;
-                        } else if (dowhile.typ() == WHILE) {
+                        if (fis.typ() == RIGHT_BRACE) {
                             nested--;
+                        } else if (line.back().typ() == LEFT_BRACE) {
+                            nested++;
                         }
                     }
                 }
@@ -215,6 +203,46 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
             } else if (current.typ() == BREAK) {
                 return 47;
+            } else if (current.typ() == IF) {
+                Token next = *std::next(inner);
+                if (next.typ() != LEFT_BRACE) {
+                    error(next, "Run-time Error: Expected a left bracket token. None were provided.");
+                    return 1;
+                }
+                Token dowhile;
+                std::vector<std::vector<Token>> ifcontents;
+                int nested = 0;
+                Token fis;
+                while (true) {
+                    outer++;
+                    std::vector<Token> line = *outer;
+                    dowhile = line[1];
+                    fis = line[0];
+                    ifcontents.push_back(line);
+                    if (fis.typ() == RIGHT_BRACE && nested == 0) {
+                        break;
+                    } else {
+                        if (fis.typ() == RIGHT_BRACE) {
+                            nested--;
+                        } else if (line.back().typ() == LEFT_BRACE) {
+                            nested++;
+                        }
+                    }
+                }
+                std::vector<Token> final = *outer;
+                std::vector<Token> perams;
+                int ps = 0;
+                for (auto token = final.begin(); token != final.end(); token++) {
+                    if (ps > 0 && !((*token).typ() == RIGHT_PAREN) && ps == 1) {
+                        perams.push_back(*token);
+                    }
+                    if ((*token).typ() == LEFT_PAREN) {
+                        ps++;
+                    } else if ((*token).typ() == RIGHT_PAREN) {
+                        ps--;
+                    }
+                }
+                ifcontents.pop_back();
             }
         }
     }

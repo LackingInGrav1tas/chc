@@ -215,3 +215,5 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 
 bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
+
+bool isOp(Token token);
