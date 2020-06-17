@@ -23,7 +23,7 @@ void error(Token token, std::string message="") {
     for (int i = 0; i < (token.col()-1)+a.length(); i++) {
         std::cout << " ";
     }
-    std::cout << "^" << " ERROR\n  " << message << "\n\n";
+    std::cerr << "^" << " ERROR\n  " << message << "\n\n";
 }
 
 Type singleChar(char current_char) {
@@ -141,7 +141,7 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens) {
     for (std::vector<Token>::iterator c = tokens.begin(); c != tokens.end(); c++) {
         Token current = *c;
         current_statement.push_back(current);
-        if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE) {
+        if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE || current.typ() == _EOF) {
             if (!current_statement.empty()) {
                 statementalized.push_back(current_statement);
             }
@@ -253,11 +253,13 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                     if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false") {
                         *error_occurred = true;
                     } else {
+                        //std::cout << "in gvv: " << token.str() << std::endl;
                         return token.str();
                     }
                 }
             } else {
                 std::string value = varvalues[found.second];
+                //std::cout << "in gvv (value): " << value << std::endl;
                 return value;
             }
         }
@@ -277,6 +279,8 @@ if (cur.typ() == IDENTIFIER && next.typ() == IDENTIFIER) {
 
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred) {
     if (op.str() == "==") {
+        //"clipboard" vs "stop"
+        //std::cout << getVarVal(lhs, names, values, error_occurred) << " == " << getVarVal(rhs, names, values, error_occurred) << " -> " << (getVarVal(lhs, names, values, error_occurred) == getVarVal(rhs, names, values, error_occurred)) << std::endl;
         return getVarVal(lhs, names, values, error_occurred) == getVarVal(rhs, names, values, error_occurred);
     } else if (op.str() == ">") {
         if (getVarVal(lhs, names, values, error_occurred).at(0) != '"' && getVarVal(rhs, names, values, error_occurred).at(0) != '"') {
@@ -318,7 +322,7 @@ bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, st
             return std::stod(getVarVal(lhs, names, values, error_occurred)) != std::stod(getVarVal(rhs, names, values, error_occurred));
         } else {
             return getVarVal(lhs, names, values, error_occurred) != getVarVal(rhs, names, values, error_occurred);
-        }   
+        }
     }
 }
 
@@ -335,29 +339,29 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
     std::vector<std::vector<Token>> variable_values;
     std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
     std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
-    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN };
+    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE };
     for (int num_l = 0; num_l < line.size()-1; num_l++) {
         Token cur = line[num_l];
         Token nex = line[num_l+1];
         //ERROR CHECKING
         //if there are two literals together, ex "string literal" 1672
         if (in(cur.typ(), literals) && in(nex.typ(), literals)) {
-            error(cur, "Compile-time Error: Stray token.");
+            error(cur, "Syntax Error: Stray token.");
             *error_occurred = true;
         }
         //if there are two identifiers next to each other, ex variable1 variable2
         //if two non-compatible operators are adjacent
         else if (in(cur.typ(), notok) && in(nex.typ(), notok)) {
-            error(cur, "Compile-time Error: Stray operator.");
+            error(cur, "Syntax Error: Stray operator.");
             *error_occurred = true;
         } else if (cur.typ() == IMMUTABLE && nex.typ() != IDENTIFIER) {
-            error(cur, "Compile-time Error: Immutable not followed by an identifier.");
-            *error_occurred = true;
+            error(cur, "Syntax Error: Immutable not followed by an identifier.");
+            *error_occurred = true; 
         } else if (in(cur.typ(), literals) && nex.typ() == LEFT_PAREN) {
-            error(cur, "Compile-time Error: Stray parentheses.");
+            error(cur, "Syntax Error: Stray parentheses.");
             *error_occurred = true;
         } else if ( isOp(cur) && ( !in(nex.typ(), OpOk ) || !in(line[num_l-1].typ(), OpOk ) ) ) {
-            error(cur, "Compile-time Error: Stray Comparator.");
+            error(cur, "Syntax Error: Stray Comparator.");
             *error_occurred = true;
         }
     }

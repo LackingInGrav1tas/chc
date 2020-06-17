@@ -12,11 +12,11 @@ std::ifstream::pos_type filesize(const char* filename) {
     return in.tellg(); 
 }
 
-std::vector<std::string> TokenList = {"BLANK", "ERROR", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
+std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
                                       "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
-                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH", "SLEEP"};
+                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH", "SLEEP", "ELIF"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     //actual compiling part starts here:
     bool error_occurred = false;
     std::vector<Token> one = lex(argv[1], &error_occurred);
+    one.push_back(Token("", 0, 0, _EOF, ""));
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);
     int exit_status = 0;
@@ -37,7 +38,11 @@ int main(int argc, char** argv) {
         std::vector<std::string> n;
         std::vector<std::string> v;
         std::vector<std::string> i;
-        exit_status = runtime(two, n, v, i, &error_occurred);
+        try {
+            exit_status = runtime(two, n, v, i, &error_occurred);
+        } catch(...) {
+            std::cerr << "Error: Unknown Error.\nMost likely a statement not finished with a semicolon, e.g.\nif () {\n#do stuff#\n} <- ; needed.";
+        }
     } else {
         std::cout << "RUNTIME TERMINATED\n";
         exit_status = 1;

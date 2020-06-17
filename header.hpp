@@ -6,7 +6,7 @@
 #include <utility>
 
 enum Type {    
-  BLANK, ERR,
+  BLANK, ERR, _EOF,
 
   // Single-character tokens.                      
   LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -24,7 +24,7 @@ enum Type {
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
   PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, RUN,
-  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK
+  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK, ELIF
                                            
 };
 
