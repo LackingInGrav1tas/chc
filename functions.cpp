@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #include "wtypes.h"
 #include <winsock.h>
+#include <limits>
 #include "header.hpp"
 
 
@@ -19,11 +20,7 @@ std::string getString(char x) {
 void error(Token token, std::string message="") {
     std::cout << "\n";
     std::string a = std::to_string(token.lines()) + "| ";
-    std::cout << a << token.actual_line() << "\n";
-    for (int i = 0; i < (token.col()-1)+a.length(); i++) {
-        std::cout << " ";
-    }
-    std::cerr << "^" << " ERROR\n  " << message << "\n\n";
+    std::cerr << a << token.actual_line() << "\n" << message << "\n\n";
 }
 
 Type singleChar(char current_char) {
@@ -122,6 +119,8 @@ Type keyword(std::string full) {
         ret = SLEEP;
     } else if (full == "break") {
         ret = BREAK;
+    } else if (full == "aware") {
+        ret = AWARE;
     }
     return ret;
 }
@@ -239,6 +238,8 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                 return '"' + returnvariable + '"';
             } else if (target == "@IP") {
                 return '"' + IP() + '"';
+            } else if (target == "@inf") {
+                return std::to_string(std::numeric_limits<double>::max());
             } else {
                 *error_occurred = true;
                 error(token, "Run-time Error: " + token.str() + " is an undefined macro.");
@@ -250,7 +251,7 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                 if (in(token.str(), ops)) {
                     return token.str();
                 } else {
-                    if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false") {
+                    if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')) {
                         *error_occurred = true;
                     } else {
                         //std::cout << "in gvv: " << token.str() << std::endl;
@@ -264,7 +265,7 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
             }
         }
     }
-    return "";
+    return "  ";
 }
 /*
 if (in(cur.typ(), literals) && in(next.typ(), literals)) {
@@ -357,7 +358,7 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
         } else if (cur.typ() == IMMUTABLE && nex.typ() != IDENTIFIER) {
             error(cur, "Syntax Error: Immutable not followed by an identifier.");
             *error_occurred = true; 
-        } else if (in(cur.typ(), literals) && nex.typ() == LEFT_PAREN) {
+        } else if ((cur.typ() == STRING || cur.typ() == NUMBER || cur.typ() == TTRUE || cur.typ() == TFALSE) && nex.typ() == LEFT_PAREN) {
             error(cur, "Syntax Error: Stray parentheses.");
             *error_occurred = true;
         } else if ( isOp(cur) && ( !in(nex.typ(), OpOk ) || !in(line[num_l-1].typ(), OpOk ) ) ) {

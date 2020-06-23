@@ -16,14 +16,20 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
                                       "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
-                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH", "SLEEP", "ELIF"};
+                                      "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH",
+                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
-    bool c = false;
+    int limit = 100;
     for (int j = 1; j < argc; j++) {
-        if (*argv[j] == 'c') {c = true;}
         if (*argv[j] == 'i') {i = true;}
+        if (j+1 < argc && *argv[j] == 'l') {
+            j++;
+            if (isdigit(std::stoi(std::to_string(*argv[j])))) {
+                limit = std::stoi(argv[j]);
+            }
+        }
     }
     //timer
     auto start = std::chrono::steady_clock::now();
@@ -35,14 +41,15 @@ int main(int argc, char** argv) {
     std::vector<std::vector<Token>> two = statementize(one);
     int exit_status = 0;
     if (!error_occurred) {
-        std::vector<std::string> n;
-        std::vector<std::string> v;
-        std::vector<std::string> i;
-        try {
-            exit_status = runtime(two, n, v, i, &error_occurred);
-        } catch(...) {
-            std::cerr << "Error: Unknown Error.\nMost likely a statement not finished with a semicolon, e.g.\nif () {\n#do stuff#\n} <- ; needed.";
-        }
+        std::vector<std::string> n, v, i, fn, aw;
+        std::vector<std::vector<std::vector<Token>>> f;
+        std::vector<std::vector<std::string>> fp;
+        std::string rv;
+        //try {
+            exit_status = runtime(two, n, v, i, &error_occurred, limit, f, fn, aw, fp, rv);
+        //} catch(...) {
+            //std::cerr << "Error: Unknown Error.";
+        //}
     } else {
         std::cout << "RUNTIME TERMINATED\n";
         exit_status = 1;
@@ -61,23 +68,24 @@ int main(int argc, char** argv) {
         std::cout << "date...\n";
         time_t now = time(0);
         char* dt = ctime(&now);
-        infofile << "Date/time of compilation: " << dt;
-        std::cout << "compilation time...\n";
-        infofile << "Time taken for compilation: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n\n";
+        infofile << "Date/time of executing: " << dt;
+        std::cout << "compilation/runtime time...\n";
+        infofile << "Time taken for compilation/runtime: " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) << " ms\n\n";
+        std::cout << "token printout...\n";
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
             Token current = *it;
             tokenspo += current.str() + "  ";
             typespo += TokenList[current.typ()] + "  ";
-            if (current.typ() == SEMICOLON) {typespo += "\n";}
+            if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE) {typespo += "\n";}
         }
-        std::cout << "token printout...\n";
         infofile << tokenspo << "\n\n";
         std::cout << "type printout...\n";
         infofile << typespo << "\n";
-        std::cout << "INFO COMPLETED";
+        std::cout << "INFO COMPLETED" << std::endl;
         infofile.close();
+        system((R"(")" + newpath + R"(")").c_str());
     }
     return exit_status;
 }

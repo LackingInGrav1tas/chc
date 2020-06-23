@@ -22,7 +22,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
         } else {
             return getVarVal(shunted.back(), names, values, error_occurred);
         }*/
-    } else {
+    } else {      
         //if shunted has more than one argument
         if (shunted.front().typ() == STRING || getVarVal(shunted.front(), names, values, error_occurred).at(0) == '"' || getVarVal(shunted.front(), names, values, error_occurred) == "\n") {
             //it is a string variable.
@@ -46,176 +46,199 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
             }
             return '"' + combined + '"';
         } else {//it is a number variable. Boolean is co-opted
-            while (shunted.size() > 1) {
-                int i = 0;
-                bool con = true;
-                std::vector<Type> ops = { MINUS, PLUS, SLASH, STAR };
-                for (i; i < shunted.size(); i++) {//finding an operator
-                    if (in(shunted[i].typ(), ops)) {
-                        break;
-                    } else if (shunted[i].typ() == STRING) {
-                        error(shunted[i], R"(Run-time Error: String")" + shunted[i].str() + R"("attempted to be added to a number.)");
-                        *error_occurred = true;
-                        con = false;
-                        break;
+            try {
+                while (shunted.size() > 1) {
+                    int i = 0;
+                    bool con = true;
+                    std::vector<Type> ops = { MINUS, PLUS, SLASH, STAR };
+                    for (i; i < shunted.size(); i++) {//finding an operator
+                        if (in(shunted[i].typ(), ops)) {
+                            break;
+                        } else if (shunted[i].typ() == STRING) {
+                            error(shunted[i], R"(Run-time Error: String)" + shunted[i].str() + R"(attempted to be added to a number.)");
+                            *error_occurred = true;
+                            con = false;
+                            return "";
+                        }
+                    }
+                    if (con) {
+                        if (shunted[i].typ() == MINUS) {
+                            double a = 2;
+                            double b = 2;
+                            if (shunted[i-1].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                a = std::stod(gv);
+                            } else {
+                                if (shunted[i-1].typ() == TTRUE) {
+                                    a = 1.0;
+                                } else if (shunted[i-1].typ() == TFALSE) {
+                                    a = 0;
+                                } else {
+                                    a = std::stod(shunted[i-1].str());
+                                }
+                                //std::cout << "literal" << std::endl;
+                            }                    
+                            if (shunted[i-2].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                b = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-2].typ() == TTRUE) {
+                                    b = 1.0;
+                                } else if (shunted[i-2].typ() == TFALSE) {
+                                    b = 0;
+                                } else {
+                                    b = std::stod(shunted[i-2].str());
+                                }
+                            }
+                            double c = b-a;
+                            //std::cout << a << "-" << b << "=" << c << "\n";
+                            //std::cout << shunted[i-1].str() << " - " << shunted[i-2].str() << " = " << c << "\n";
+                            shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
+                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            shunted.insert(shunted.begin(), fnd);
+                        }
+                        if (shunted[i].typ() == PLUS) {
+                            double a = 2;
+                            double b = 2;
+                            if (shunted[i-1].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                a = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-1].typ() == TTRUE) {
+                                    a = 1.0;
+                                } else if (shunted[i-1].typ() == TFALSE) {
+                                    a = 0;
+                                } else {
+                                    a = std::stod(shunted[i-1].str());
+                                }
+                            }                    
+                            if (shunted[i-2].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                b = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-2].typ() == TTRUE) {
+                                    b = 1.0;
+                                } else if (shunted[i-2].typ() == TFALSE) {
+                                    b = 0;
+                                } else {
+                                    b = std::stod(shunted[i-2].str());
+                                }
+                            }
+                            double c = a+b;
+                            //std::cout << a << "+" << b << "=" << c << "\n";
+                            //std::cout << shunted[i-1].str() << " + " << shunted[i-2].str() << " = " << c << "\n";
+                            shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
+                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            shunted.insert(shunted.begin(), fnd);
+                        }
+                        if (shunted[i].typ() == STAR) {
+                            double a = 2;
+                            double b = 2;
+                            if (shunted[i-1].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                a = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-1].typ() == TTRUE) {
+                                    a = 1.0;
+                                } else if (shunted[i-1].typ() == TFALSE) {
+                                    a = 0;
+                                } else {
+                                    a = std::stod(shunted[i-1].str());
+                                }
+                            }                    
+                            if (shunted[i-2].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                b = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-2].typ() == TTRUE) {
+                                    b = 1.0;
+                                } else if (shunted[i-2].typ() == TFALSE) {
+                                    b = 0;
+                                } else {
+                                    b = std::stod(shunted[i-2].str());
+                                }
+                            }
+                            double c = a*b;
+                            //std::cout << a << "*" << b << "=" << c << "\n";
+                            //std::cout << shunted[i-1].str() << " * " << shunted[i-2].str() << " = " << c << "\n";
+                            shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
+                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            shunted.insert(shunted.begin(), fnd);
+                        }
+                        if (shunted[i].typ() == SLASH) {
+                            double a = 2;
+                            double b = 2;
+                            if (shunted[i-1].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                a = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-1].typ() == TTRUE) {
+                                    a = 1.0;
+                                } else if (shunted[i-1].typ() == TFALSE) {
+                                    a = 0;
+                                } else {
+                                    a = std::stod(shunted[i-1].str());
+                                }
+                            }                    
+                            if (shunted[i-2].typ() == IDENTIFIER) {
+                                std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
+                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
+                                b = std::stod(gv);
+                            } else {
+                                //std::cout << "literal" << std::endl;
+                                if (shunted[i-2].typ() == TTRUE) {
+                                    b = 1.0;
+                                } else if (shunted[i-2].typ() == TFALSE) {
+                                    b = 0;
+                                } else {
+                                    b = std::stod(shunted[i-2].str());
+                                }
+                            }
+                            double c = b/a;
+                            //std::cout << a << "/" << b << "=" << c << "\n";
+                            //std::cout << shunted[i-1].str() << " / " << shunted[i-2].str() << " = " << c << "\n";
+                            shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
+                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            shunted.insert(shunted.begin(), fnd);
+                        }
                     }
                 }
-                if (con) {
-                    if (shunted[i].typ() == MINUS) {
-                        double a = 2;
-                        double b = 2;
-                        if (shunted[i-1].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            a = std::stod(gv);
+                return shunted.back().str();
+            } catch (...) {
+                //it is a string variable.
+                std::string combined;
+                for (auto current_token = shunted.begin(); current_token != shunted.end(); current_token++) {
+                    Token ct = *current_token;
+                    if (ct.typ() == NUMBER || ct.typ() == TTRUE || ct.typ() == TFALSE) {//supporting adding numbers
+                        combined += ct.str();
+                    } else if (in(ct.str(), names) || ct.str().at(0) == '@') {//if it's an or macro
+                        std::string val = getVarVal(ct, names, values, error_occurred);
+                        if (val.at(0) == '"') {
+                            combined += val.substr(1, val.length()-2);
                         } else {
-                            if (shunted[i-1].typ() == TTRUE) {
-                                a = 1.0;
-                            } else if (shunted[i-1].typ() == TFALSE) {
-                                a = 0;
-                            } else {
-                                a = std::stod(shunted[i-1].str());
-                            }
-                            //std::cout << "literal" << std::endl;
-                        }                    
-                        if (shunted[i-2].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            b = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-2].typ() == TTRUE) {
-                                b = 1.0;
-                            } else if (shunted[i-2].typ() == TFALSE) {
-                                b = 0;
-                            } else {
-                                b = std::stod(shunted[i-2].str());
-                            }
+                            combined += val;
                         }
-                        double c = a-b;
-                        //std::cout << a << "-" << b << "=" << c << "\n";
-                        //std::cout << shunted[i-1].str() << " - " << shunted[i-2].str() << " = " << c << "\n";
-                        shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                        Token fnd(std::to_string(c), 0, 0, NUMBER, "");
-                        shunted.insert(shunted.begin(), fnd);
-                    }
-                    if (shunted[i].typ() == PLUS) {
-                        double a = 2;
-                        double b = 2;
-                        if (shunted[i-1].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            a = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-1].typ() == TTRUE) {
-                                a = 1.0;
-                            } else if (shunted[i-1].typ() == TFALSE) {
-                                a = 0;
-                            } else {
-                                a = std::stod(shunted[i-1].str());
-                            }
-                        }                    
-                        if (shunted[i-2].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            b = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-2].typ() == TTRUE) {
-                                b = 1.0;
-                            } else if (shunted[i-2].typ() == TFALSE) {
-                                b = 0;
-                            } else {
-                                b = std::stod(shunted[i-2].str());
-                            }
-                        }
-                        double c = a+b;
-                        //std::cout << a << "+" << b << "=" << c << "\n";
-                        //std::cout << shunted[i-1].str() << " + " << shunted[i-2].str() << " = " << c << "\n";
-                        shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                        Token fnd(std::to_string(c), 0, 0, NUMBER, "");
-                        shunted.insert(shunted.begin(), fnd);
-                    }
-                    if (shunted[i].typ() == STAR) {
-                        double a = 2;
-                        double b = 2;
-                        if (shunted[i-1].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            a = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-1].typ() == TTRUE) {
-                                a = 1.0;
-                            } else if (shunted[i-1].typ() == TFALSE) {
-                                a = 0;
-                            } else {
-                                a = std::stod(shunted[i-1].str());
-                            }
-                        }                    
-                        if (shunted[i-2].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            b = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-2].typ() == TTRUE) {
-                                b = 1.0;
-                            } else if (shunted[i-2].typ() == TFALSE) {
-                                b = 0;
-                            } else {
-                                b = std::stod(shunted[i-2].str());
-                            }
-                        }
-                        double c = a*b;
-                        //std::cout << a << "*" << b << "=" << c << "\n";
-                        //std::cout << shunted[i-1].str() << " * " << shunted[i-2].str() << " = " << c << "\n";
-                        shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                        Token fnd(std::to_string(c), 0, 0, NUMBER, "");
-                        shunted.insert(shunted.begin(), fnd);
-                    }
-                    if (shunted[i].typ() == SLASH) {
-                        double a = 2;
-                        double b = 2;
-                        if (shunted[i-1].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            a = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-1].typ() == TTRUE) {
-                                a = 1.0;
-                            } else if (shunted[i-1].typ() == TFALSE) {
-                                a = 0;
-                            } else {
-                                a = std::stod(shunted[i-1].str());
-                            }
-                        }                    
-                        if (shunted[i-2].typ() == IDENTIFIER) {
-                            std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                            //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
-                            b = std::stod(gv);
-                        } else {
-                            //std::cout << "literal" << std::endl;
-                            if (shunted[i-2].typ() == TTRUE) {
-                                b = 1.0;
-                            } else if (shunted[i-2].typ() == TFALSE) {
-                                b = 0;
-                            } else {
-                                b = std::stod(shunted[i-2].str());
-                            }
-                        }
-                        double c = a/b;
-                        //std::cout << a << "/" << b << "=" << c << "\n";
-                        //std::cout << shunted[i-1].str() << " / " << shunted[i-2].str() << " = " << c << "\n";
-                        shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                        Token fnd(std::to_string(c), 0, 0, NUMBER, "");
-                        shunted.insert(shunted.begin(), fnd);
+                    } else if (ct.str().at(0) == '"') {
+                        combined += ct.str().substr(1, ct.str().length()-2);
+                    } else if (ct.typ() != PLUS && ct.typ() != MINUS && ct.typ() != STAR && ct.typ() != SLASH) {//it's a string literal
+                        combined += getVarVal(ct, names, values, error_occurred).substr(1, getVarVal(ct, names, values, error_occurred).length()-2);
                     }
                 }
+                return '"' + combined + '"';
             }
-            return shunted.back().str();
         }
     }
 }

@@ -24,7 +24,8 @@ enum Type {
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
   PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, RUN,
-  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK, ELIF
+  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
+  _VOID_FUNC_HOLDER
                                            
 };
 
@@ -210,7 +211,7 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
 
 std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred);
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::string &return_variable);
 
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 
