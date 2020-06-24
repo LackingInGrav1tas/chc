@@ -24,12 +24,24 @@ int main(int argc, char** argv) {
     int limit = 100;
     for (int j = 1; j < argc; j++) {
         if (*argv[j] == 'i') {i = true;}
-        if (j+1 < argc && *argv[j] == 'l') {
-            j++;
-            if (isdigit(std::stoi(std::to_string(*argv[j])))) {
-                limit = std::stoi(argv[j]);
+        std::string full = argv[j];
+        if (full.at(0) == 'l') {
+            if (full.length() > 3) {
+                if (full.at(1) == '=') {
+                    try {
+                        limit = std::stoi(std::string(full.begin()+2, full.end()));
+                        //std::cout << limit;
+                    } catch(...) {
+                        std::cout << "the correct syntax to set the loop limit is: " << argv[0] << "c:/.../example.chc l=%desired limit%" << std::endl;
+                        //std::cout << "full: " << full << "\nsegmented: " << std::string(full.begin()+1, full.end()) << std::endl;
+                    }
+                }
             }
         }
+    }
+    if (argc < 2) {
+        std::cerr << "The accepted format is: " << argv[0] << " c:/.../example.chc OPTIONAL{i, l=?}";
+        return EXIT_FAILURE;
     }
     //timer
     auto start = std::chrono::steady_clock::now();
@@ -45,11 +57,11 @@ int main(int argc, char** argv) {
         std::vector<std::vector<std::vector<Token>>> f;
         std::vector<std::vector<std::string>> fp;
         std::string rv;
-        //try {
+        try {
             exit_status = runtime(two, n, v, i, &error_occurred, limit, f, fn, aw, fp, rv);
-        //} catch(...) {
-            //std::cerr << "Error: Unknown Error.";
-        //}
+        } catch(...) {
+            std::cerr << "Error: Unknown Error.";
+        }
     } else {
         std::cout << "RUNTIME TERMINATED\n";
         exit_status = 1;

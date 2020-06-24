@@ -20,8 +20,8 @@ std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 std::vector<Token> lex(std::string f, bool *error_occurred) {
     std::ifstream file(f);
     if (!file) {
-        std::cout << R"(")" << f << R"(")" << " not found.";
-        exit(1);
+        std::cerr << R"(")" << f << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
+        exit(EXIT_FAILURE);
     }
     std::string line;
     int row = 0;

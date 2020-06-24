@@ -101,6 +101,12 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         //std::cout << (*ato).str() << " ";
                     }
                     //std::cout << "\n";
+                    /*std::vector<Token> ers(std::next(token), std::next(std::next(nd)));
+                    std::cout << "\nerasing: ";
+                    for (auto oop = ers.begin(); oop < ers.end(); oop++) {
+                        std::cout << (*oop).str() << " ";
+                    }
+                    std::cout << std::endl;*/
                     stmt.erase(std::next(token), std::next(std::next(nd)));
                     for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
                         //std::cout << (*ato).str() << " ";
