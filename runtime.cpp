@@ -8,7 +8,7 @@
 #include <windows.h>
 #include "header.hpp"
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::string &return_variable) {
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
         int size = 0;
@@ -68,7 +68,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             to_execute.push_back(*b);
                         }
                         //std::cout << "rt" << std::endl;
-                        std::string rv = "-0-0-0-";
+                        std::vector<Token> rv;
                         int result;
                         if (!in((*token).str(), aware_functions)) {
                             //std::cout << "!in((*token).str(), aware_functions)" << std::endl;
@@ -85,17 +85,17 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         //std::cout << "RV: " << rv << std::endl;
                         Token replacement;
-                        if (rv == "-0-0-0-") {
+                        if (rv.empty()) {
                             replacement = Token("_void_func_holder", -47, -47, _VOID_FUNC_HOLDER, "_void_func_holder");
-                        } else if (rv == "true") {
-                            replacement = Token("true", -47, -47, TTRUE, "");
-                        } else if (rv == "false") {
-                            replacement = Token("false", -47, -47, TFALSE, "");
-                        } else if (rv.at(0) == '"') {
-                            replacement = Token(rv, -47, -47, STRING, "");
-                        } else {
-                            replacement = Token(rv, -47, -47, NUMBER, "");
-                        }
+                        }// else if (rv == "true") {
+                        //    replacement = Token("true", -47, -47, TTRUE, "");
+                        //} else if (rv == "false") {
+                        //    replacement = Token("false", -47, -47, TFALSE, "");
+                        //} else if (rv.at(0) == '"') {
+                        //    replacement = Token(rv, -47, -47, STRING, "");
+                        //} else {
+                        //    replacement = Token(rv, -47, -47, NUMBER, "");
+                        //}
                         //std::cout << "stmt.s: " << stmt.size() << std::endl;
                         for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
                             //std::cout << (*ato).str() << " ";
@@ -155,7 +155,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                                 return 1;
                             }
                         }
-                        std::string return_val;
+                        std::vector<Token> return_val;
                         bool er = false;
                         int result = runtime(function_bodies[found.second], n, v, im, &er, limit, f, fn, aw, fp, return_val);
                         if (result == 1) {
@@ -177,7 +177,13 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             }
                             stmt.erase(stmt.begin()+ct);
                         }
-                        stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line()));
+                        if (return_val.empty())
+                            stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line()));
+                        else {
+                            for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
+                                stmt.insert(stmt.begin()+ct, *ret);
+                            }
+                        }
                         //std::cout << std::endl;
                         for (int b = 0; b < 0; b++) {//stmt.size()
                             std::cout << stmt[b].str() << " ";
@@ -695,22 +701,22 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 std::vector<Token> segmented(std::next(inner), nd);
                 bool boolean = false;
                 for (auto its = segmented.begin(); its < segmented.end(); its++) {
-                    if ((*its).typ() == EQUAL_EQUAL || (*its).typ() == LESS_EQUAL || (*its).typ() == GREATER_EQUAL || (*its).typ() == LESS || (*its).typ() == GREATER_EQUAL || (*its).typ() == EXC_EQUAL) {
-                        boolean = true;
-                    }
-                }
-                if (boolean) {
-                    if (boolsolve(segmented, names, values, error_occurred)) {
-                        return_variable = "true";
+                    if ((*its).typ() == LEFT_PAREN)
+                        continue;
+                    if ((*its).typ() == IDENTIFIER) {
+                        Type t;
+                        if (getVarVal(*its, names, values, error_occurred).at(0) == '"') {
+                            t = STRING;
+                        } else if (getVarVal(*its, names, values, error_occurred) == "true") {
+                            t = TTRUE;
+                        } else if (getVarVal(*its, names, values, error_occurred) == "false") {
+                            t = TFALSE;
+                        } else {
+                            t = NUMBER;
+                        }
+                        return_variable.push_back(Token(getVarVal(*its, names, values, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line()));
                     } else {
-                        return_variable = "false";
-                    }
-                } else {
-                    bool err = false;
-                    return_variable = solve(segmented, names, values, &err);
-                    if (err) {
-                        error(current, "Run-time Error: Evauation Error");
-                        return 1;
+                        return_variable.push_back(*its);
                     }
                 }
                 return 0;

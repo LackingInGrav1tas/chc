@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> n, v, i, fn, aw;
         std::vector<std::vector<std::vector<Token>>> f;
         std::vector<std::vector<std::string>> fp;
-        std::string rv;
+        std::vector<Token> rv;
         try {
             exit_status = runtime(two, n, v, i, &error_occurred, limit, f, fn, aw, fp, rv);
         } catch(...) {

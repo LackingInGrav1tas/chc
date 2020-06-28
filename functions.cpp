@@ -26,7 +26,7 @@ void error(Token token, std::string message="") {
     for (int i = 0; i < token.str().length()-1; i++) {
         std::cerr << "~";
     }
-    std::cerr << "^\n" << message << " col: " << token.col() << "  token: " << token.str() << "\n" << std::endl;
+    std::cerr << "^\n" << message << " (col: " << token.col() << "  token: " << token.str() << ")\n" << std::endl;
 }
 
 Type singleChar(char current_char) {
