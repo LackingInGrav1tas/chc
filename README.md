@@ -92,6 +92,19 @@ foo(); #error#
 var = "something";
 foo();#something#
 ```
+Additionally, ```aware``` can be used to create recursive functions.
+```
+aware fun recursive(n) {
+    print(n + @EOL);
+    n = n * n;
+    if (n > 50) {
+        return();
+    };
+    recursive();
+};
+
+recursive(2);
+```
 MACROS:
 
 Supported macros:
