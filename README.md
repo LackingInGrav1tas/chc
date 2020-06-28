@@ -95,15 +95,16 @@ foo();#something#
 Additionally, ```aware``` can be used to create recursive functions.
 ```
 aware fun recursive(n) {
-    print(n + @EOL);
     n = n * n;
+    print(n + @EOL);
     if (n > 50) {
-        return();
+        return(n);
     };
-    recursive(n);
+    to_return = recursive(n);
+    return(to_return);
 };
 
-recursive(2);
+r = recursive(2);
 ```
 MACROS:
 
