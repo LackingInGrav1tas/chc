@@ -18,9 +18,15 @@ std::string getString(char x) {
 }
 
 void error(Token token, std::string message="") {
-    std::cout << "\n";
     std::string a = std::to_string(token.lines()) + "| ";
-    std::cerr << a << token.actual_line() << "\n" << message << "\n\n";
+    std::cerr << "\n" << a << token.actual_line() << "\n";
+    for (int i = 0; i < a.length()+token.col()-1; i++) {
+        std::cerr << " ";
+    }
+    for (int i = 0; i < token.str().length()-1; i++) {
+        std::cerr << "~";
+    }
+    std::cerr << "^\n" << message << " col: " << token.col() << "  token: " << token.str() << "\n" << std::endl;
 }
 
 Type singleChar(char current_char) {
@@ -366,4 +372,39 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
             *error_occurred = true;
         }
     }
+}
+
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter) {
+    //std::vector<Token> line = { Token("callee", 0, 0, IDENTIFIER, ""), Token("(", 0, 0, LEFT_PAREN, ""), Token(")", 0, 0, RIGHT_PAREN, "") };
+    std::vector<std::vector<Token>> final;
+    std::vector<Token> current;
+    int nested = 0;
+    for (auto a = start; a < line.end(); a++) {
+        //std::cout << "nested: " << nested << std::endl;
+        if ((*a).typ() == delimiter) {
+            //std::cout << "COMMA TIME!\ncurrent.s: " << current.size() << std::endl;
+            if (!current.empty()) {
+                final.push_back(current);
+                current.clear();
+            }
+        } else if ((*a).typ() == RIGHT_PAREN && nested == 1) {
+            if (!current.empty()) {
+                final.push_back(current);
+                current.clear();
+            }
+            break;
+        } else if ((*a).typ() != LEFT_PAREN && nested > 0) {
+            current.push_back(*a);
+        }
+        if ((*a).typ() == LEFT_PAREN) {
+            nested++;
+        } else if ((*a).typ() == RIGHT_PAREN) {
+            nested--;
+        }
+        if ((*a).typ() == RIGHT_PAREN && nested == 1) {
+            break;
+        }
+    }
+    //std::cout << "final.s: " << final.size() << std::endl;
+    return final;
 }

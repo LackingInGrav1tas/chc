@@ -218,3 +218,5 @@ bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, st
 bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 
 bool isOp(Token token);
+
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter);

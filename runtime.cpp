@@ -15,112 +15,177 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
         int index = 0;
         for (auto token = stmt.begin(); token < stmt.end(); token++) {
             if (in((*token).str(), function_names)) {
-                //std::cout << "IN" << std::endl;
-                if ((*std::next(token)).typ() != LEFT_PAREN) {
-                    error(*std::next(token), "Run-time Error: Expected function parameters.");
-                    return 1;
-                }
-                //std::cout << "finding params" << std::endl;
-                int n = std::next(token) - stmt.begin();
-                auto nd = std::next(token);
-                int nested = 0;
-                while (true) {
-                    nd++;
-                    //std::cout << (*nd).str() << " ";
-                    n++;
-                    if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
-                        break;
-                    } else {
-                        if (stmt[n].typ() == LEFT_PAREN) {
-                            nested++;
-                        } else if (stmt[n].typ() == RIGHT_PAREN) {
-                            nested--;
-                        } else if (nd == stmt.end()) {
-                            error(stmt.back(), "Run-time Error: Unclosed parentheses");
+                Token token_copy((*token).str(), (*token).lines(), (*token).col(), (*token).typ(), (*token).actual_line());
+                auto call_params = findParams(stmt, token, COMMA);
+                if (call_params.empty()) {
+                    //std::cout << "IN" << std::endl;
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Expected function parameters.");
+                        return 1;
+                    }
+                    //std::cout << "finding params" << std::endl;
+                    int n = std::next(token) - stmt.begin();
+                    auto nd = std::next(token);
+                    int nested = 0;
+                    while (true) {
+                        nd++;
+                        //std::cout << (*nd).str() << " ";
+                        n++;
+                        if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
+                            break;
+                        } else {
+                            if (stmt[n].typ() == LEFT_PAREN) {
+                                nested++;
+                            } else if (stmt[n].typ() == RIGHT_PAREN) {
+                                nested--;
+                            } else if (nd == stmt.end()) {
+                                error(stmt.back(), "Run-time Error: Unclosed parentheses");
+                                return 1;
+                            }
+                        }
+                    }
+                    nd--;
+                    std::vector<Token> new_params(std::next(token), nd);
+                    //std::cout << "\nfind in v" << std::endl;
+                    std::pair<bool, int> found = findInV(function_names, (*token).str());
+                    std::vector<std::vector<Token>> to_execute;
+                    //std::cout << "found.first: " << found.first << std::endl;
+                    //std::cout << "found.second: " << found.second << std::endl;
+                    if (found.first) {
+                        //std::cout << "fn[f.s]" << function_names[found.second] << std::endl;
+                        //std::cout << "token.s" << (*token).str() << std::endl;
+                        //std::cout << "fp[f.s].s" << function_params[found.second].size() << std::endl;
+                        //std::cout << "np.s" << new_params.size() << std::endl;
+                        if (function_params[found.second].size() == new_params.size()) {
+                            //std::cout << "placement funcs" << std::endl;
+                            for (int i = 0; i < new_params.size(); i++) {
+                                std::vector<Token> to_send = { Token(function_params[found.second][i], 0, 0, IDENTIFIER, ""), Token("=", 0, 0, EQUAL, ""), Token(new_params[i].str(), 0, 0, IDENTIFIER, ""), Token(";", 0, 0, SEMICOLON, "") };
+                                to_execute.push_back(to_send);
+                            }
+                        }
+                        //std::cout << "rest of func" << std::endl;
+                        for (auto b = function_bodies[found.second].begin(); b < function_bodies[found.second].end(); b++) {
+                            to_execute.push_back(*b);
+                        }
+                        //std::cout << "rt" << std::endl;
+                        std::string rv = "-0-0-0-";
+                        int result;
+                        if (!in((*token).str(), aware_functions)) {
+                            //std::cout << "!in((*token).str(), aware_functions)" << std::endl;
+                            std::vector<std::string> n, v, i, fn, aw;
+                            std::vector<std::vector<std::vector<Token>>> f;
+                            std::vector<std::vector<std::string>> fp;
+                            result = runtime(to_execute, n, v, i, error_occurred, limit, f, fn, aw, fp, rv);
+                        } else {
+                            //std::cout << "f\n";
+                            result = runtime(to_execute, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, rv);
+                        }
+                        if (result == 1) {
                             return 1;
                         }
-                    }
-                }
-                nd--;
-                std::vector<Token> new_params(std::next(token), nd);
-                //std::cout << "\nfind in v" << std::endl;
-                std::pair<bool, int> found = findInV(function_names, (*token).str());
-                std::vector<std::vector<Token>> to_execute;
-                //std::cout << "found.first: " << found.first << std::endl;
-                //std::cout << "found.second: " << found.second << std::endl;
-                if (found.first) {
-                    //std::cout << "fn[f.s]" << function_names[found.second] << std::endl;
-                    //std::cout << "token.s" << (*token).str() << std::endl;
-                    //std::cout << "fp[f.s].s" << function_params[found.second].size() << std::endl;
-                    //std::cout << "np.s" << new_params.size() << std::endl;
-                    if (function_params[found.second].size() == new_params.size()) {
-                        //std::cout << "placement funcs" << std::endl;
-                        for (int i = 0; i < new_params.size(); i++) {
-                            std::vector<Token> to_send = { Token(function_params[found.second][i], 0, 0, IDENTIFIER, ""), Token("=", 0, 0, EQUAL, ""), Token(new_params[i].str(), 0, 0, IDENTIFIER, ""), Token(";", 0, 0, SEMICOLON, "") };
-                            to_execute.push_back(to_send);
+                        //std::cout << "RV: " << rv << std::endl;
+                        Token replacement;
+                        if (rv == "-0-0-0-") {
+                            replacement = Token("_void_func_holder", -47, -47, _VOID_FUNC_HOLDER, "_void_func_holder");
+                        } else if (rv == "true") {
+                            replacement = Token("true", -47, -47, TTRUE, "");
+                        } else if (rv == "false") {
+                            replacement = Token("false", -47, -47, TFALSE, "");
+                        } else if (rv.at(0) == '"') {
+                            replacement = Token(rv, -47, -47, STRING, "");
+                        } else {
+                            replacement = Token(rv, -47, -47, NUMBER, "");
                         }
+                        //std::cout << "stmt.s: " << stmt.size() << std::endl;
+                        for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
+                            //std::cout << (*ato).str() << " ";
+                        }
+                        //std::cout << "\n";
+                        /*std::vector<Token> ers(std::next(token), std::next(std::next(nd)));
+                        std::cout << "\nerasing: ";
+                        for (auto oop = ers.begin(); oop < ers.end(); oop++) {
+                            std::cout << (*oop).str() << " ";
+                        }
+                        std::cout << std::endl;*/
+                        stmt.erase(std::next(token), std::next(std::next(nd)));
+                        for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
+                            //std::cout << (*ato).str() << " ";
+                        }
+                        //std::cout << "replacing: " << stmt[index].str() << std::endl;
+                        stmt[index] = replacement;
+                        //std::cout << "\nindex: " << index << std::endl;//stmt.s: " << stmt.size() << std::endl;
+                        for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
+                            //std::cout << (*ato).str() << " ";
+                        }
+                        //std::cout << "\n";
                     } else {
-                        error((*token), "Run-time Error: Inconsistency in function arity.");
+                        error((*token), "Run-time Error: Call of a non-existent function.");
                         return 1;
                     }
-                    //std::cout << "rest of func" << std::endl;
-                    for (auto b = function_bodies[found.second].begin(); b < function_bodies[found.second].end(); b++) {
-                        to_execute.push_back(*b);
-                    }
-                    //std::cout << "rt" << std::endl;
-                    std::string rv = "-0-0-0-";
-                    int result;
-                    if (!in((*token).str(), aware_functions)) {
-                        //std::cout << "!in((*token).str(), aware_functions)" << std::endl;
-                        std::vector<std::string> n, v, i, fn, aw;
+                } else {
+                    std::pair<bool, int> found = findInV(function_names, (*token).str());
+                    if (found.first) {
+                        if (call_params.size() != function_params[found.second].size()) {
+                            std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(function_params[found.second].size());
+                            error(*token, msg);
+                            return 1;
+                        }
+                        //use the technique from EQUAL to descern the value of the things, then add them to the environment upon executing
+                        std::vector<std::string> n, v, im, fn, aw;
                         std::vector<std::vector<std::vector<Token>>> f;
                         std::vector<std::vector<std::string>> fp;
-                        result = runtime(to_execute, n, v, i, error_occurred, limit, f, fn, aw, fp, rv);
-                    } else {
-                        //std::cout << "f\n";
-                        result = runtime(to_execute, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, rv);
+                        std::string rv;
+                        if (in((*token).str(), aware_functions)) {
+                            n = names;
+                            v = values;
+                            im = immutables;
+                            fn = function_names;
+                            aw = aware_functions;
+                            f = function_bodies;
+                            fp = function_params;
+                        }
+                        for (int i = 0; i < call_params.size(); i++) {
+                            n.push_back(function_params[found.second][i]);
+                            if (in(function_params[found.second][i], immutables))
+                                im.push_back(function_params[found.second][i]);
+                            bool err = false;
+                            v.push_back(solve(call_params[i], names, values, &err));
+                            if (err) {
+                                error(*token, "Run-time Error: Evaluation Error.");
+                                return 1;
+                            }
+                        }
+                        std::string return_val;
+                        bool er = false;
+                        int result = runtime(function_bodies[found.second], n, v, im, &er, limit, f, fn, aw, fp, return_val);
+                        if (result == 1) {
+                            return result;
+                        }
+                        int ct = token - stmt.begin();
+                        int nested = 0;
+                        //std::cout << "\nbefore while" << std::endl;
+                        while (true) {
+                            //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                            if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                                stmt.erase(stmt.begin()+ct);
+                                break;
+                            }
+                            if (stmt[ct].typ() == RIGHT_PAREN) {
+                                nested--;
+                            } else if (stmt[ct].typ() == LEFT_PAREN) {
+                                nested++;
+                            }
+                            stmt.erase(stmt.begin()+ct);
+                        }
+                        stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line()));
+                        //std::cout << std::endl;
+                        for (int b = 0; b < 0; b++) {//stmt.size()
+                            std::cout << stmt[b].str() << " ";
+                        }
+                        //std::cout << std::endl;
+                        //std::cout << "after while" << std::endl;
+                        //std::cout << "\nstmt.s: " << stmt.size() << std::endl;
                     }
-                    if (result == 1) {
-                        return 1;
-                    }
-                    //std::cout << "RV: " << rv << std::endl;
-                    Token replacement;
-                    if (rv == "-0-0-0-") {
-                        replacement = Token("_void_func_holder", -47, -47, _VOID_FUNC_HOLDER, "_void_func_holder");
-                    } else if (rv == "true") {
-                        replacement = Token("true", -47, -47, TTRUE, "");
-                    } else if (rv == "false") {
-                        replacement = Token("false", -47, -47, TFALSE, "");
-                    } else if (rv.at(0) == '"') {
-                        replacement = Token(rv, -47, -47, STRING, "");
-                    } else {
-                        replacement = Token(rv, -47, -47, NUMBER, "");
-                    }
-                    //std::cout << "stmt.s: " << stmt.size() << std::endl;
-                    for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
-                        //std::cout << (*ato).str() << " ";
-                    }
-                    //std::cout << "\n";
-                    /*std::vector<Token> ers(std::next(token), std::next(std::next(nd)));
-                    std::cout << "\nerasing: ";
-                    for (auto oop = ers.begin(); oop < ers.end(); oop++) {
-                        std::cout << (*oop).str() << " ";
-                    }
-                    std::cout << std::endl;*/
-                    stmt.erase(std::next(token), std::next(std::next(nd)));
-                    for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
-                        //std::cout << (*ato).str() << " ";
-                    }
-                    //std::cout << "replacing: " << stmt[index].str() << std::endl;
-                    stmt[index] = replacement;
-                    //std::cout << "\nindex: " << index << std::endl;//stmt.s: " << stmt.size() << std::endl;
-                    for (auto ato = stmt.begin(); ato < stmt.end(); ato++) {
-                        //std::cout << (*ato).str() << " ";
-                    }
-                    //std::cout << "\n";
-                } else {
-                    error((*token), "Run-time Error: Call of a non-existent function.");
-                    return 1;
                 }
             }
             index++;
@@ -128,7 +193,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
         for (auto inner = stmt.begin(); inner < stmt.end(); inner++) {
             size++;
             Token current = *inner;
-            if (current.typ() == EQUAL) {
+            if (current.typ() == EQUAL) {//setting variable values
                 Token previous = *std::prev(inner);
                 if (previous.typ() != IDENTIFIER) {
                     error(previous, "Runtime Error: Inadequite identifier.");
@@ -512,7 +577,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
                 //std::cout << "after while loop" << std::endl;
                 if (whilecontents.back()[1].typ() != SEMICOLON) {
-                    error(whilecontents.back()[1], "Run-time Error: Expected a ; at the end of the while statement.");
+                    error(whilecontents.back()[0], "Run-time Error: Expected a ; at the end of the while statement.");
                     return 1;
                 }
                 whilecontents.pop_back();
@@ -574,7 +639,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending while loop.");
+                        error(current, "Run-time Error: Unending function.");
                         return 1;
                     }
                     fis = cline.front();
