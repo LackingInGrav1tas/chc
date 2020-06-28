@@ -100,7 +100,7 @@ aware fun recursive(n) {
     if (n > 50) {
         return();
     };
-    recursive();
+    recursive(n);
 };
 
 recursive(2);
