@@ -59,6 +59,8 @@ The variable types currently supported by CHC are: string, bool, num
 
 FUNCTIONS:
 
+Native Functions:
+
 input:
 ```
 string_variable = input("this will print out, then take user input.");
@@ -73,6 +75,23 @@ print("This will be sent to standard output.");
 ```
 etc.
 
+User defined functions:
+
+Declare functions by using the ```fun``` keyword. Ex.
+```
+fun foo() {
+    return("something");
+};
+```
+Scoped functions can be made using the ```aware``` keyword, which gives the function the scope of it's call location. Ex.
+```
+aware fun foo() {
+    print(var);
+};
+foo(); #error#
+var = "something";
+foo();#something#
+```
 MACROS:
 
 Supported macros:
