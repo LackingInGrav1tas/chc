@@ -9,6 +9,7 @@
 #include "wtypes.h"
 #include <winsock.h>
 #include <limits>
+#include <functional>
 #include "header.hpp"
 
 
@@ -20,11 +21,8 @@ std::string getString(char x) {
 void error(Token token, std::string message="") {
     std::string a = std::to_string(token.lines()) + "| ";
     std::cerr << "\n" << a << token.actual_line() << "\n";
-    for (int i = 0; i < a.length()+token.col()-1; i++) {
+    for (int i = 0; i < a.length()+token.col()-2; i++) {
         std::cerr << " ";
-    }
-    for (int i = 0; i < token.str().length()-1; i++) {
-        std::cerr << "~";
     }
     std::cerr << "^\n" << message << " (col: " << token.col() << "  token: " << token.str() << ")\n" << std::endl;
 }
@@ -135,6 +133,16 @@ Type keyword(std::string full) {
         ret = ASSERT;
     } else if (full == "length") {
         ret = LENGTH;
+    } else if (full == "rprint") {
+        ret = RPRINT;
+    } else if (full == "fprint") {
+        ret = FPRINT;
+    } else if (full == "rfprint") {
+        ret = RFPRINT;
+    } else if (full == "throw") {
+        ret = THROW;
+    } else if (full == "eval") {
+        ret = EVAL;
     }
     return ret;
 }
@@ -419,4 +427,9 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
     }
     //std::cout << "final.s: " << final.size() << std::endl;
     return final;
+}
+
+std::string hash(std::string source) {
+    std::hash<std::string> hashing_object;
+    return std::to_string(hashing_object(source));
 }

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "header.hpp"
 
-std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "while", "run", "define", "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto", "assert", "length" };
+std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "while", "run", "define", "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto", "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -13,11 +13,11 @@ std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '
                                        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
                                        '5', '6', '7', '8', '9', '0', '"', '#', '_', '@' };
 
-std::vector<char> important_characters = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';' };
+std::vector<char> important_characters = { '(', ')', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';' };
 
 std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 
-std::vector<Token> lex(std::string f, bool *error_occurred) {
+std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
     std::ifstream file(f);
     if (!file) {
         std::cerr << R"(")" << f << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
@@ -49,6 +49,13 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
                         dismissed.push_back(preprocessors[i]);
                     }
                 }
+                if (preprocessors[1] == "limit") {
+                    try {
+                        limit = std::stoi(preprocessors[2]);
+                    } catch (...) {
+                        continue;
+                    }
+                }
             }
         }
     }
@@ -71,12 +78,12 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
     int col = 0;
     std::vector<Token> tokens;
     while (std::getline(nfile, line)) {
+        row++;
+        col = 0;
         if (line.length() > 0) {
             if (line.at(0) == '$') {
                 continue;
             } else {
-                row++;
-                col = 0;
                 std::string current_token = "";
                 //iterating though the file, char by char
                 for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
@@ -198,20 +205,6 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
     for (std::vector<Token>::iterator it = tokens.begin(); it != tokens.end(); it++) {
         Token b = *it;
         n.push_back(b.str());
-    }
-    //removing comments
-    while (in(std::string("//"), n)) {
-        std::pair<bool, int> index = findInVector(n, std::string("//"));
-        if (index.first) {
-            n.erase(n.begin()+index.second);
-            tokens.erase(tokens.begin()+index.second);
-            while (n[index.second] != "//") {
-                n.erase(n.begin()+index.second);
-                tokens.erase(tokens.begin()+index.second);
-            }
-            n.erase(n.begin()+index.second);
-            tokens.erase(tokens.begin()+index.second);
-        }
     }
     //checking if all brackets and parentheses are closed
     int plcount = std::count(n.begin(), n.end(), "(");

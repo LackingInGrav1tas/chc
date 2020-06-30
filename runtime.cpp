@@ -11,7 +11,7 @@
 int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<std::string> native_functions = { "input", "assert", "writeto", "length" };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL };
         int size = 0;
         int index = 0;
         for (auto token = stmt.begin(); token < stmt.end(); token++) {
@@ -149,7 +149,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         //std::cout << "\nstmt.s: " << stmt.size() << std::endl;
                     }
                 }
-            } else if (in((*token).str(), native_functions)) {
+            } else if (in((*token).typ(), native_functions)) {
                 if ((*token).typ() == TOKEN_INPUT) {
                     auto call_params = findParams(stmt, token, COMMA);
                     if (call_params.size() != 1) {
@@ -339,6 +339,205 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         stmt.erase(stmt.begin()+ct);
                     }
                     stmt.insert(stmt.begin()+ct, Token(std::to_string(getVarVal(call_params[0][0], names, values, error_occurred).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
+                } else if ((*token).typ() == HASH) {
+                    std::cout << "hash" << std::endl;
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Expected a left bracket token.");
+                        return 1;
+                    }
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    std::string solved;
+                    for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
+                        if ((*cur).syhtyp() == TERMINAL) {
+                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            if (currentString.at(0) == '"') {
+                                currentString = currentString.substr(1, currentString.length()-2);
+                            }
+                            solved += currentString;
+                        }
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token('"' + hash(solved) + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
+                } else if ((*token).typ() == RPRINT) {
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string solved;
+                    for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
+                        if ((*cur).syhtyp() == TERMINAL) {
+                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            solved += currentString;
+                        }
+                    }
+                    std::cout << solved;
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    //std::cout << std::endl;
+                    for (int b = 0; b < 0; b++) {//stmt.size()
+                        std::cout << stmt[b].str() << " ";
+                    }
+                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
+                    stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
+                } else if ((*token).typ() == FPRINT) {
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string solved;
+                    for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
+                        if ((*cur).syhtyp() == TERMINAL) {
+                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            if (currentString.at(0) == '"') {
+                                currentString = currentString.substr(1, currentString.length()-2);
+                            }
+                            solved += currentString;
+                        }
+                    }
+                    std::cout << solved << std::endl;
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    //std::cout << std::endl;
+                    for (int b = 0; b < 0; b++) {//stmt.size()
+                        std::cout << stmt[b].str() << " ";
+                    }
+                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
+                    stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
+                } else if ((*token).typ() == RFPRINT) {
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string solved;
+                    for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
+                        if ((*cur).syhtyp() == TERMINAL) {
+                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            solved += currentString;
+                        }
+                    }
+                    std::cout << solved << std::endl;
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    //std::cout << std::endl;
+                    for (int b = 0; b < 0; b++) {//stmt.size()
+                        std::cout << stmt[b].str() << " ";
+                    }
+                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
+                    stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
+                } else if ((*token).typ() == EVAL) {
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        return 1;
+                    }
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    Type evaluated = TFALSE;
+                    std::string bol = "false";
+                    if (boolsolve(call_params[0], names, values, error_occurred)) {
+                        evaluated = TTRUE;
+                        bol = "true";
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(bol, (*token).lines(), (*token).col(), evaluated, (*token).actual_line()));
+                } else if ((*token).typ() == THROW) {
+                    auto call_params = findParams(stmt, token, COMMA);
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string solved;
+                    for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
+                        if ((*cur).syhtyp() == TERMINAL) {
+                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            if (currentString.at(0) == '"') {
+                                currentString = currentString.substr(1, currentString.length()-2);
+                            }
+                            solved += currentString;
+                        }
+                    }
+                    error(*token, solved);
+                    return 1;
                 }
             }
             index++;
@@ -352,6 +551,12 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     error(previous, "Runtime Error: Inadequite identifier.");
                     return 1;
                 } else {
+                    for (auto tok = inner; tok < stmt.end(); tok++) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(names, (*tok).str()).first == false) {
+                            error(*tok, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
+                    }
                     //its good!
                     if (!in(previous.str(), immutables)) {
                         std::vector<Token>::const_iterator beg = std::next(inner);
@@ -385,6 +590,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(names, (*nd).str()).first == false) {
+                            error(*nd, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
                         //std::cout << stmt[n].str();
                         nd++;
                         n++;

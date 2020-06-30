@@ -33,6 +33,9 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                     combined += ct.str();
                 } else if (in(ct.str(), names) || ct.str().at(0) == '@') {//if it's an or macro
                     std::string val = getVarVal(ct, names, values, error_occurred);
+                    if (error_occurred) {
+                        return "";
+                    }
                     if (val.at(0) == '"') {
                         combined += val.substr(1, val.length()-2);
                     } else {
@@ -94,10 +97,14 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = b-a;
-                            //std::cout << a << "-" << b << "=" << c << "\n";
-                            //std::cout << shunted[i-1].str() << " - " << shunted[i-2].str() << " = " << c << "\n";
+                            std::string shortened = std::to_string(c);
+                            while (shortened.back() == '0') {
+                                shortened.pop_back();
+                            }
+                            if (shortened.back() == '.')
+                                shortened.pop_back();
                             shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            Token fnd(shortened, 0, 0, NUMBER, "");
                             shunted.insert(shunted.begin(), fnd);
                         }
                         if (shunted[i].typ() == PLUS) {
@@ -132,10 +139,14 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = a+b;
-                            //std::cout << a << "+" << b << "=" << c << "\n";
-                            //std::cout << shunted[i-1].str() << " + " << shunted[i-2].str() << " = " << c << "\n";
+                            std::string shortened = std::to_string(c);
+                            while (shortened.back() == '0') {
+                                shortened.pop_back();
+                            }
+                            if (shortened.back() == '.')
+                                shortened.pop_back();
                             shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            Token fnd(shortened, 0, 0, NUMBER, "");
                             shunted.insert(shunted.begin(), fnd);
                         }
                         if (shunted[i].typ() == STAR) {
@@ -170,10 +181,14 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = a*b;
-                            //std::cout << a << "*" << b << "=" << c << "\n";
-                            //std::cout << shunted[i-1].str() << " * " << shunted[i-2].str() << " = " << c << "\n";
+                            std::string shortened = std::to_string(c);
+                            while (shortened.back() == '0') {
+                                shortened.pop_back();
+                            }
+                            if (shortened.back() == '.')
+                                shortened.pop_back();
                             shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            Token fnd(shortened, 0, 0, NUMBER, "");
                             shunted.insert(shunted.begin(), fnd);
                         }
                         if (shunted[i].typ() == SLASH) {
@@ -208,10 +223,14 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = b/a;
-                            //std::cout << a << "/" << b << "=" << c << "\n";
-                            //std::cout << shunted[i-1].str() << " / " << shunted[i-2].str() << " = " << c << "\n";
+                            std::string shortened = std::to_string(c);
+                            while (shortened.back() == '0') {
+                                shortened.pop_back();
+                            }
+                            if (shortened.back() == '.')
+                                shortened.pop_back();
                             shunted.erase((shunted.begin()+i-2), shunted.begin()+(i+1));
-                            Token fnd(std::to_string(c), 0, 0, NUMBER, "");
+                            Token fnd(shortened, 0, 0, NUMBER, "");
                             shunted.insert(shunted.begin(), fnd);
                         }
                     }

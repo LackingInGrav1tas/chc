@@ -17,10 +17,12 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
                                       "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH",
-                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH"};
+                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
+                                      "FPRINT", "RFPRINT", "THROW", "EVAL"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
+    bool c = false;
     int limit = 100;
     for (int j = 1; j < argc; j++) {
         if (*argv[j] == 'i') {i = true;}
@@ -38,6 +40,12 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        if (full == "cli") {
+            c = true;
+        }
+    }
+    if (c) {
+        //cli();
     }
     if (argc < 2) {
         std::cerr << "The accepted format is: " << argv[0] << " c:/.../example.chc OPTIONAL{i, l=?}";
@@ -52,7 +60,7 @@ int main(int argc, char** argv) {
     auto start = std::chrono::steady_clock::now();
     //actual compiling part starts here:
     bool error_occurred = false;
-    std::vector<Token> one = lex(argv[1], &error_occurred);
+    std::vector<Token> one = lex(argv[1], &error_occurred, limit);
     one.push_back(Token("", 0, 0, _EOF, ""));
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);

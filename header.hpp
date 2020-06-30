@@ -26,7 +26,7 @@ enum Type {
   PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, RUN,
   DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
-  LENGTH
+  LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL
                                            
 };
 
@@ -198,7 +198,7 @@ Type doubleChar(std::string full);
 
 Type singleChar(char current_char);
 
-std::vector<Token> lex(std::string f, bool *error_occurred);
+std::vector<Token> lex(std::string f, bool *error_occurred, int &limit);
 
 std::vector<std::vector<Token>> get_lines(std::vector<Token> tokens);
 
@@ -221,3 +221,7 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
 bool isOp(Token token);
 
 std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter);
+
+std::string hash(std::string source);
+
+void cli();
