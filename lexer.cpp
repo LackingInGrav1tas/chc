@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "header.hpp"
 
-std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "while", "run", "define", "immutable", "do", "hash", "sleep", "break", "aware" };
+std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "while", "run", "define", "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto", "assert", "length" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -23,124 +23,173 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
         std::cerr << R"(")" << f << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
         exit(EXIT_FAILURE);
     }
+    std::vector<std::string> dismissed;
+    std::string preline;
+    while (std::getline(file, preline)) {
+        if (preline.length() > 0) {
+            if (preline.at(0) == '$') {
+                std::vector<std::string> preprocessors = { "$" };
+                std::string current;
+                for (int i = 1; i < preline.length(); i++) {
+                    if (preline.at(i) == ' ' || preline.at(i) == '$') {
+                        if (!current.empty()) {
+                            preprocessors.push_back(current);
+                            current.clear();
+                            continue;
+                        }
+                    }
+                    current += preline.at(i);
+                }
+                if (!current.empty()) {
+                    preprocessors.push_back(current);
+                    current.clear();
+                }
+                if (preprocessors[1] == "dismiss") {
+                    for (int i = 2; i < preprocessors.size(); i++) {
+                        dismissed.push_back(preprocessors[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<std::vector<std::string>::iterator> to_del;
+    for (auto it = keywords.begin(); it < keywords.end(); it++) {
+        if (in(*it, dismissed)) {
+            to_del.push_back(it);
+        }
+    }
+
+    for (auto it = to_del.begin(); it < to_del.end(); it++) {
+        keywords.erase(*it);
+    }
+
+    file.close();
+    std::ifstream nfile(f);
     std::string line;
     int row = 0;
     int col = 0;
     std::vector<Token> tokens;
-    while (std::getline(file, line)) {
-        row++;
-        col = 0;
-        std::string current_token = "";
-        //iterating though the file, char by char
-        for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
-            col++;
-            //checks if the character is acceptable
-            Token errorcheck(getString(*current_char), row, col,  ERR, line);
-            if (!in(*current_char , recognized_chars)) {
-                std::string errormsg = std::string("Compile-time Error: Unrecognized character: ") + *current_char;
-                error(errorcheck, errormsg);
-                *error_occurred = true;
-            }
-            //checks if the current character is independent of anything it might be attached to
-            if (*current_char == '"') {//it's a string literal
-                std::string literal = "";
-                current_char++;
-                literal += '"';
-                bool r = false;
-                for (current_char; *current_char != '"'; current_char++) {
-                    literal += *current_char;
+    while (std::getline(nfile, line)) {
+        if (line.length() > 0) {
+            if (line.at(0) == '$') {
+                continue;
+            } else {
+                row++;
+                col = 0;
+                std::string current_token = "";
+                //iterating though the file, char by char
+                for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
                     col++;
-                    if (col >= line.length()) {
-                        *error_occurred == true;
-                        r = true;
-                        break;
+                    //checks if the character is acceptable
+                    Token errorcheck(getString(*current_char), row, col,  ERR, line);
+                    if (!in(*current_char , recognized_chars)) {
+                        std::string errormsg = std::string("Compile-time Error: Unrecognized character: ") + *current_char;
+                        error(errorcheck, errormsg);
+                        *error_occurred = true;
                     }
-                }
-                literal += '"';
-                Token tok(literal, row, col, STRING, line);
-                if (r) {
-                    error(tok, "Compile-time Error: Unending string.");
-                }
-                tokens.push_back(tok);
-            } else if (*current_char == '#') {//it's a comment
-                current_char++;
-                bool r = false;
-                std::string literal = "#";
-                for (current_char; *current_char != '#'; current_char++) {
-                    literal += *current_char;
-                    col++;
-                    if (col >= line.length()) {
-                        *error_occurred == true;
-                        r = true;
-                        break;
-                    }
-                }
-                literal += '#';
-                Token tok(literal, row, col, ERR, line);
-                if (r) {
-                    error(tok, "Compile-time Error: Unending comment.");
-                }
-            } else if (in(*current_char, important_characters)) {
-                if (!current_token.empty()) {
-                    Type enumed;
-                    //checking if token is a keyword
-                    if (!in(current_token, keywords)) {
-                        //at this point, the literal is either an identifier or a number. This will check.
-                        if ((current_token.at(0) - 48) >= 0 && (current_token.at(0) - 48) <= 9) {
-                            enumed = NUMBER;
-                        } else {
-                            enumed = IDENTIFIER;
+                    //checks if the current character is independent of anything it might be attached to
+                    if (*current_char == '"') {//it's a string literal
+                        std::string literal = "";
+                        current_char++;
+                        literal += '"';
+                        bool r = false;
+                        for (current_char; *current_char != '"'; current_char++) {
+                            literal += *current_char;
+                            col++;
+                            if (col >= line.length()) {
+                                *error_occurred == true;
+                                r = true;
+                                break;
+                            }
                         }
-                    } else {
-                        enumed = keyword(current_token);
-                    }
-                    Token tok(current_token, row, col, enumed, line);
-                    tokens.push_back(tok);
-                    current_token = "";
-                }
-                //checks if the character is connectable, ex: !=
-                if (in(*current_char, doubleable)) {
-                    if (!in(*std::prev(current_char), doubleable) && !in(*std::next(current_char), doubleable)) {
-                        Type enumed = singleChar(*current_char);
-                        Token tok(getString(*current_char), row, col, enumed, line);
+                        literal += '"';
+                        Token tok(literal, row, col, STRING, line);
+                        if (r) {
+                            error(tok, "Compile-time Error: Unending string.");
+                        }
                         tokens.push_back(tok);
-                    } else if (in(*std::prev(current_char), doubleable)) {
+                    } else if (*current_char == '#') {//it's a comment
+                        current_char++;
+                        bool r = false;
+                        std::string literal = "#";
+                        for (current_char; *current_char != '#'; current_char++) {
+                            literal += *current_char;
+                            col++;
+                            if (col >= line.length()) {
+                                *error_occurred == true;
+                                r = true;
+                                break;
+                            }
+                        }
+                        literal += '#';
+                        Token tok(literal, row, col, ERR, line);
+                        if (r) {
+                            error(tok, "Compile-time Error: Unending comment.");
+                        }
+                    } else if (in(*current_char, important_characters)) {
+                        if (!current_token.empty()) {
+                            Type enumed;
+                            //checking if token is a keyword
+                            if (!in(current_token, keywords)) {
+                                //at this point, the literal is either an identifier or a number. This will check.
+                                if ((current_token.at(0) - 48) >= 0 && (current_token.at(0) - 48) <= 9) {
+                                    enumed = NUMBER;
+                                } else {
+                                    enumed = IDENTIFIER;
+                                }
+                            } else {
+                                enumed = keyword(current_token);
+                            }
+                            Token tok(current_token, row, col, enumed, line);
+                            tokens.push_back(tok);
+                            current_token = "";
+                        }
+                        //checks if the character is connectable, ex: !=
                         if (in(*current_char, doubleable)) {
-                            std::string done = getString(*std::prev(current_char)) + getString(*current_char);
-                            Type enumed = doubleChar(done);
-                            Token tok(done, row, col, enumed, line);
+                            if (!in(*std::prev(current_char), doubleable) && !in(*std::next(current_char), doubleable)) {
+                                Type enumed = singleChar(*current_char);
+                                Token tok(getString(*current_char), row, col, enumed, line);
+                                tokens.push_back(tok);
+                            } else if (in(*std::prev(current_char), doubleable)) {
+                                if (in(*current_char, doubleable)) {
+                                    std::string done = getString(*std::prev(current_char)) + getString(*current_char);
+                                    Type enumed = doubleChar(done);
+                                    Token tok(done, row, col, enumed, line);
+                                    tokens.push_back(tok);
+                                }
+                            }
+                        } else {
+                            Token tok(getString(*current_char), row, col, singleChar(*current_char), line);
                             tokens.push_back(tok);
                         }
-                    }
-                } else {
-                    Token tok(getString(*current_char), row, col, singleChar(*current_char), line);
-                    tokens.push_back(tok);
-                }
-            //checks if it's whitespace/space in betwixt tokens
-            } else if (*current_char == ' ') {
-                if (!current_token.empty()) {
-                    Type enumed;
-                    //checking if token is a keyword
-                    if (!in(current_token, keywords)) {
-                        //std::cout << R"(")" << current_token << R"(")" << "\n";
-                        //at this point, the literal is either an identifier or a number. This will check.
-                        if ((current_token.at(0) - 48) >= 0 && (current_token.at(0) - 48) <= 9) {
-                            //std::cout << "num\n";
-                            enumed = NUMBER;
-                        } else {
-                            //std::cout << "ident\n";
-                            enumed = IDENTIFIER;
+                    //checks if it's whitespace/space in betwixt tokens
+                    } else if (*current_char == ' ') {
+                        if (!current_token.empty()) {
+                            Type enumed;
+                            //checking if token is a keyword
+                            if (!in(current_token, keywords)) {
+                                //std::cout << R"(")" << current_token << R"(")" << "\n";
+                                //at this point, the literal is either an identifier or a number. This will check.
+                                if ((current_token.at(0) - 48) >= 0 && (current_token.at(0) - 48) <= 9) {
+                                    //std::cout << "num\n";
+                                    enumed = NUMBER;
+                                } else {
+                                    //std::cout << "ident\n";
+                                    enumed = IDENTIFIER;
+                                }
+                            } else {
+                                enumed = keyword(current_token);
+                            }
+                            Token tok(current_token, row, col, enumed, line);
+                            tokens.push_back(tok);
+                            current_token = "";
                         }
+                    //anything else it adds to the token
                     } else {
-                        enumed = keyword(current_token);
+                        current_token += *current_char;
                     }
-                    Token tok(current_token, row, col, enumed, line);
-                    tokens.push_back(tok);
-                    current_token = "";
                 }
-            //anything else it adds to the token
-            } else {
-                current_token += *current_char;
             }
         }
     }
@@ -224,6 +273,6 @@ std::vector<Token> lex(std::string f, bool *error_occurred) {
         error(currenttok, "Compile-time Error: Uncalled for end bracket.\n");
         *error_occurred = true;
     }
-    
+    nfile.close();
     return tokens;
 }

@@ -55,7 +55,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                         if (in(shunted[i].typ(), ops)) {
                             break;
                         } else if (shunted[i].typ() == STRING) {
-                            error(shunted[i], R"(Run-time Error: String)" + shunted[i].str() + R"(attempted to be added to a number.)");
+                            error(shunted[i], R"(Run-time Error: String )" + shunted[i].str() + R"( attempted to be added to a number.)");
                             *error_occurred = true;
                             con = false;
                             return "";

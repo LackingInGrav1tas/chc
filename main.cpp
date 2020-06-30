@@ -17,7 +17,7 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
                                       "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "IDENTIFIER",
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
                                       "PRINT", "RETURN", "SUPER", "SELF", "TRUE", "WHILE", "RUN", "DEFINE", "IMMUTABLE", "DO", "HASH",
-                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER"};
+                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
@@ -41,6 +41,11 @@ int main(int argc, char** argv) {
     }
     if (argc < 2) {
         std::cerr << "The accepted format is: " << argv[0] << " c:/.../example.chc OPTIONAL{i, l=?}";
+        return EXIT_FAILURE;
+    }
+    std::string forsubstr = argv[1];
+    if (forsubstr.substr(forsubstr.length() - 4) != ".chc") {
+        std::cerr << "Expected a .chc file.";
         return EXIT_FAILURE;
     }
     //timer

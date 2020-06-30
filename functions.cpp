@@ -127,6 +127,14 @@ Type keyword(std::string full) {
         ret = BREAK;
     } else if (full == "aware") {
         ret = AWARE;
+    } else if (full == "input") {
+        ret = TOKEN_INPUT;
+    } else if (full == "writeto") {
+        ret = WRITETO;
+    } else if (full == "assert") {
+        ret = ASSERT;
+    } else if (full == "length") {
+        ret = LENGTH;
     }
     return ret;
 }
@@ -246,6 +254,10 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                 return '"' + IP() + '"';
             } else if (target == "@inf") {
                 return std::to_string(std::numeric_limits<double>::max());
+            } else if (target == "@write") {
+                return "@write";
+            } else if (target == "@append") {
+                return "@append";
             } else {
                 *error_occurred = true;
                 error(token, "Run-time Error: " + token.str() + " is an undefined macro.");
