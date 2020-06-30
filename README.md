@@ -72,6 +72,13 @@ run("this will be sent to CMD");
 print:
 ```
 print("This will be sent to standard output.");
+#This will be sent to standard output.#
+fprint("This will be sent to standard output."); #flush print#
+#This will be sent to standard output. + flush#
+rprint("This will be sent to standard output."); #raw print#
+#"This will be sent to standard output."#
+rfprint("This will be sent to standard output."); #raw flush print#
+#"This will be sent to standard output." + flush#
 ```
 writeto:
 ```
@@ -85,6 +92,14 @@ assert(a == "some other text");
 2| assert(a == "some other text");
    ^
 Run-time Error: Assertion failed.
+```
+eval:
+```
+variable = eval(true == true);
+```
+length:
+```
+a = length("text"); #4#
 ```
 etc.
 
