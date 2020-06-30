@@ -140,3 +140,23 @@ Supported macros:
 @IP #returns the IP address of the PC#
 @EOL #end of line signifier for strings#
 ```
+
+Preprocessors:
+
+Any preprocessors are defined using ```$``` before the statement.
+Currently, the supported options are:
+
+dismiss (used to remove native functions):
+```
+$dismiss assert
+fun assert() {
+    ...
+};
+#no error#
+```
+or
+```
+$dismiss assert
+assert(true == true);
+#error#
+```
