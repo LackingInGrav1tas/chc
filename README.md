@@ -14,7 +14,7 @@ print("text") #incorrect#
 CASE SENSITIVITY:
 CHC is case sensitive. Ex:
 ```
-variable = 10
+variable = 10;
 print(var); # 10 #
 print(VAR); # Scoping error #
 ```
