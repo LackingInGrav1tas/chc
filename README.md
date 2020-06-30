@@ -160,3 +160,10 @@ $dismiss assert
 assert(true == true);
 #error#
 ```
+limit (changes the loop limit, 0=no limit. Can also be changed in the command line):
+```
+$limit 1
+while (true) {};
+2| while (true) {};
+Terminate after control finds repeating while loop, limit: 1
+```
