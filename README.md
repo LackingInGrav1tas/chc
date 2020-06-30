@@ -96,7 +96,7 @@ fun foo() {
     return("something");
 };
 ```
-Scoped functions can be made using the ```aware``` keyword, which gives the function the scope of it's call location. Ex.
+Scoped functions can be made using the ```aware``` keyword, which gives the function the full environment of it's call location. Ex.
 ```
 aware fun foo() {
     print(var);
