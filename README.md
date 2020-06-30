@@ -73,6 +73,19 @@ print:
 ```
 print("This will be sent to standard output.");
 ```
+writeto:
+```
+success = writeto("filepath", "to be wrote to file", %either @write or @append%);
+writeto("filepath", "to be wrote to file", %either @write or @append%);
+```
+assert:
+```
+a = "some text";
+assert(a == "some other text");
+2| assert(a == "some other text");
+   ^
+Run-time Error: Assertion failed.
+```
 etc.
 
 User defined functions:
@@ -110,6 +123,8 @@ MACROS:
 
 Supported macros:
 ```
+@write #used to define the mode of file handling#
+@append #^#
 @sec #second of the minute#
 @min #minute of the hour#
 @hour #hour of the day#
