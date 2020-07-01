@@ -193,4 +193,4 @@ $include "c:\...\a.chc"
 fprint(a);
 ```
 ```interpreter c:\...\b.chc
-a```
+a
