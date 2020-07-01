@@ -186,12 +186,17 @@ import (allows for the use of multiple files):
 
 a.chc
 ```
+fun foo() {
+    fprint("foo");
+};
 a =  "a";
 ```
 b.chc
 ```
 $include "c:\...\a.chc"
 fprint(a);
+foo();
 ```
 ```interpreter c:\...\b.chc
 a
+foo
