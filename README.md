@@ -191,7 +191,7 @@ import (allows for the use of multiple files):
 a.chc
 ```
 fun foo() {
-    fprint("foo");
+    print("foo");
 };
 a =  "a";
 ```
