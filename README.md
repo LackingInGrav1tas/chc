@@ -69,7 +69,7 @@ run:
 ```
 run("this will be sent to CMD");
 ```
-print:
+versions of print:
 ```
 print("This will be sent to standard output.");
 #This will be sent to standard output.#
@@ -100,6 +100,10 @@ variable = eval(true == true);
 length:
 ```
 a = length("text"); #4#
+```
+rand:
+```
+a_random_num_between_zero_and_fifty = rand(50);
 ```
 etc.
 
