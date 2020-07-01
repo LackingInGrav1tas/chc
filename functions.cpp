@@ -396,9 +396,10 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
     //std::vector<Token> line = { Token("callee", 0, 0, IDENTIFIER, ""), Token("(", 0, 0, LEFT_PAREN, ""), Token(")", 0, 0, RIGHT_PAREN, "") };
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
+    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf" };
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
-        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false) {
+        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants)) {
             error(*a, "Run-time Error: Undefined variable.");
             err = true;
             break;

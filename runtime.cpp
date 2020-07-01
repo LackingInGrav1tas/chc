@@ -9,6 +9,7 @@
 #include "header.hpp"
 
 int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
+    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
         std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND };
@@ -623,7 +624,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     return 1;
                 } else {
                     for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(names, (*tok).str()).first == false) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
                             error(*tok, "Run-time Error: Undefined variable.");
                             return 1;
                         }
@@ -661,7 +662,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
-                        if ((*nd).typ() == IDENTIFIER && findInV(names, (*nd).str()).first == false) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
                             error(*nd, "Run-time Error: Undefined variable.");
                             return 1;
                         }
