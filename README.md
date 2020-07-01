@@ -183,6 +183,7 @@ while (true) {};
 Terminate after control finds repeating while loop, limit: 1
 ```
 import (allows for the use of multiple files):
+
 a.chc
 ```
 a =  "a";
