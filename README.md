@@ -23,25 +23,25 @@ CHC disregards whitespace. Ex:
 ```
 if (condition) {
 print("string");
-}
+};
 #string#
 ```
 ```
 if(condition) {
     print("string");
-}
+};
 #string#
 ```
 ```
 if (condition) {
     print("string");
-    }
+    };
 #string#
 ```
 ```
     if(condition) {
 print("string");
-}
+};
 #string#
 ```
 etc.
