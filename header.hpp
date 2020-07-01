@@ -23,10 +23,11 @@ enum Type {
 
   // Keywords.                                     
   AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
-  PRINT, RETURN, SUPER, SELF, TTRUE, WHILE, RUN,
-  DEFINE, IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
+  PRINT, RETURN, TTRUE, WHILE, RUN,
+  IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
-  LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL
+  LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
+  RAND
                                            
 };
 
@@ -220,7 +221,7 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
 
 bool isOp(Token token);
 
-std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter);
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err);
 
 std::string hash(std::string source);
 

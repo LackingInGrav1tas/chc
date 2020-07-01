@@ -5,7 +5,11 @@
 #include <algorithm>
 #include "header.hpp"
 
-std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or", "print", "return", "super", "self", "true", "while", "run", "define", "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto", "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval" };
+std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or",
+                                      "print", "return", "true", "while", "run",
+                                      "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto",
+                                      "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval", "continue",
+                                      "rand" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -18,6 +22,7 @@ std::vector<char> important_characters = { '(', ')', '=', '+', '-', '*', '/', '{
 std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 
 std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
+    std::vector<Token> tokens;
     std::ifstream file(f);
     if (!file) {
         std::cerr << R"(")" << f << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
@@ -31,7 +36,17 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                 std::vector<std::string> preprocessors = { "$" };
                 std::string current;
                 for (int i = 1; i < preline.length(); i++) {
-                    if (preline.at(i) == ' ' || preline.at(i) == '$') {
+                    if (preline.at(i) == '"') {
+                        i++;
+                        for (; preline.at(i) != '"'; i++) {
+                            current += preline.at(i);
+                        }
+                        if (!current.empty()) {
+                            preprocessors.push_back(current);
+                            current.clear();
+                            continue;
+                        }
+                    } else if (preline.at(i) == ' ' || preline.at(i) == '$') {
                         if (!current.empty()) {
                             preprocessors.push_back(current);
                             current.clear();
@@ -56,6 +71,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                         continue;
                     }
                 }
+                if (preprocessors[1] == "import") {
+                    auto import_tokens = lex(preprocessors[2], error_occurred, limit);
+                    tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
+                }
             }
         }
     }
@@ -76,7 +95,6 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
     std::string line;
     int row = 0;
     int col = 0;
-    std::vector<Token> tokens;
     while (std::getline(nfile, line)) {
         row++;
         col = 0;

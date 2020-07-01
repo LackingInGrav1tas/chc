@@ -101,18 +101,12 @@ Type keyword(std::string full) {
         ret = PRINT;
     } else if (full == "return") {
         ret = RETURN;
-    } else if (full == "super") {
-        ret = SUPER;
-    } else if (full == "self") {
-        ret = SELF;
     } else if (full == "true") {
         ret = TTRUE;
     } else if (full == "while") {
         ret = WHILE;
     } else if (full == "run") {
         ret = RUN;
-    } else if (full == "define") {
-        ret = DEFINE;
     } else if (full == "immutable") {
         ret = IMMUTABLE;
     } else if (full == "do") {
@@ -143,6 +137,10 @@ Type keyword(std::string full) {
         ret = THROW;
     } else if (full == "eval") {
         ret = EVAL;
+    } else if (full == "continue") {
+        ret = CONTINUE;
+    } else if (full == "rand") {
+        ret = RAND;
     }
     return ret;
 }
@@ -394,12 +392,17 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
     }
 }
 
-std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter) {
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err) {
     //std::vector<Token> line = { Token("callee", 0, 0, IDENTIFIER, ""), Token("(", 0, 0, LEFT_PAREN, ""), Token(")", 0, 0, RIGHT_PAREN, "") };
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
+        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false) {
+            error(*a, "Run-time Error: Undefined variable.");
+            err = true;
+            break;
+        }
         //std::cout << "nested: " << nested << std::endl;
         if ((*a).typ() == delimiter) {
             //std::cout << "COMMA TIME!\ncurrent.s: " << current.size() << std::endl;

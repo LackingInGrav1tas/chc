@@ -11,13 +11,16 @@
 int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND };
         int size = 0;
         int index = 0;
         for (auto token = stmt.begin(); token < stmt.end(); token++) {
             if (in((*token).str(), function_names)) {
                 Token token_copy((*token).str(), (*token).lines(), (*token).col(), (*token).typ(), (*token).actual_line());
-                auto call_params = findParams(stmt, token, COMMA);
+                bool eroc = false;
+                auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                if (eroc)
+                    return 1;
                 if (call_params.empty()) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected function parameters.");
@@ -151,7 +154,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
             } else if (in((*token).typ(), native_functions)) {
                 if ((*token).typ() == TOKEN_INPUT) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
                         error(*token, msg);
@@ -192,7 +198,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token('"' + raw_input + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == WRITETO) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() < 2) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 3.";
                         error(*token, msg);
@@ -284,7 +293,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
                         return 1;
                     }
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     for (auto param_segment = call_params.begin(); param_segment < call_params.end(); param_segment++) {
                         if (!boolsolve(*param_segment, names, values, error_occurred)) {
                             error((*param_segment).front(), "Run-time Error: Assertion Failed.");
@@ -311,7 +323,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
                         return 1;
                     }
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
@@ -345,7 +360,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
                         return 1;
                     }
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
@@ -377,7 +395,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     stmt.insert(stmt.begin()+ct, Token('"' + hash(solved) + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == RPRINT) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
                         error(*token, msg);
@@ -413,7 +434,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == FPRINT) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
                         error(*token, msg);
@@ -423,7 +447,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
                             std::string currentString = getVarVal(*cur, names, values, error_occurred);
-                            if (currentString.at(0) == '"') {
+                            if (currentString.at(0) == '"') {//here
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
                             solved += currentString;
@@ -452,7 +476,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == RFPRINT) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
                         error(*token, msg);
@@ -492,7 +519,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
                         return 1;
                     }
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
@@ -520,7 +550,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     stmt.insert(stmt.begin()+ct, Token(bol, (*token).lines(), (*token).col(), evaluated, (*token).actual_line()));
                 } else if ((*token).typ() == THROW) {
-                    auto call_params = findParams(stmt, token, COMMA);
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
                     if (call_params.size() != 1) {
                         std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
                         error(*token, msg);
@@ -538,6 +571,44 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     error(*token, solved);
                     return 1;
+                } else if ((*token).typ() == RAND) {
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    std::string solved = solve(call_params[0], names, values, error_occurred);
+                    std::string ret;
+                    try {
+                        srand(time(NULL));
+                        ret = std::to_string(rand() % std::stoi(solved));
+                    } catch (...) {
+                        error(*token, "Run-time Error: rand() expects an intiger value as a parameter.");
+                        return 1;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(ret, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                 }
             }
             index++;
