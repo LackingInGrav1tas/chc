@@ -117,9 +117,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         int ct = token - stmt.begin();
                         int nested = 0;
-                        //std::cout << "\nbefore while" << std::endl;
                         while (true) {
-                            //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                             if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                                 stmt.erase(stmt.begin()+ct);
                                 break;
@@ -138,13 +136,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                                 stmt.insert(stmt.begin()+ct, *ret);
                             }
                         }
-                        //std::cout << std::endl;
                         for (int b = 0; b < 0; b++) {//stmt.size()
                             std::cout << stmt[b].str() << " ";
                         }
-                        //std::cout << std::endl;
-                        //std::cout << "after while" << std::endl;
-                        //std::cout << "\nstmt.s: " << stmt.size() << std::endl;
                     }
                 }
             } else if (in((*token).typ(), native_functions)) {
@@ -174,7 +168,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -186,11 +179,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    //std::cout << std::endl;
                     for (int b = 0; b < 0; b++) {//stmt.size()
                         std::cout << stmt[b].str() << " ";
                     }
-                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token('"' + raw_input + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == WRITETO) {
                     bool eroc = false;
@@ -265,7 +256,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -277,11 +267,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    //std::cout << std::endl;
                     for (int b = 0; b < 0; b++) {//stmt.size()
                         std::cout << stmt[b].str() << " ";
                     }
-                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), foundornot, (*token).actual_line()));
                 } else if ((*token).typ() == ASSERT) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
@@ -301,7 +289,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -347,7 +334,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -362,7 +348,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token(std::to_string(getVarVal(*std::prev(std::prev(token)), names, values, error_occurred).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                     stmt.erase(std::prev(std::prev(token)), token);
                 } else if ((*token).typ() == HASH) {
-                    std::cout << "hash" << std::endl;
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
                         return 1;
@@ -388,7 +373,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -422,7 +406,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -434,11 +417,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    //std::cout << std::endl;
                     for (int b = 0; b < 0; b++) {//stmt.size()
                         std::cout << stmt[b].str() << " ";
                     }
-                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == FPRINT) {
                     bool eroc = false;
@@ -464,7 +445,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -476,11 +456,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    //std::cout << std::endl;
                     for (int b = 0; b < 0; b++) {//stmt.size()
                         std::cout << stmt[b].str() << " ";
                     }
-                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == RFPRINT) {
                     bool eroc = false;
@@ -503,7 +481,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -515,11 +492,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    //std::cout << std::endl;
                     for (int b = 0; b < 0; b++) {//stmt.size()
                         std::cout << stmt[b].str() << " ";
                     }
-                    //std::cout << std::endl << '"' + raw_input + '"' << std::endl;
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == EVAL) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
@@ -543,7 +518,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -603,7 +577,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -662,7 +635,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        //std::cout << "ct: " << ct << "\nnested: " << nested << "\ncurrent: " << stmt[ct].str() << std::endl;
                         if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
                             break;
@@ -733,7 +705,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             error(*nd, "Run-time Error: Undefined variable.");
                             return 1;
                         }
-                        //std::cout << stmt[n].str();
                         nd++;
                         n++;
                         if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
@@ -751,19 +722,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     n++;
                     if (stmt[n].typ() != SEMICOLON) {
-                        //std::cout << stmt[n].str();
                         error(current, "Warning: It's prudent to postfix the statement with a semicolon.");
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
-                    /*bool err = false;
-                    std::string solved = solve(segmented, names, values, &err);
-                    if (err) {
-                        error(current, "Run-time Error: Evauation Error");
-                        return 1;
-                    }
-                    if (solved.at(0) == '"') {
-                        solved = solved.substr(1, solved.length()-2);
-                    }*/
                     std::string solved;
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
                         if ((*ato).syhtyp() == TERMINAL) {
@@ -1043,7 +1004,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     error(next, "Run-time Error: Expected a left bracket token. None were provided.");
                     return 1;
                 }
-                //std::cout << "passed ifs" << std::endl;
                 std::vector<Token> final = *outer;
                 std::vector<Token> params;
                 int ps = 0;
@@ -1058,8 +1018,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                 }
                 
-                //std::cout << "passed for" << std::endl;
-
                 std::vector<std::vector<Token>> whilecontents;
                 int nested = 0;
                 Token fis;
@@ -1082,17 +1040,14 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                     }
                 }
-                //std::cout << "after while loop" << std::endl;
                 if (whilecontents.back()[1].typ() != SEMICOLON) {
                     error(whilecontents.back()[0], "Run-time Error: Expected a ; at the end of the while statement.");
                     return 1;
                 }
                 whilecontents.pop_back();
                 int stop = 0;
-                //std::cout << "|\nboolsolve: " << boolsolve(params, names, values, error_occurred) << std::endl;
                 while (boolsolve(params, names, values, error_occurred)) {
                     stop++;
-                    //std::cout << "loop " << stop << "\n";
                     if (stop == limit) {
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
                         return 1;
@@ -1107,7 +1062,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                 }
                 break;
-                //std::cout << "end of while.";
             } else if (current.typ() == FUN) {
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error(*std::next(inner), "Run-time Error: Inadequite function name.");
@@ -1115,7 +1069,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 } else {
                     function_names.push_back((*std::next(inner)).str());
                 }
-                //std::cout << "prevstr: " << (*std::prev(inner)).str() << "|" << (*std::prev(inner)).typ() << std::endl;
                 if ((*std::prev(inner)).typ() == AWARE) {
                     aware_functions.push_back((*std::next(inner)).str());
                 }
@@ -1161,7 +1114,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                     }
                 }
-                //std::cout << "after while loop" << std::endl;
                 if (func_body.back()[1].typ() != SEMICOLON) {
                     error(func_body.back()[1], "Run-time Error: Expected a ; at the end of the function declaration.");
                     return 1;
@@ -1222,7 +1174,6 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
                 return 47;
             }
-            //std::cout << "\n*error_occurred\n" << *error_occurred;
         }
     }
     return 0;

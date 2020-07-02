@@ -29,12 +29,15 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         exit(EXIT_FAILURE);
     }
     std::vector<std::string> dismissed;
+    
+    //PREPROCESSING
     std::string preline;
     while (std::getline(file, preline)) {
         if (preline.length() > 0) {
             if (preline.at(0) == '$') {
                 std::vector<std::string> preprocessors = { "$" };
                 std::string current;
+                //finding preprocessor commands
                 for (int i = 1; i < preline.length(); i++) {
                     if (preline.at(i) == '"') {
                         i++;
@@ -55,15 +58,18 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                     }
                     current += preline.at(i);
                 }
+
                 if (!current.empty()) {
                     preprocessors.push_back(current);
                     current.clear();
                 }
+                //setting up dismissing functions
                 if (preprocessors[1] == "dismiss") {
                     for (int i = 2; i < preprocessors.size(); i++) {
                         dismissed.push_back(preprocessors[i]);
                     }
                 }
+                //changing the while loop limit
                 if (preprocessors[1] == "limit") {
                     try {
                         limit = std::stoi(preprocessors[2]);
@@ -71,6 +77,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                         continue;
                     }
                 }
+                //adding files
                 if (preprocessors[1] == "import") {
                     auto import_tokens = lex(preprocessors[2], error_occurred, limit);
                     tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
@@ -78,19 +85,20 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
             }
         }
     }
-
+    //finding dismissed keywords in keywords
     std::vector<std::vector<std::string>::iterator> to_del;
     for (auto it = keywords.begin(); it < keywords.end(); it++) {
         if (in(*it, dismissed)) {
             to_del.push_back(it);
         }
     }
-
+    //deleting dismissed keywords from keywords
     for (auto it = to_del.begin(); it < to_del.end(); it++) {
         keywords.erase(*it);
     }
-
     file.close();
+    
+    //SCANNING
     std::ifstream nfile(f);
     std::string line;
     int row = 0;
@@ -99,7 +107,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         row++;
         col = 0;
         if (line.length() > 0) {
-            if (line.at(0) == '$') {
+            if (line.at(0) == '$') {//ignore preprocessors
                 continue;
             } else {
                 std::string current_token = "";
@@ -124,15 +132,13 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                             col++;
                             if (col >= line.length()) {
                                 *error_occurred == true;
-                                r = true;
+                                Token tok(literal, row, col, STRING, line);
+                                error(tok, "Compile-time Error: Unending string.");
                                 break;
                             }
                         }
                         literal += '"';
                         Token tok(literal, row, col, STRING, line);
-                        if (r) {
-                            error(tok, "Compile-time Error: Unending string.");
-                        }
                         tokens.push_back(tok);
                     } else if (*current_char == '#') {//it's a comment
                         current_char++;
@@ -142,16 +148,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                             literal += *current_char;
                             col++;
                             if (col >= line.length()) {
-                                *error_occurred == true;
-                                r = true;
                                 break;
                             }
                         }
                         literal += '#';
-                        Token tok(literal, row, col, ERR, line);
-                        if (r) {
-                            error(tok, "Compile-time Error: Unending comment.");
-                        }
                     } else if (in(*current_char, important_characters)) {
                         if (!current_token.empty()) {
                             Type enumed;
@@ -166,27 +166,21 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            Token tok(current_token, row, col, enumed, line);
-                            tokens.push_back(tok);
+                            tokens.push_back(Token(current_token, row, col, enumed, line));
                             current_token = "";
                         }
                         //checks if the character is connectable, ex: !=
                         if (in(*current_char, doubleable)) {
                             if (!in(*std::prev(current_char), doubleable) && !in(*std::next(current_char), doubleable)) {
-                                Type enumed = singleChar(*current_char);
-                                Token tok(getString(*current_char), row, col, enumed, line);
-                                tokens.push_back(tok);
+                                tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line));
                             } else if (in(*std::prev(current_char), doubleable)) {
                                 if (in(*current_char, doubleable)) {
                                     std::string done = getString(*std::prev(current_char)) + getString(*current_char);
-                                    Type enumed = doubleChar(done);
-                                    Token tok(done, row, col, enumed, line);
-                                    tokens.push_back(tok);
+                                    tokens.push_back(Token(done, row, col, doubleChar(done), line));
                                 }
                             }
                         } else {
-                            Token tok(getString(*current_char), row, col, singleChar(*current_char), line);
-                            tokens.push_back(tok);
+                            tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line));
                         }
                     //checks if it's whitespace/space in betwixt tokens
                     } else if (*current_char == ' ') {
@@ -206,8 +200,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            Token tok(current_token, row, col, enumed, line);
-                            tokens.push_back(tok);
+                            tokens.push_back(Token(current_token, row, col, enumed, line));
                             current_token = "";
                         }
                     //anything else it adds to the token
@@ -218,11 +211,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
             }
         }
     }
-
+    //string form of tokenized list
     std::vector<std::string> n;
     for (std::vector<Token>::iterator it = tokens.begin(); it != tokens.end(); it++) {
-        Token b = *it;
-        n.push_back(b.str());
+        n.push_back((*it).str());
     }
     //checking if all brackets and parentheses are closed
     int plcount = std::count(n.begin(), n.end(), "(");
@@ -234,8 +226,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            currenttok = *it;
-            if (currenttok.str() == "(") {
+            if ((*it).str() == "(") {
                 errcont = false;
             } else {
                 it--;
@@ -247,8 +238,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            currenttok = *it;
-            if (currenttok.str() == ")") {
+            if ((*it).str() == ")") {
                 errcont = false;
             } else {
                 it--;
@@ -261,8 +251,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            currenttok = *it;
-            if (currenttok.str() == "{") {
+            if ((*it).str() == "{") {
                 errcont = false;
             } else {
                 it--;
@@ -274,8 +263,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            currenttok = *it;
-            if (currenttok.str() == "}") {
+            if ((*it).str() == "}") {
                 errcont = false;
             } else {
                 it--;
@@ -285,6 +273,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         *error_occurred = true;
     }
     nfile.close();
+    //replacing valid MINUS NUMBER with 0 MINUS NUMBER
     for (int token_i = 1; token_i < tokens.size()-1 && token_i < 50; token_i++) {
         if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
             tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line()));

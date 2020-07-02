@@ -168,6 +168,7 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens) {
     return statementalized;
 }
 
+//NOT MY CODE
 std::string GetClip() {
     std::string text;
     if (OpenClipboard(NULL)) 
@@ -183,6 +184,7 @@ std::string GetClip() {
 	return text;
 }
 
+//NOT MY CODE
 void GetDesktopResolution(int& horizontal, int& vertical) {
     RECT desktop;
     const HWND hDesktop = GetDesktopWindow();
@@ -191,6 +193,7 @@ void GetDesktopResolution(int& horizontal, int& vertical) {
     vertical = desktop.bottom;
 }
 
+//NOT MY CODE
 std::string IP() {
     WSADATA wsa_Data;
     int wsa_ReturnCode = WSAStartup(0x101,&wsa_Data);
@@ -276,34 +279,20 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
                     if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')) {
                         *error_occurred = true;
                     } else {
-                        //std::cout << "in gvv: " << token.str() << std::endl;
                         return token.str();
                     }
                 }
             } else {
-                std::string value = varvalues[found.second];
-                //std::cout << "in gvv (value): " << value << std::endl;
-                return value;
+                return varvalues[found.second];
             }
         }
     }
     return "  ";
 }
-/*
-if (in(cur.typ(), literals) && in(next.typ(), literals)) {
-    error(cur, "Two literals next to each other. Did you want to have an operator between them?");
-    *error_occurred = true;
-}
-if (cur.typ() == IDENTIFIER && next.typ() == IDENTIFIER) {
-    error(cur, "Two identifiers next to each other. Did mean to put a space in between them?");
-    *error_occurred = true;
-}
-*/
 
+//evaluates operation in the form of: lhs op rhs
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred) {
     if (op.str() == "==") {
-        //"clipboard" vs "stop"
-        //std::cout << getVarVal(lhs, names, values, error_occurred) << " == " << getVarVal(rhs, names, values, error_occurred) << " -> " << (getVarVal(lhs, names, values, error_occurred) == getVarVal(rhs, names, values, error_occurred)) << std::endl;
         return getVarVal(lhs, names, values, error_occurred) == getVarVal(rhs, names, values, error_occurred);
     } else if (op.str() == ">") {
         if (getVarVal(lhs, names, values, error_occurred).at(0) != '"' && getVarVal(rhs, names, values, error_occurred).at(0) != '"') {
@@ -427,11 +416,10 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
             break;
         }
     }
-    //std::cout << "final.s: " << final.size() << std::endl;
     return final;
 }
 
 std::string hash(std::string source) {
-    std::hash<std::string> hashing_object;
-    return std::to_string(hashing_object(source));
+    std::hash<std::string> hasher;
+    return std::to_string(hasher(source));
 }

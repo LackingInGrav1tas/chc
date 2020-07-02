@@ -7,7 +7,7 @@
 #include <chrono>
 #include "header.hpp"
 
-std::ifstream::pos_type filesize(const char* filename) {
+std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
     return in.tellg(); 
 }
@@ -22,7 +22,6 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
-    bool c = false;
     int limit = 100;
     for (int j = 1; j < argc; j++) {
         if (*argv[j] == 'i') {i = true;}
@@ -40,12 +39,6 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        if (full == "cli") {
-            c = true;
-        }
-    }
-    if (c) {
-        //cli();
     }
     if (argc < 2) {
         std::cerr << "The accepted format is: " << argv[0] << " c:/.../example.chc OPTIONAL{i, l=?}";
@@ -100,10 +93,9 @@ int main(int argc, char** argv) {
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
-            Token current = *it;
-            tokenspo += current.str() + "  ";
-            typespo += TokenList[current.typ()] + "  ";
-            if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE) {typespo += "\n";}
+            tokenspo += (*it).str() + "  ";
+            typespo += TokenList[(*it).typ()] + "  ";
+            if ((*it).typ() == SEMICOLON || (*it).typ() == LEFT_BRACE) {typespo += "\n";}
         }
         infofile << tokenspo << "\n\n";
         std::cout << "type printout...\n";

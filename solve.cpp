@@ -12,16 +12,6 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
     std::vector<Token> shunted = destackify( shunting_yard_algorithm( stackify(tokens) ) );//destackify( shunting_yard_algorithm( stackify(tokens) ) );
     if (shunted.size() == 1) {
         return getVarVal(shunted.back(), names, values, error_occurred);
-        /*
-        if (shunted.back().typ() == NUMBER || shunted.back().typ() == STRING || shunted.back().typ() == TTRUE || shunted.back().typ() == TFALSE) {
-            if (shunted.back().typ() == STRING) {
-                return shunted.back().str();
-            } else {
-                return shunted.back().str();
-            }
-        } else {
-            return getVarVal(shunted.back(), names, values, error_occurred);
-        }*/
     } else {      
         //if shunted has more than one argument
         if (shunted.front().typ() == STRING || getVarVal(shunted.front(), names, values, error_occurred).at(0) == '"' || getVarVal(shunted.front(), names, values, error_occurred) == "\n") {
@@ -70,7 +60,6 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             double b = 2;
                             if (shunted[i-1].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 a = std::stod(gv);
                             } else {
                                 if (shunted[i-1].typ() == TTRUE) {
@@ -80,14 +69,11 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 } else {
                                     a = std::stod(shunted[i-1].str());
                                 }
-                                //std::cout << "literal" << std::endl;
                             }                    
                             if (shunted[i-2].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 b = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-2].typ() == TTRUE) {
                                     b = 1.0;
                                 } else if (shunted[i-2].typ() == TFALSE) {
@@ -112,10 +98,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             double b = 2;
                             if (shunted[i-1].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 a = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-1].typ() == TTRUE) {
                                     a = 1.0;
                                 } else if (shunted[i-1].typ() == TFALSE) {
@@ -126,10 +110,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             }                    
                             if (shunted[i-2].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 b = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-2].typ() == TTRUE) {
                                     b = 1.0;
                                 } else if (shunted[i-2].typ() == TFALSE) {
@@ -154,10 +136,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             double b = 2;
                             if (shunted[i-1].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 a = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-1].typ() == TTRUE) {
                                     a = 1.0;
                                 } else if (shunted[i-1].typ() == TFALSE) {
@@ -168,10 +148,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             }                    
                             if (shunted[i-2].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 b = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-2].typ() == TTRUE) {
                                     b = 1.0;
                                 } else if (shunted[i-2].typ() == TFALSE) {
@@ -196,10 +174,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             double b = 2;
                             if (shunted[i-1].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-1], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-1].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 a = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-1].typ() == TTRUE) {
                                     a = 1.0;
                                 } else if (shunted[i-1].typ() == TFALSE) {
@@ -210,10 +186,8 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                             }                    
                             if (shunted[i-2].typ() == IDENTIFIER) {
                                 std::string gv = getVarVal(shunted[i-2], names, values, error_occurred);
-                                //std::cout << "identifier -> " << gv << " .str() -> " << shunted[i-2].str() << " std::stod -> " << std::stod(gv) << std::endl;
                                 b = std::stod(gv);
                             } else {
-                                //std::cout << "literal" << std::endl;
                                 if (shunted[i-2].typ() == TTRUE) {
                                     b = 1.0;
                                 } else if (shunted[i-2].typ() == TFALSE) {
@@ -276,17 +250,13 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
             return false;
         }
     } else {
-        std::vector<bool> final;// = { true, false };
-        //Token op("||", 0, 0, OR, "");
-        std::vector<Token> ops;// = { op };
-
+        std::vector<bool> final;
+        std::vector<Token> ops;
         /*
         split tokens by AND and OR tokens into a new vector, segments
         split each segment by their operator into a 3 vectors, (lhs, op, rhs)
         push evaluate ( solve( lhs ), op, solve( rhs ) ) to final
         */
-        
-        //split tokens by AND and OR tokens into a new vector, segments
         std::vector<std::vector<Token>> segments;
         std::vector<Token> current_segment;
         for (auto token = tokens.begin(); token != tokens.end(); token++) {
@@ -300,17 +270,6 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
         }
         segments.push_back(current_segment);
         current_segment.clear();
-        /*
-        std::cout << "segments.size(): " << segments.size() << std::endl << "segments: [";
-        for (auto i = segments.begin(); i != segments.end(); i++) {
-            std::cout << (*i).back().str() << ", ";
-        }
-        std::cout << "]\nops.size(): " << ops.size() << std::endl << "ops: [";
-        for (auto i = ops.begin(); i != ops.end(); i++) {
-            std::cout << (*i).str() << ", ";
-        }
-        std::cout <<  "]\n\n";
-        */
         //split each segment by their operator into a 3 vectors, (lhs, op, rhs)
         for (auto segment = segments.begin(); segment != segments.end(); segment++) {
             int times = 0;
@@ -331,30 +290,16 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
                 } else if (times == 1) {
                     rhs.push_back((*token));
                 } else {
-                    std::cout << "WTF!!! how could this have happened!\n";
+                    std::cout << "Something is wrong with C++.\n";
                 }
-            }/*
-            std::cout << "lhs.size(): " << lhs.size() << std::endl << "lhs: [";
-            for (auto i = lhs.begin(); i != lhs.end(); i++) {
-                std::cout << (*i).str() << ", ";
             }
-            std::cout << "]\nrhs.size(): " << rhs.size() << std::endl << "rhs: [";
-            for (auto i = rhs.begin(); i != rhs.end(); i++) {
-                std::cout << (*i).str() << ", ";
-            }
-            std::cout <<  "]\nop: " << op.str() << "\n\n";
-            */
             if (rhs.empty()) {
-                //std::cout << "rhs.empty()\n";
                 if (lhs[0].typ() == TFALSE || getVarVal(lhs[0], names, values, error_occurred) == "false" || getVarVal(lhs[0], names, values, error_occurred) == "0" || getVarVal(lhs[0], names, values, error_occurred) == R"("")" || getVarVal(lhs[0], names, values, error_occurred) == "") {
-                    //std::cout << "0\n";
                     final.push_back(false);
                 } else {
-                    //std::cout << "1 " << lhs[0].str() << "\n";
                     final.push_back(true);
                 }
             } else {
-                //std::cout << evaluate( lhs[0], op, rhs[0], names, values, error_occurred ) << "\n";
                 final.push_back( evaluate( lhs[0], op, rhs[0], names, values, error_occurred ) );
             }
         }
@@ -379,18 +324,3 @@ bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::v
         return final[0];
     }
 }
-/*
-int main() {
-    Token a("i", 0, 0, IDENTIFIER, "");
-    Token b("<", 0, 0, LESS, "");
-    Token c("5", 0, 0, NUMBER, "");
-    Token d("and", 0, 0, AND, "");
-    Token e("v", 0, 0, IDENTIFIER, "");
-    Token f("==", 0, 0, LESS, "");
-    Token g("1", 0, 0, NUMBER, "");
-    std::vector<std::string> n = { "i", "v" };
-    std::vector<std::string> v = { "1", "1" };
-    std::vector<Token> all = { a, b, c, d, e, f, g };
-    bool okey = true;
-    std::cout << boolsolve(all, n, v, &okey) << "\nend" << std::endl;
-}*/
