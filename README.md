@@ -107,6 +107,21 @@ a_random_num_between_zero_and_fifty = rand(50);
 ```
 etc.
 
+Methods:
+
+string<-at(index):
+```
+string = "abcdefg";
+segment = string<-at(0);#"a"#
+segment2 = "abcdefg"<-at(0);#"a"#
+```
+string<-length();
+```
+string = "abcdefg";
+len = string<-length();#7#
+len2 = "abcdefgh"<-length();#7#
+```
+
 User defined functions:
 
 Declare functions by using the ```fun``` keyword. Ex.
