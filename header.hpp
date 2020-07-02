@@ -27,7 +27,7 @@ enum Type {
   IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
   LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
-  RAND
+  RAND, AT, ARROW
                                            
 };
 

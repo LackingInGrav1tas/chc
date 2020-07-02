@@ -28,121 +28,119 @@ void error(Token token, std::string message="") {
 }
 
 Type singleChar(char current_char) {
-    Type enumed;
     if (current_char == '!') {
-        enumed = EXC;
+        return EXC;
     } else if (current_char == '+') {
-        enumed = PLUS;
+        return PLUS;
     } else if (current_char == '-') {
-        enumed = MINUS;
+        return MINUS;
     } else if (current_char == '/') {
-        enumed = SLASH;
+        return SLASH;
     } else if (current_char == '*') {
-        enumed = STAR;
+        return STAR;
     } else if (current_char == ',') {
-        enumed = COMMA;
+        return COMMA;
     } else if (current_char == ';') {
-        enumed = SEMICOLON;
+        return SEMICOLON;
     } else if (current_char == ')') {
-        enumed = RIGHT_PAREN;
+        return RIGHT_PAREN;
     } else if (current_char == '(') {
-        enumed = LEFT_PAREN;
+        return LEFT_PAREN;
     } else if (current_char == '}') {
-        enumed = RIGHT_BRACE;
+        return RIGHT_BRACE;
     } else if (current_char == '{') {
-        enumed = LEFT_BRACE;
+        return LEFT_BRACE;
     } else if (current_char == '<') {
-        enumed = LESS;
+        return LESS;
     } else if (current_char == '>') {
-        enumed = GREATER;
+        return GREATER;
     } else if (current_char == '=') {
-        enumed = EQUAL;
+        return EQUAL;
     } else if (current_char == '.') {
-        enumed = DOT;
+        return DOT;
     }
-    return enumed;
 }
 
 Type doubleChar(std::string full) {
-    Type enumed;
     if (full == "!=") {
-        enumed = EXC_EQUAL;
+        return EXC_EQUAL;
     } else if (full == "==") {
-        enumed = EQUAL_EQUAL;
+        return EQUAL_EQUAL;
     } else if (full == ">=") {
-        enumed = GREATER_EQUAL;
+        return GREATER_EQUAL;
     } else if (full == "<=") {
-        enumed = LESS_EQUAL;
+        return LESS_EQUAL;
+    } else if (full == "<-") {
+        return ARROW;
     }
-    return  enumed;
 }
 
 Type keyword(std::string full) {
-    Type ret;
     if (full == "and") {
-        ret = AND;
+        return AND;
     } else if (full == "class") {
-        ret = CLASS;
+        return CLASS;
     } else if (full == "else") {
-        ret = ELSE;
+        return ELSE;
     } else if (full == "false") {
-        ret = TFALSE;
+        return TFALSE;
     } else if (full == "fun") {
-        ret = FUN;
+        return FUN;
     } else if (full == "for") {
-        ret = FOR;
+        return FOR;
     } else if (full == "if") {
-        ret = IF;
+        return IF;
     } else if (full == "nil") {
-        ret = NIL;
+        return NIL;
     } else if (full == "or") {
-        ret = OR;
+        return OR;
     } else if (full == "print") {
-        ret = PRINT;
+        return PRINT;
     } else if (full == "return") {
-        ret = RETURN;
+        return RETURN;
     } else if (full == "true") {
-        ret = TTRUE;
+        return TTRUE;
     } else if (full == "while") {
-        ret = WHILE;
+        return WHILE;
     } else if (full == "run") {
-        ret = RUN;
+        return RUN;
     } else if (full == "immutable") {
-        ret = IMMUTABLE;
+        return IMMUTABLE;
     } else if (full == "do") {
-        ret = DO;
+        return DO;
     } else if (full == "hash") {
-        ret = HASH;
+        return HASH;
     } else if (full == "sleep") {
-        ret = SLEEP;
+        return SLEEP;
     } else if (full == "break") {
-        ret = BREAK;
+        return BREAK;
     } else if (full == "aware") {
-        ret = AWARE;
+        return AWARE;
     } else if (full == "input") {
-        ret = TOKEN_INPUT;
+        return TOKEN_INPUT;
     } else if (full == "writeto") {
-        ret = WRITETO;
+        return WRITETO;
     } else if (full == "assert") {
-        ret = ASSERT;
+        return ASSERT;
     } else if (full == "length") {
-        ret = LENGTH;
+        return LENGTH;
     } else if (full == "rprint") {
-        ret = RPRINT;
+        return RPRINT;
     } else if (full == "fprint") {
-        ret = FPRINT;
+        return FPRINT;
     } else if (full == "rfprint") {
-        ret = RFPRINT;
+        return RFPRINT;
     } else if (full == "throw") {
-        ret = THROW;
+        return THROW;
     } else if (full == "eval") {
-        ret = EVAL;
+        return EVAL;
     } else if (full == "continue") {
-        ret = CONTINUE;
+        return CONTINUE;
     } else if (full == "rand") {
-        ret = RAND;
+        return RAND;
+    } else if (full == "at") {
+        return AT;
     }
-    return ret;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -396,10 +394,10 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
     //std::vector<Token> line = { Token("callee", 0, 0, IDENTIFIER, ""), Token("(", 0, 0, LEFT_PAREN, ""), Token(")", 0, 0, RIGHT_PAREN, "") };
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
-    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf" };
+    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
-        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants)) {
+        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants) && a != start) {
             error(*a, "Run-time Error: Undefined variable.");
             err = true;
             break;

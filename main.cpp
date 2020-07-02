@@ -18,7 +18,7 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
                                       "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
                                       "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
-                                      "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND"};
+                                      "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         time_t now = time(0);
         char* dt = ctime(&now);
         infofile << "Date/time of executing: " << dt;
-        std::cout << "compilation/runtime time...\n";
+        std::cout << "compilation/run time...\n";
         infofile << "Time taken for compilation/runtime: " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) << " ms\n\n";
         std::cout << "token printout...\n";
         std::string tokenspo = "";

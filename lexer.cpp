@@ -9,7 +9,7 @@ std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "f
                                       "print", "return", "true", "while", "run",
                                       "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto",
                                       "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval", "continue",
-                                      "rand" };
+                                      "rand", "at" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -285,5 +285,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
         *error_occurred = true;
     }
     nfile.close();
+    for (int token_i = 1; token_i < tokens.size()-1 && token_i < 50; token_i++) {
+        if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
+            tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line()));
+        }
+    }
     return tokens;
 }
