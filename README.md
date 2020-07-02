@@ -61,19 +61,17 @@ The variable types currently supported by CHC are: string, bool, num
 
 **Native Functions:**
 
-*input:*
+*input (returns: string):*
 ```
 string_variable = input("this will print out, then take user input.");
 ```
-r: string
  
-*run:*
+*run (returns: void):*
 ```
 run("this will be sent to CMD");
 ```
-r: void
 
-*versions of print:*
+*versions of print (returns: void):*
 ```
 print("This will be sent to standard output.");
 #This will be sent to standard output.#
@@ -84,16 +82,14 @@ rprint("This will be sent to standard output."); #raw print#
 rfprint("This will be sent to standard output."); #raw flush print#
 #"This will be sent to standard output." + flush#
 ```
-r: void
  
-*writeto:*
+*writeto (returns: void):*
 ```
 success = writeto("filepath", "to be wrote to file", %either @write or @append%);
 writeto("filepath", "to be wrote to file", %either @write or @append%);
 ```
-r: bool
  
-*assert:*
+*assert (returns: void):*
 ```
 a = "some text";
 assert(a == "some other text");
@@ -101,19 +97,15 @@ assert(a == "some other text");
    ^
 Run-time Error: Assertion failed.
 ```
-r: void
- 
-*eval:*
+
+*eval (returns: bool):*
 ```
 variable = eval(true == true);
-```
-r: bool
- 
-*rand:*
+``` 
+*rand (returns: number):*
 ```
 a_random_num_between_zero_and_fifty = rand(50);
 ```
-r: number
  
 etc.
 
@@ -121,22 +113,19 @@ etc.
 
 Methods are called with the ```<-``` arrow token on the object.
 
-*string<-at(index)*
+*string<-at(index),  (returns: string)*
 ```
 string = "abcdefg";
 segment = string<-at(0);#"a"#
 segment2 = "abcdefg"<-at(0);#"a"#
 ```
-r: string
  
-*string<-length()*
+*string<-length(),  (returns: number)*
 ```
 string = "abcdefg";
 len = string<-length();#7#
 len2 = "abcdefgh"<-length();#7#
-```
-r: number
- 
+``` 
 
 **User defined functions:**
 
