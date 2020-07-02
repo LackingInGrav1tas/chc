@@ -1,5 +1,5 @@
 # chc
-A simple interpreter. My first real attemept, so keep that in mind.
+A simple interpreter. Spaghetti code.
 CHC is a simple interpreted language which supports functions. It utilizes lazy evaluation and is written completely in C++
 
 SYNTAX
