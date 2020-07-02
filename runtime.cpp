@@ -12,7 +12,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE };
         int size = 0;
         int index = 0;
         for (auto token = stmt.begin(); token < stmt.end(); token++) {
@@ -647,6 +647,79 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         stmt.erase(stmt.begin()+ct);
                     }
                     Token insert_tok( R"(")" + getString(value.at(pos)) + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line());
+                    stmt.insert(stmt.begin()+ct, insert_tok);
+                    stmt.erase(std::prev(std::prev(token)), token);
+                } else if ((*token).typ() == DISPOSE) {
+                    bool e = false;
+                    if ((token-stmt.begin()) < 2) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
+                        return 1;
+                    }
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
+                        return 1;
+                    } else if ((*std::prev(token)).typ() != ARROW) {
+                        error(*std::prev(token), "Run-time Error: Method called with no target.");
+                        return 1;
+                    } else if ((*std::prev(std::prev(token))).typ() != IDENTIFIER) {
+                        error(*std::prev(std::prev(token)), "Run-time Error: Method called with invalid.");
+                        return 1;
+                    } else if (getVarVal(*std::prev(std::prev(token)), names, values, &e).at(0) != '"') {
+                        error(*std::prev(std::prev(token)), "Run-time Error: at method called on non-string object.");
+                        return 1;
+                    }
+                    if (e) {
+                        error(*token, "Run-time Error: Eval error.");
+                    }
+                    bool eroc = false;
+                    std::cout << "cp" << std::endl;
+                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    if (eroc) {
+                        std::cout << "er" << std::endl;
+                        return 1;
+                    }
+                    if (call_params.size() != 0) {
+                        error(*token, "Run-time Error: Expected 0 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    for (int i = 0; i < names.size(); i++) {
+                        if (names[i] == (*std::prev(std::prev(token))).str()) {
+                            names.erase(names.begin()+i);
+                            values.erase(values.begin()+i);
+                        }
+                    }
+                    for (int i = 0; i < immutables.size(); i++) {
+                        if (immutables[i] == (*std::prev(std::prev(token))).str()) {
+                            immutables.erase(immutables.begin()+i);
+                        }
+                    }
+                    for (int i = 0; i < function_names.size(); i++) {
+                        if (function_names[i] == (*std::prev(std::prev(token))).str()) {
+                            function_names.erase(function_names.begin()+i);
+                            function_params.erase(function_params.begin()+i);
+                            function_bodies.erase(function_bodies.begin()+i);
+                        }
+                    }
+                    for (int i = 0; i < aware_functions.size(); i++) {
+                        if (aware_functions[i] == (*std::prev(std::prev(token))).str()) {
+                            aware_functions.erase(aware_functions.begin()+i);
+                        }
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    Token insert_tok("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line());
                     stmt.insert(stmt.begin()+ct, insert_tok);
                     stmt.erase(std::prev(std::prev(token)), token);
                 }

@@ -140,6 +140,8 @@ Type keyword(std::string full) {
         return RAND;
     } else if (full == "at") {
         return AT;
+    } else if (full == "dispose") {
+        return DISPOSE;
     }
 }
 

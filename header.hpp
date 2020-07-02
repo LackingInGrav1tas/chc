@@ -27,7 +27,7 @@ enum Type {
   IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
   LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
-  RAND, AT, ARROW
+  RAND, AT, ARROW, DISPOSE
                                            
 };
 
@@ -185,8 +185,6 @@ std::pair<bool, int> findInV(std::vector<R> vec, R target) {
     return ret;
 }
 
-std::vector<std::vector<Token>> get_statements(std::vector<Token> tokens);
-
 std::vector<std::string> get_lexemes(std::vector<Token> tokens);
 
 std::string getString(char x);
@@ -200,8 +198,6 @@ Type doubleChar(std::string full);
 Type singleChar(char current_char);
 
 std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision);
-
-std::vector<std::vector<Token>> get_lines(std::vector<Token> tokens);
 
 void errorCheck(std::vector<Token> line, bool *error_occurred);
 
