@@ -314,6 +314,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         stmt.erase(stmt.begin()+ct);
                     }
                 } else if ((*token).typ() == LENGTH) {
+                    if ((token-stmt.begin()) < 3) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
+                        return 1;
+                    }
                     bool e = false;
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
@@ -519,7 +523,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == EVAL) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of function call.");
                         return 1;
                     }
                     bool eroc = false;
@@ -576,7 +580,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     return 1;
                 } else if ((*token).typ() == RAND) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of function call.");
                         return 1;
                     }
                     bool eroc = false;
@@ -614,8 +618,12 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token(ret, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                 } else if ((*token).typ() == AT) {
                     bool e = false;
+                    if ((token-stmt.begin()) < 3) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
+                        return 1;
+                    }
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
                         return 1;
                     } else if ((*std::prev(token)).typ() != ARROW) {
                         error(*std::prev(token), "Run-time Error: Method called with no target.");
