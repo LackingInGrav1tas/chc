@@ -109,6 +109,8 @@ etc.
 
 Methods:
 
+Methods are called with the ```<-``` arrow token on the object.
+
 string<-at(index)
 ```
 string = "abcdefg";
