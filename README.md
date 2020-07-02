@@ -213,7 +213,7 @@ a.chc
 fun foo() {
     print("foo");
 };
-a =  "a";
+a =  "a's contents";
 ```
 b.chc
 ```
@@ -223,6 +223,6 @@ foo();
 ```
 Output:
 ```
-a
+a's contents
 foo
 ```
