@@ -65,10 +65,14 @@ The variable types currently supported by CHC are: string, bool, num
 ```
 string_variable = input("this will print out, then take user input.");
 ```
+r: string
+ 
 *run:*
 ```
 run("this will be sent to CMD");
 ```
+r: void
+
 *versions of print:*
 ```
 print("This will be sent to standard output.");
@@ -80,11 +84,15 @@ rprint("This will be sent to standard output."); #raw print#
 rfprint("This will be sent to standard output."); #raw flush print#
 #"This will be sent to standard output." + flush#
 ```
+r: void
+ 
 *writeto:*
 ```
 success = writeto("filepath", "to be wrote to file", %either @write or @append%);
 writeto("filepath", "to be wrote to file", %either @write or @append%);
 ```
+r: bool
+ 
 *assert:*
 ```
 a = "some text";
@@ -93,18 +101,20 @@ assert(a == "some other text");
    ^
 Run-time Error: Assertion failed.
 ```
+r: void
+ 
 *eval:*
 ```
 variable = eval(true == true);
 ```
-*length:*
-```
-a = length("text"); #4#
-```
+r: bool
+ 
 *rand:*
 ```
 a_random_num_between_zero_and_fifty = rand(50);
 ```
+r: number
+ 
 etc.
 
 **Methods:**
@@ -117,12 +127,16 @@ string = "abcdefg";
 segment = string<-at(0);#"a"#
 segment2 = "abcdefg"<-at(0);#"a"#
 ```
+r: string
+ 
 *string<-length()*
 ```
 string = "abcdefg";
 len = string<-length();#7#
 len2 = "abcdefgh"<-length();#7#
 ```
+r: number
+ 
 
 **User defined functions:**
 
