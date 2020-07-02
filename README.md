@@ -221,7 +221,7 @@ $import "c:\...\a.chc"
 fprint(a);
 foo();
 ```
-Output:
+Output of b:
 ```
 a's contents
 foo
