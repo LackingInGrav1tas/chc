@@ -57,7 +57,7 @@ variable = 3; #ERROR#
 ```
 The variable types currently supported by CHC are: string, bool, num
 
-###FUNCTIONS:###
+### FUNCTIONS: ###
 
 **Native Functions:**
 
@@ -155,7 +155,7 @@ aware fun recursive(n) {
 
 r = recursive(2);
 ```
-###MACROS:###
+### MACROS: ###
 
 Supported macros:
 ```
@@ -177,7 +177,7 @@ Supported macros:
 @EOL #end of line signifier for strings#
 ```
 
-###Preprocessors:###
+### Preprocessors: ###
 
 Any preprocessors are defined using ```$``` before the statement.
 Currently, the supported options are:
