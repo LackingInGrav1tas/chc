@@ -199,7 +199,7 @@ Type doubleChar(std::string full);
 
 Type singleChar(char current_char);
 
-std::vector<Token> lex(std::string f, bool *error_occurred, int &limit);
+std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision);
 
 std::vector<std::vector<Token>> get_lines(std::vector<Token> tokens);
 
@@ -211,9 +211,9 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
 
 std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
 
-std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
+std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred, int precision);
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable);
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, int precision, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable);
 
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 

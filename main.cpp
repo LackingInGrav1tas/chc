@@ -23,6 +23,7 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
 int main(int argc, char** argv) {
     bool i = false;
     int limit = 100;
+    int precision = 6;
     for (int j = 1; j < argc; j++) {
         if (*argv[j] == 'i') {i = true;}
         std::string full = argv[j];
@@ -53,7 +54,7 @@ int main(int argc, char** argv) {
     auto start = std::chrono::steady_clock::now();
     //actual compiling part starts here:
     bool error_occurred = false;
-    std::vector<Token> one = lex(argv[1], &error_occurred, limit);
+    std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);
     one.push_back(Token("", 0, 0, _EOF, ""));
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
         std::vector<std::vector<std::string>> fp;
         std::vector<Token> rv;
         try {
-            exit_status = runtime(two, n, v, i, &error_occurred, limit, f, fn, aw, fp, rv);
+            exit_status = runtime(two, n, v, i, &error_occurred, limit, precision, f, fn, aw, fp, rv);
         } catch(...) {
             std::cerr << "Error: Unknown Error.";
         }

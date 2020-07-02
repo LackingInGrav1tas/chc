@@ -7,8 +7,17 @@
 #include <winbase.h>
 #include "header.hpp"
 #include <assert.h>
+#include <sstream>
+#include <iomanip>
 
-std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred) {
+template <typename T>//https://stackoverflow.com/a/16606128/13132049 thanks
+std::string to_string_with_precision(T a_value, int n) {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << a_value;
+    return out.str();
+}
+
+std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred, int precision) {
     std::vector<Token> shunted = destackify( shunting_yard_algorithm( stackify(tokens) ) );//destackify( shunting_yard_algorithm( stackify(tokens) ) );
     if (shunted.size() == 1) {
         return getVarVal(shunted.back(), names, values, error_occurred);
@@ -83,7 +92,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = b-a;
-                            std::string shortened = std::to_string(c);
+                            std::string shortened = to_string_with_precision(c, precision);//here
                             while (shortened.back() == '0') {
                                 shortened.pop_back();
                             }
@@ -121,7 +130,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = a+b;
-                            std::string shortened = std::to_string(c);
+                            std::string shortened = to_string_with_precision(c, precision);
                             while (shortened.back() == '0') {
                                 shortened.pop_back();
                             }
@@ -159,7 +168,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = a*b;
-                            std::string shortened = std::to_string(c);
+                            std::string shortened = to_string_with_precision(c, precision);
                             while (shortened.back() == '0') {
                                 shortened.pop_back();
                             }
@@ -197,7 +206,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                                 }
                             }
                             double c = b/a;
-                            std::string shortened = std::to_string(c);
+                            std::string shortened = to_string_with_precision(c, precision);
                             while (shortened.back() == '0') {
                                 shortened.pop_back();
                             }

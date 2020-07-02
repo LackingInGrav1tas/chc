@@ -168,8 +168,8 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens) {
     return statementalized;
 }
 
-//NOT MY CODE
-std::string GetClip() {
+//kinda my code
+std::string getClip() {
     std::string text;
     if (OpenClipboard(NULL)) 
     {
@@ -193,7 +193,7 @@ void GetDesktopResolution(int& horizontal, int& vertical) {
     vertical = desktop.bottom;
 }
 
-//NOT MY CODE
+//https://stackoverflow.com/a/122240/13132049
 std::string IP() {
     WSADATA wsa_Data;
     int wsa_ReturnCode = WSAStartup(0x101,&wsa_Data);
@@ -232,7 +232,7 @@ std::string getVarVal(Token token, std::vector<std::string> varnames, std::vecto
             } else if (target == "@year") {
                 return '"' + std::to_string(calendar_time.tm_year + 1900) + '"';
             } else if (target == "@clipboard") {
-                return '"' + GetClip() + '"';
+                return '"' + getClip() + '"';
             } else if (target == "@home") {
                 char path[ MAX_PATH ];
                 if (SHGetFolderPathA(NULL, CSIDL_PROFILE, NULL, 0, path) != S_OK) {

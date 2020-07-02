@@ -8,7 +8,7 @@
 #include <windows.h>
 #include "header.hpp"
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
+int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, int precision, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
@@ -60,9 +60,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             std::vector<std::string> n, v, i, aw, fn;
                             std::vector<std::vector<std::vector<Token>>> f;
                             std::vector<std::vector<std::string>> fp;
-                            result = runtime(to_execute, n, v, i, error_occurred, limit, f, fn, aw, fp, rv);
+                            result = runtime(to_execute, n, v, i, error_occurred, limit, precision, f, fn, aw, fp, rv);
                         } else {
-                            result = runtime(to_execute, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, rv);
+                            result = runtime(to_execute, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, rv);
                         }
                         if (result == 1) {
                             return 1;
@@ -103,7 +103,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             if (in(function_params[found.second][i], immutables))
                                 im.push_back(function_params[found.second][i]);
                             bool err = false;
-                            v.push_back(solve(call_params[i], names, values, &err));
+                            v.push_back(solve(call_params[i], names, values, &err, precision));
                             if (err) {
                                 error(*token, "Run-time Error: Evaluation Error.");
                                 return 1;
@@ -111,7 +111,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         std::vector<Token> return_val;
                         bool er = false;
-                        int result = runtime(function_bodies[found.second], n, v, im, &er, limit, f, fn, aw, fp, return_val);
+                        int result = runtime(function_bodies[found.second], n, v, im, &er, limit, precision, f, fn, aw, fp, return_val);
                         if (result == 1) {
                             return 1;
                         }
@@ -565,7 +565,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string solved = solve(call_params[0], names, values, error_occurred);
+                    std::string solved = solve(call_params[0], names, values, error_occurred, precision);
                     std::string ret;
                     try {
                         srand(time(NULL));
@@ -617,7 +617,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                     std::string value = getVarVal(*std::prev(std::prev(token)), names, values, &e).substr(1, getVarVal(*std::prev(std::prev(token)), names, values, &e).length()-2);
-                    std::string solved = solve(call_params[0], names, values, &e);
+                    std::string solved = solve(call_params[0], names, values, &e, precision);
                     if (e) {
                         error(call_params[0][0], "Run-time Error: Solving error.");
                         return 1;
@@ -674,7 +674,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
                         std::vector<Token> rest(beg, end);
                         bool err = false;
-                        values.push_back(solve(rest, names, values, &err));
+                        values.push_back(solve(rest, names, values, &err, precision));
                         if (err) {
                             error(previous, "Run-time Error: Evaluation Error");
                             return 1;
@@ -770,7 +770,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, names, values, &err);
+                    std::string solved = solve(segmented, names, values, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -830,7 +830,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(current, "Terminate after control finds repeating while loop, limit:" + std::to_string(limit));
                         return 1;
                     }
-                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, return_variable);
+                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
                     if (result == 1) {
                         return 1;
                     } else if (result == 47) {
@@ -868,7 +868,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, names, values, &err);
+                    std::string solved = solve(segmented, names, values, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -976,7 +976,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     ifcontents.pop_back();
 
                     if (boolsolve(params, names, values, error_occurred)) {
-                        int result = runtime(ifcontents, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, return_variable);
+                        int result = runtime(ifcontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
                         if (result == 1) {
                             return 1;
                         } else if (result == 47) {
@@ -984,7 +984,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                     } else {
                         if (!elsecontents.empty()) {
-                            int result = runtime(elsecontents, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, return_variable);
+                            int result = runtime(elsecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
                             if (result == 1) {
                                 return 1;
                             } else if (result == 47) {
@@ -1052,7 +1052,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
                         return 1;
                     }
-                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, function_bodies, function_names, aware_functions, function_params, return_variable);
+                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
                     if (result == 1) {
                         return 1;
                     } else if (result == 47) {

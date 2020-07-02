@@ -21,7 +21,7 @@ std::vector<char> important_characters = { '(', ')', '=', '+', '-', '*', '/', '{
 
 std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 
-std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
+std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision) {
     std::vector<Token> tokens;
     std::ifstream file(f);
     if (!file) {
@@ -63,24 +63,34 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit) {
                     preprocessors.push_back(current);
                     current.clear();
                 }
-                //setting up dismissing functions
-                if (preprocessors[1] == "dismiss") {
-                    for (int i = 2; i < preprocessors.size(); i++) {
-                        dismissed.push_back(preprocessors[i]);
+                if (preprocessors.size() > 2) {
+                    //setting up dismissing functions
+                    if (preprocessors[1] == "dismiss") {
+                        for (int i = 2; i < preprocessors.size(); i++) {
+                            dismissed.push_back(preprocessors[i]);
+                        }
                     }
-                }
-                //changing the while loop limit
-                if (preprocessors[1] == "limit") {
-                    try {
-                        limit = std::stoi(preprocessors[2]);
-                    } catch (...) {
-                        continue;
+                    //changing the while loop limit
+                    if (preprocessors[1] == "limit") {
+                        try {
+                            limit = std::stoi(preprocessors[2]);
+                        } catch (...) {
+                            continue;
+                        }
                     }
-                }
-                //adding files
-                if (preprocessors[1] == "import") {
-                    auto import_tokens = lex(preprocessors[2], error_occurred, limit);
-                    tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
+                    //changing the number precision
+                    if (preprocessors[1] == "precision") {
+                        try {
+                            precision = std::stoi(preprocessors[2]);
+                        } catch (...) {
+                            continue;
+                        }
+                    }
+                    //adding files
+                    if (preprocessors[1] == "import") {
+                        auto import_tokens = lex(preprocessors[2], error_occurred, limit, precision);
+                        tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
+                    }
                 }
             }
         }
