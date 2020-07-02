@@ -226,3 +226,12 @@ Output of b:
 a's contents
 foo
 ```
+*precision (changes number precision)*
+```
+$precision 1
+num = 3.75/2;
+print(num);
+```
+```
+1.9
+```
