@@ -8,15 +8,15 @@ CHC is a simple interpreted language which supports functions. It utilizes lazy 
 **EOL:**
 CHC uses ; as an EOL\end of statement marker. Ex:
 ```
-print("text");#correct#
-print("text") #incorrect#
+print("text");#correct
+print("text") #incorrect
 ```
 **CASE SENSITIVITY:**
 CHC is case sensitive. Ex:
 ```
 variable = 10;
-print(var); # 10 #
-print(VAR); # Scoping error #
+print(var); # 10
+print(VAR); # Scoping error
 ```
 **WHITESPACE:**
 CHC disregards whitespace. Ex:
@@ -24,36 +24,36 @@ CHC disregards whitespace. Ex:
 if (condition) {
 print("string");
 };
-#string#
+#string
 ```
 ```
 if(condition) {
     print("string");
 };
-#string#
+#string
 ```
 ```
 if (condition) {
     print("string");
     };
-#string#
+#string
 ```
 ```
     if(condition) {
 print("string");
 };
-#string#
+#string
 ```
 etc.
 
 **VARIABLE DECLARATION:**
 CHC has type inference, as well as immutable types. Ex:
 ```
-variable = 5; #5#
+variable = 5; #5
 ```
 ```
-immutable variable = 5; #5#
-variable = 3; #ERROR#
+immutable variable = 5; #5
+variable = 3; #ERROR
 ```
 The variable types currently supported by CHC are: string, bool, num
 
@@ -74,13 +74,13 @@ run("this will be sent to CMD");
 *versions of print (returns: void):*
 ```
 print("This will be sent to standard output.");
-#This will be sent to standard output.#
-fprint("This will be sent to standard output."); #flush print#
-#This will be sent to standard output. + flush#
-rprint("This will be sent to standard output."); #raw print#
-#"This will be sent to standard output."#
-rfprint("This will be sent to standard output."); #raw flush print#
-#"This will be sent to standard output." + flush#
+#This will be sent to standard output.
+fprint("This will be sent to standard output."); #flush print
+#This will be sent to standard output. + flush
+rprint("This will be sent to standard output."); #raw print
+#"This will be sent to standard output."
+rfprint("This will be sent to standard output."); #raw flush print
+#"This will be sent to standard output." + flush
 ```
  
 *writeto (returns: void):*
@@ -116,15 +116,15 @@ Methods are called with the ```<-``` arrow token on the object.
 *string<-at(index),  (returns: string)*
 ```
 string = "abcdefg";
-segment = string<-at(0);#"a"#
-segment2 = "abcdefg"<-at(0);#"a"#
+segment = string<-at(0);#"a"
+segment2 = "abcdefg"<-at(0);#"a"
 ```
  
 *string<-length(),  (returns: number)*
 ```
 string = "abcdefg";
-len = string<-length();#7#
-len2 = "abcdefgh"<-length();#7#
+len = string<-length();#7
+len2 = "abcdefgh"<-length();#7
 ``` 
 
 **User defined functions:**
@@ -140,9 +140,9 @@ Scoped functions can be made using the ```aware``` keyword, which gives the func
 aware fun foo() {
     print(var);
 };
-foo(); #error#
+foo(); #error
 var = "something";
-foo();#something#
+foo();#something
 ```
 Additionally, ```aware``` can be used to create recursive functions.
 ```
@@ -162,22 +162,22 @@ r = recursive(2);
 
 Supported macros:
 ```
-@write #used to define the mode of file handling#
-@append #^#
-@sec #second of the minute#
-@min #minute of the hour#
-@hour #hour of the day#
-@mday #day of the month#
-@yday #day of the year#
-@mon #month, January = 1#
-@year #guess#
-@clipboard #clipboard#
-@home #returns the home drive letter#
-@desktopH #desktop height in pixels#
-@desktopW #desktop width in pixels#
-@environment #prints out the current variable information#
-@IP #returns the IP address of the PC#
-@EOL #end of line signifier for strings#
+@write #used to define the mode of file handling
+@append #^
+@sec #second of the minute
+@min #minute of the hour
+@hour #hour of the day
+@mday #day of the month
+@yday #day of the year
+@mon #month, January = 1
+@year #guess
+@clipboard #clipboard
+@home #returns the home drive letter
+@desktopH #desktop height in pixels
+@desktopW #desktop width in pixels
+@environment #prints out the current variable information
+@IP #returns the IP address of the PC
+@EOL #end of line signifier for strings
 ```
 
 ### Preprocessors: ###
@@ -191,13 +191,13 @@ $dismiss assert
 fun assert() {
     ...
 };
-#no error#
+#no error
 ```
 or
 ```
 $dismiss assert
 assert(true == true);
-#error#
+#error
 ```
 *limit (changes the loop limit, 0=no limit. Can also be changed in the command line):*
 ```
