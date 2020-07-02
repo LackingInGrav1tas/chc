@@ -65,11 +65,11 @@ The variable types currently supported by CHC are: string, bool, num
 ```
 string_variable = input("this will print out, then take user input.");
 ```
-run:
+*run:*
 ```
 run("this will be sent to CMD");
 ```
-versions of print:
+*versions of print:*
 ```
 print("This will be sent to standard output.");
 #This will be sent to standard output.#
@@ -80,12 +80,12 @@ rprint("This will be sent to standard output."); #raw print#
 rfprint("This will be sent to standard output."); #raw flush print#
 #"This will be sent to standard output." + flush#
 ```
-writeto:
+*writeto:*
 ```
 success = writeto("filepath", "to be wrote to file", %either @write or @append%);
 writeto("filepath", "to be wrote to file", %either @write or @append%);
 ```
-assert:
+*assert:*
 ```
 a = "some text";
 assert(a == "some other text");
@@ -93,38 +93,38 @@ assert(a == "some other text");
    ^
 Run-time Error: Assertion failed.
 ```
-eval:
+*eval:*
 ```
 variable = eval(true == true);
 ```
-length:
+*length:*
 ```
 a = length("text"); #4#
 ```
-rand:
+*rand:*
 ```
 a_random_num_between_zero_and_fifty = rand(50);
 ```
 etc.
 
-Methods:
+**Methods:**
 
 Methods are called with the ```<-``` arrow token on the object.
 
-string<-at(index)
+*string<-at(index)*
 ```
 string = "abcdefg";
 segment = string<-at(0);#"a"#
 segment2 = "abcdefg"<-at(0);#"a"#
 ```
-string<-length()
+*string<-length()*
 ```
 string = "abcdefg";
 len = string<-length();#7#
 len2 = "abcdefgh"<-length();#7#
 ```
 
-User defined functions:
+**User defined functions:**
 
 Declare functions by using the ```fun``` keyword. Ex.
 ```
@@ -155,7 +155,7 @@ aware fun recursive(n) {
 
 r = recursive(2);
 ```
-MACROS:
+###MACROS:###
 
 Supported macros:
 ```
@@ -177,12 +177,12 @@ Supported macros:
 @EOL #end of line signifier for strings#
 ```
 
-Preprocessors:
+###Preprocessors:###
 
 Any preprocessors are defined using ```$``` before the statement.
 Currently, the supported options are:
 
-dismiss (used to remove native functions):
+*dismiss (used to remove native functions):*
 ```
 $dismiss assert
 fun assert() {
@@ -196,14 +196,14 @@ $dismiss assert
 assert(true == true);
 #error#
 ```
-limit (changes the loop limit, 0=no limit. Can also be changed in the command line):
+*limit (changes the loop limit, 0=no limit. Can also be changed in the command line):*
 ```
 $limit 1
 while (true) {};
 2| while (true) {};
 Terminate after control finds repeating while loop, limit: 1
 ```
-import (allows for the use of multiple files):
+*import (allows for the use of multiple files):*
 
 a.chc
 ```
