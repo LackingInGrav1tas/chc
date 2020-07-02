@@ -217,7 +217,7 @@ a =  "a's contents";
 ```
 b.chc
 ```
-$include "c:\...\a.chc"
+$import "c:\...\a.chc"
 fprint(a);
 foo();
 ```
