@@ -3,8 +3,7 @@ WARNING: Spaghetti code ahead.
 
 CHC is a simple interpreted language which supports functions. It utilizes lazy evaluation and is written completely in C++.
 
-SYNTAX
-
+## SYNTAX ##
 
 EOL:
 CHC uses ; as an EOL\end of statement marker. Ex:
