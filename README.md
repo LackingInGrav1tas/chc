@@ -1,5 +1,5 @@
 # chc
-**Spaghetti code. CHC is a simple interpreted language which supports functions. It utilizes lazy evaluation and is written completely in C++.
+**Spaghetti code. CHC is a simple interpreted language which supports functions. It utilizes lazy evaluation and is written completely in C++.**
 
 SYNTAX
 
