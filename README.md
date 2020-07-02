@@ -109,13 +109,13 @@ etc.
 
 Methods:
 
-string<-at(index):
+string<-at(index)
 ```
 string = "abcdefg";
 segment = string<-at(0);#"a"#
 segment2 = "abcdefg"<-at(0);#"a"#
 ```
-string<-length();
+string<-length()
 ```
 string = "abcdefg";
 len = string<-length();#7#
