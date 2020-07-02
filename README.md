@@ -221,6 +221,8 @@ $include "c:\...\a.chc"
 fprint(a);
 foo();
 ```
-```c:\...\> interpreter c:\...\b.chc
+```
+c:\...\> interpreter c:\...\b.chc
 a
 foo
+```
