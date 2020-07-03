@@ -140,9 +140,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                                 stmt.insert(stmt.begin()+ct, *ret);
                             }
                         }
-                        for (int b = 0; b < 0; b++) {//stmt.size()
-                            std::cout << stmt[b].str() << " ";
-                        }
                     }
                 }
             } else if (in((*token).typ(), native_functions)) {
@@ -182,9 +179,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             nested++;
                         }
                         stmt.erase(stmt.begin()+ct);
-                    }
-                    for (int b = 0; b < 0; b++) {//stmt.size()
-                        std::cout << stmt[b].str() << " ";
                     }
                     stmt.insert(stmt.begin()+ct, Token('"' + raw_input + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == WRITETO) {
@@ -270,9 +264,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             nested++;
                         }
                         stmt.erase(stmt.begin()+ct);
-                    }
-                    for (int b = 0; b < 0; b++) {//stmt.size()
-                        std::cout << stmt[b].str() << " ";
                     }
                     stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), foundornot, (*token).actual_line()));
                 } else if ((*token).typ() == ASSERT) {
@@ -407,9 +398,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    for (int b = 0; b < 0; b++) {//stmt.size()
-                        std::cout << stmt[b].str() << " ";
-                    }
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == FPRINT) {
                     bool eroc = false;
@@ -446,9 +434,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    for (int b = 0; b < 0; b++) {//stmt.size()
-                        std::cout << stmt[b].str() << " ";
-                    }
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == RFPRINT) {
                     bool eroc = false;
@@ -481,9 +466,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             nested++;
                         }
                         stmt.erase(stmt.begin()+ct);
-                    }
-                    for (int b = 0; b < 0; b++) {//stmt.size()
-                        std::cout << stmt[b].str() << " ";
                     }
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == EVAL) {
@@ -798,11 +780,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    stmt.insert(stmt.begin()+ct, Token(R"(")" + solved + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
-                    for (int b = 0; b < stmt.size(); b++) {
-                        std::cout << stmt[b].str() << " ";
-                    }
-                    std::cout << std::endl;
+                    stmt.insert(stmt.begin()+ct, Token(R"(")" + solved + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line() ));
                 }
                 token++;
             }
@@ -884,10 +862,12 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
                         if ((*ato).syhtyp() == TERMINAL) {
                             std::string currentString = getVarVal(*ato, scope.names, scope.values, error_occurred);
-                            if (currentString.at(0) == '"') {
-                                currentString = currentString.substr(1, currentString.length()-2);
+                            if (!currentString.empty()) {
+                                if (currentString.at(0) == '"') {
+                                    currentString = currentString.substr(1, currentString.length()-2);
+                                }
+                                solved += currentString;
                             }
-                            solved += currentString;
                         }
                     }
                     std::cout << solved;
@@ -1207,7 +1187,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
                         return 1;
                     }
-                    int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);//here
+                    int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);
                     if (result == 1) {
                         return 1;
                     } else if (result == 47) {

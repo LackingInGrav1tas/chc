@@ -16,7 +16,8 @@ enum Type {
   EXC, EXC_EQUAL,                                
   EQUAL, EQUAL_EQUAL,                              
   GREATER, GREATER_EQUAL,                          
-  LESS, LESS_EQUAL,                                
+  LESS, LESS_EQUAL, MINUS_MINUS,
+  PLUS_PLUS,                               
 
   // Literals.                                     
   IDENTIFIER, STRING, NUMBER, CONSTANT,

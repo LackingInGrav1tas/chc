@@ -18,6 +18,20 @@ std::string to_string_with_precision(T a_value, int n) {
 }
 
 std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred, int precision) {
+    if (getVarVal(tokens.front(), names, values, error_occurred).at(0) == '"') {
+        std::string combined = "";
+        for (auto token = tokens.begin(); token < tokens.end(); token++) {
+            if ((*token).syhtyp() == TERMINAL) {
+                std::string gvv = getVarVal(*token, names, values, error_occurred);
+                if (gvv.at(0) == '"') {
+                    combined += gvv.substr(1, gvv.length()-2);
+                } else {
+                    combined += gvv;
+                }
+            }
+        }
+        return '"' + combined + '"';
+    }
     std::vector<Token> shunted = destackify( shunting_yard_algorithm( stackify(tokens) ) );//destackify( shunting_yard_algorithm( stackify(tokens) ) );
     if (shunted.size() == 1) {
         return getVarVal(shunted.back(), names, values, error_occurred);
@@ -30,7 +44,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                 Token ct = *current_token;
                 if (ct.typ() == NUMBER || ct.typ() == TTRUE || ct.typ() == TFALSE) {//supporting adding numbers
                     combined += ct.str();
-                } else if (in(ct.str(), names) || ct.str().at(0) == '@') {//if it's an or macro
+                } else if (in(ct.str(), names) || ct.str().at(0) == '@') {//if it's a macro or identifier
                     std::string val = getVarVal(ct, names, values, error_occurred);
                     if (error_occurred) {
                         return "";
@@ -42,7 +56,7 @@ std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std
                     }
                 } else if (ct.str().at(0) == '"') {
                     combined += ct.str().substr(1, ct.str().length()-2);
-                } else if (ct.typ() != PLUS && ct.typ() != MINUS && ct.typ() != STAR && ct.typ() != SLASH) {//it's a string literal
+                } else if (ct.typ() != PLUS && ct.typ() != MINUS && ct.typ() != STAR && ct.typ() != SLASH) {//it's a string identifier
                     combined += getVarVal(ct, names, values, error_occurred).substr(1, getVarVal(ct, names, values, error_occurred).length()-2);
                 }
             }

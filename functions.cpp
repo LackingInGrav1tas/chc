@@ -72,6 +72,10 @@ Type doubleChar(std::string full) {
         return LESS_EQUAL;
     } else if (full == "<-") {
         return ARROW;
+    } else if (full == "--") {
+        return MINUS_MINUS;
+    } else if (full == "++") {
+        return PLUS_PLUS;
     }
 }
 
