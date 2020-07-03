@@ -106,26 +106,27 @@ variable = eval(true == true);
 ```
 a_random_num_between_zero_and_fifty = rand(50);
 ```
- 
-etc.
-
-**Methods:**
-
-Methods are called with the ```<-``` arrow token on the object.
-
-*string<-at(index),  (returns: string)*
+*str (returns: string):*
 ```
-string = "abcdefg";
-segment = string<-at(0);#"a"
-segment2 = "abcdefg"<-at(0);#"a"
+string = str(45);
+rprint(string);
+# "45"
 ```
- 
-*string<-length(),  (returns: number)*
+*length (returns: num):*
 ```
-string = "abcdefg";
-len = string<-length();#7
-len2 = "abcdefgh"<-length();#7
-``` 
+sizeofin = length(input(""));# gets length of input
+```
+*save_scope, set_scope (returns: void):*
+```
+save_scope(%literal%);
+set_scope(%literal%);
+#example
+save_scope(1);# saves environment
+a = "a";
+set_scope(1);# sets environment
+fprint(a);# scope error
+```
+
 
 **User defined functions:**
 
