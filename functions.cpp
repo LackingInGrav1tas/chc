@@ -142,6 +142,12 @@ Type keyword(std::string full) {
         return AT;
     } else if (full == "dispose") {
         return DISPOSE;
+    } else if (full == "save_scope") {
+        return SAVE_SCOPE;
+    } else if (full == "set_scope") {
+        return SET_SCOPE;
+    } else if (full == "str") {
+        return STR;
     }
 }
 

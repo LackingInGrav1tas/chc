@@ -8,21 +8,27 @@
 #include <windows.h>
 #include "header.hpp"
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, int precision, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable) {
+std::vector<Scope> scopes;
+std::vector<std::string> scope_indices;
+
+int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *error_occurred, int limit, int precision, std::vector<Token> &return_variable) {
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR };
         int size = 0;
         int index = 0;
-        for (auto token = stmt.begin(); token < stmt.end(); token++) {
-            if (in((*token).str(), function_names)) {
+        for (auto token = stmt.end()-1; token >= stmt.begin(); token--) {
+            if (in((*token).str(), scope.function_names)) {
                 Token token_copy((*token).str(), (*token).lines(), (*token).col(), (*token).typ(), (*token).actual_line());
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                 if (eroc)
                     return 1;
                 if (call_params.empty()) {
+                    if ((*std::prev(std::prev(token))).typ() == DISPOSE) {
+                        continue;
+                    }
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected function parameters.");
                         return 1;
@@ -48,21 +54,19 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     nd--;
                     std::vector<Token> new_params(std::next(token), nd);
-                    std::pair<bool, int> found = findInV(function_names, (*token).str());
+                    std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
                     std::vector<std::vector<Token>> to_execute;
                     if (found.first) {
-                        for (auto b = function_bodies[found.second].begin(); b < function_bodies[found.second].end(); b++) {
+                        for (auto b = scope.function_bodies[found.second].begin(); b < scope.function_bodies[found.second].end(); b++) {
                             to_execute.push_back(*b);
                         }
                         std::vector<Token> rv;
                         int result;
-                        if (!in((*token).str(), aware_functions)) {
-                            std::vector<std::string> n, v, i, aw, fn;
-                            std::vector<std::vector<std::vector<Token>>> f;
-                            std::vector<std::vector<std::string>> fp;
-                            result = runtime(to_execute, n, v, i, error_occurred, limit, precision, f, fn, aw, fp, rv);
+                        if (!in((*token).str(), scope.aware_functions)) {
+                            Scope nscope;
+                            result = runtime(to_execute, nscope, error_occurred, limit, precision, rv);
                         } else {
-                            result = runtime(to_execute, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, rv);
+                            result = runtime(to_execute, scope, error_occurred, limit, precision, rv);
                         }
                         if (result == 1) {
                             return 1;
@@ -78,32 +82,32 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                 } else {
-                    std::pair<bool, int> found = findInV(function_names, (*token).str());
+                    std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
                     if (found.first) {
-                        if (call_params.size() != function_params[found.second].size()) {
-                            std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(function_params[found.second].size());
+                        if (call_params.size() != scope.function_params[found.second].size()) {
+                            std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(scope.function_params[found.second].size());
                             error(*token, msg);
                             return 1;
                         }
-                        std::vector<std::string> n, v, im, fn, aw;
+                        Scope nscope;
                         std::vector<std::vector<std::vector<Token>>> f;
                         std::vector<std::vector<std::string>> fp;
                         std::string rv;
-                        if (in((*token).str(), aware_functions)) {
-                            n = names;
-                            v = values;
-                            im = immutables;
-                            fn = function_names;
-                            aw = aware_functions;
-                            f = function_bodies;
-                            fp = function_params;
+                        if (in((*token).str(), scope.aware_functions)) {
+                            nscope.names = scope.names;
+                            nscope.values = scope.values;
+                            nscope.immutables = scope.immutables;
+                            nscope.function_names = scope.function_names;
+                            nscope.aware_functions = scope.aware_functions;
+                            nscope.function_bodies = scope.function_bodies;
+                            nscope.function_params = scope.function_params;
                         }
                         for (int i = 0; i < call_params.size(); i++) {
-                            n.push_back(function_params[found.second][i]);
-                            if (in(function_params[found.second][i], immutables))
-                                im.push_back(function_params[found.second][i]);
+                            nscope.names.push_back(scope.function_params[found.second][i]);
+                            if (in(scope.function_params[found.second][i], scope.immutables))
+                                nscope.immutables.push_back(scope.function_params[found.second][i]);
                             bool err = false;
-                            v.push_back(solve(call_params[i], names, values, &err, precision));
+                            nscope.values.push_back(solve(call_params[i], scope.names, scope.values, &err, precision));
                             if (err) {
                                 error(*token, "Run-time Error: Evaluation Error.");
                                 return 1;
@@ -111,7 +115,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         std::vector<Token> return_val;
                         bool er = false;
-                        int result = runtime(function_bodies[found.second], n, v, im, &er, limit, precision, f, fn, aw, fp, return_val);
+                        int result = runtime(scope.function_bodies[found.second], nscope, &er, limit, precision, return_val);
                         if (result == 1) {
                             return 1;
                         }
@@ -144,7 +148,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
             } else if (in((*token).typ(), native_functions)) {
                 if ((*token).typ() == TOKEN_INPUT) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -155,7 +159,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -185,7 +189,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token('"' + raw_input + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == WRITETO) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() < 2) {
@@ -196,7 +200,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string filename;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -206,7 +210,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string text;
                     for (auto cur = call_params[1].begin(); cur < call_params[1].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -221,7 +225,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                             return 1;
                         }
                         bool e = false;
-                        if (getVarVal(call_params[2][0], names, values, &e) == "@append") {
+                        if (getVarVal(call_params[2][0], scope.names, scope.values, &e) == "@append") {
                             std::ofstream output(filename, std::ios_base::app);
                             if (!output) {
                                 foundornot = TFALSE;
@@ -277,11 +281,11 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     for (auto param_segment = call_params.begin(); param_segment < call_params.end(); param_segment++) {
-                        if (!boolsolve(*param_segment, names, values, error_occurred)) {
+                        if (!boolsolve(*param_segment, scope.names, scope.values, error_occurred)) {
                             error((*param_segment).front(), "Run-time Error: Assertion Failed.");
                             return 1;
                         }
@@ -301,22 +305,9 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         stmt.erase(stmt.begin()+ct);
                     }
                 } else if ((*token).typ() == LENGTH) {
-                    if ((token-stmt.begin()) < 3) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
-                        return 1;
-                    }
                     bool e = false;
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
-                        return 1;
-                    } else if ((*std::prev(token)).typ() != ARROW) {
-                        error(*std::prev(token), "Run-time Error: Method called with no target.");
-                        return 1;
-                    } else if ((*std::prev(std::prev(token))).typ() != IDENTIFIER  && (*std::prev(std::prev(token))).typ() != STRING) {
-                        error(*std::prev(std::prev(token)), "Run-time Error: Method called with no target.");
-                        return 1;
-                    } else if (getVarVal(*std::prev(std::prev(token)), names, values, &e).at(0) != '"') {
-                        error(*std::prev(std::prev(token)), "Run-time Error: at method called on non-string object.");
                         return 1;
                     }
                     if (e) {
@@ -324,11 +315,11 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
-                    if (call_params.size() != 0) {
-                        error(*token, "Run-time Error: Expected 0 parameters. Received " + std::to_string(call_params.size()) + ".");
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
                     int ct = token - stmt.begin();
@@ -345,15 +336,14 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    stmt.insert(stmt.begin()+ct, Token(std::to_string(getVarVal(*std::prev(std::prev(token)), names, values, error_occurred).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
-                    stmt.erase(std::prev(std::prev(token)), token);
+                    stmt.insert(stmt.begin()+ct, Token(std::to_string(solve(call_params[0], scope.names, scope.values, &e, precision).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                 } else if ((*token).typ() == HASH) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
                         return 1;
                     }
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -363,7 +353,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -387,7 +377,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token('"' + hash(solved) + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == RPRINT) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -398,7 +388,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             solved += currentString;
                         }
                     }
@@ -423,7 +413,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == FPRINT) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -434,7 +424,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -462,7 +452,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line()));
                 } else if ((*token).typ() == RFPRINT) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -473,7 +463,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             solved += currentString;
                         }
                     }
@@ -502,7 +492,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -511,7 +501,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     Type evaluated = TFALSE;
                     std::string bol = "false";
-                    if (boolsolve(call_params[0], names, values, error_occurred)) {
+                    if (boolsolve(call_params[0], scope.names, scope.values, error_occurred)) {
                         evaluated = TTRUE;
                         bol = "true";
                     }
@@ -532,7 +522,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     stmt.insert(stmt.begin()+ct, Token(bol, (*token).lines(), (*token).col(), evaluated, (*token).actual_line()));
                 } else if ((*token).typ() == THROW) {
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
@@ -543,7 +533,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, names, values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -558,14 +548,14 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         return 1;
                     }
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
                     if (call_params.size() != 1) {
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string solved = solve(call_params[0], names, values, error_occurred, precision);
+                    std::string solved = solve(call_params[0], scope.names, scope.values, error_occurred, precision);
                     std::string ret;
                     try {
                         srand(time(NULL));
@@ -590,34 +580,21 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     stmt.insert(stmt.begin()+ct, Token(ret, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                 } else if ((*token).typ() == AT) {
-                    bool e = false;
-                    if ((token-stmt.begin()) < 3) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
-                        return 1;
-                    }
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
-                        return 1;
-                    } else if ((*std::prev(token)).typ() != ARROW) {
-                        error(*std::prev(token), "Run-time Error: Method called with no target.");
-                        return 1;
-                    } else if ((*std::prev(std::prev(token))).typ() != IDENTIFIER  && (*std::prev(std::prev(token))).typ() != STRING) {
-                        error(*std::prev(std::prev(token)), "Run-time Error: Method called with no target.");
-                        return 1;
-                    } else if (getVarVal(*std::prev(std::prev(token)), names, values, &e).at(0) != '"') {
-                        error(*std::prev(std::prev(token)), "Run-time Error: at method called on non-string object.");
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of function call.");
                         return 1;
                     }
+                    bool e = false;
                     bool eroc = false;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc)
                         return 1;
-                    if (call_params.size() != 1) {
-                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                    if (call_params.size() != 2) {
+                        error(*token, "Run-time Error: Expected 2 parameters. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string value = getVarVal(*std::prev(std::prev(token)), names, values, &e).substr(1, getVarVal(*std::prev(std::prev(token)), names, values, &e).length()-2);
-                    std::string solved = solve(call_params[0], names, values, &e, precision);
+                    std::string value = solve(call_params[0], scope.names, scope.values, &e, precision).substr(1, solve(call_params[1], scope.names, scope.values, &e, precision).length()-2);
+                    std::string solved = solve(call_params[1], scope.names, scope.values, &e, precision);
                     if (e) {
                         error(call_params[0][0], "Run-time Error: Solving error.");
                         return 1;
@@ -646,63 +623,49 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    Token insert_tok( R"(")" + getString(value.at(pos)) + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line());
-                    stmt.insert(stmt.begin()+ct, insert_tok);
-                    stmt.erase(std::prev(std::prev(token)), token);
+                    stmt.insert(stmt.begin()+ct, Token(R"(")" + getString(value.at(pos)) + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
                 } else if ((*token).typ() == DISPOSE) {
                     bool e = false;
-                    if ((token-stmt.begin()) < 2) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
-                        return 1;
-                    }
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Incorrect formatting of method call.");
-                        return 1;
-                    } else if ((*std::prev(token)).typ() != ARROW) {
-                        error(*std::prev(token), "Run-time Error: Method called with no target.");
-                        return 1;
-                    } else if ((*std::prev(std::prev(token))).typ() != IDENTIFIER) {
-                        error(*std::prev(std::prev(token)), "Run-time Error: Method called with invalid.");
-                        return 1;
-                    } else if (getVarVal(*std::prev(std::prev(token)), names, values, &e).at(0) != '"') {
-                        error(*std::prev(std::prev(token)), "Run-time Error: at method called on non-string object.");
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of call.");
                         return 1;
                     }
                     if (e) {
                         error(*token, "Run-time Error: Eval error.");
                     }
                     bool eroc = false;
-                    std::cout << "cp" << std::endl;
-                    auto call_params = findParams(stmt, token, COMMA, names, eroc);
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                     if (eroc) {
-                        std::cout << "er" << std::endl;
                         return 1;
                     }
-                    if (call_params.size() != 0) {
-                        error(*token, "Run-time Error: Expected 0 parameter. Received " + std::to_string(call_params.size()) + ".");
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    } else if (call_params[0].size() != 1 || call_params[0][0].typ() != IDENTIFIER) {
+                        error(*token, "Run-time Error: Expected a single identifier as a parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    for (int i = 0; i < names.size(); i++) {
-                        if (names[i] == (*std::prev(std::prev(token))).str()) {
-                            names.erase(names.begin()+i);
-                            values.erase(values.begin()+i);
+                    for (int i = 0; i < scope.names.size(); i++) {
+                        if (scope.names[i] == call_params[0][0].str()) {
+                            scope.names.erase(scope.names.begin()+i);
+                            scope.values.erase(scope.values.begin()+i);
                         }
                     }
-                    for (int i = 0; i < immutables.size(); i++) {
-                        if (immutables[i] == (*std::prev(std::prev(token))).str()) {
-                            immutables.erase(immutables.begin()+i);
+                    for (int i = 0; i < scope.immutables.size(); i++) {
+                        if (scope.immutables[i] == call_params[0][0].str()) {
+                            scope.immutables.erase(scope.immutables.begin()+i);
                         }
                     }
-                    for (int i = 0; i < function_names.size(); i++) {
-                        if (function_names[i] == (*std::prev(std::prev(token))).str()) {
-                            function_names.erase(function_names.begin()+i);
-                            function_params.erase(function_params.begin()+i);
-                            function_bodies.erase(function_bodies.begin()+i);
+                    for (int i = 0; i < scope.function_names.size(); i++) {
+                        if (scope.function_names[i] == call_params[0][0].str()) {
+                            scope.function_names.erase(scope.function_names.begin()+i);
+                            scope.function_params.erase(scope.function_params.begin()+i);
+                            scope.function_bodies.erase(scope.function_bodies.begin()+i);
                         }
                     }
-                    for (int i = 0; i < aware_functions.size(); i++) {
-                        if (aware_functions[i] == (*std::prev(std::prev(token))).str()) {
-                            aware_functions.erase(aware_functions.begin()+i);
+                    for (int i = 0; i < scope.aware_functions.size(); i++) {
+                        if (scope.aware_functions[i] == call_params[0][0].str()) {
+                            scope.aware_functions.erase(scope.aware_functions.begin()+i);
                         }
                     }
                     int ct = token - stmt.begin();
@@ -721,8 +684,127 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     Token insert_tok("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line());
                     stmt.insert(stmt.begin()+ct, insert_tok);
-                    stmt.erase(std::prev(std::prev(token)), token);
+                } else if ((*token).typ() == SAVE_SCOPE) {
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter, received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    } else if (call_params[0].size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter, received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    bool gvve = false;
+                    scopes.push_back(scope);
+                    scope_indices.push_back(getVarVal(*std::next(std::next(token)), scope.names, scope.values, &gvve));
+                    if (gvve) {
+                        error(*std::next(std::next(token)), "Run-time Error: Eval error.");
+                        return 1;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                } else if ((*token).typ() == SET_SCOPE) {
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of assert call.");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter, received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    bool gvve = false;
+                    auto found = findInV(scope_indices, getVarVal(*std::next(std::next(token)), scope.names, scope.values, &gvve));
+                    if (gvve) {
+                        error(*std::next(std::next(token)), "Run-time Error: Eval error.");
+                        return 1;
+                    }
+                    if (found.first) {
+                        scope = scopes[found.second];
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                } else if ((*token).typ() == STR) {
+                    bool e = false;
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Expected a left bracket token.");
+                        return 1;
+                    }
+                    if (e) {
+                        error(*std::prev(std::prev(token)), "Run-time Error: ");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    std::string solved = solve(call_params[0], scope.names, scope.values, &e, precision);
+                    if (solved.at(0) == '"') {
+                        error(*token, "Run-time Error: Expected non-string as an input.");
+                        return 1;
+                    }
+                    if (e) {
+                        error(*token, "Run-time Error: Solving error.");
+                        return 1;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(R"(")" + solved + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line()));
+                    for (int b = 0; b < stmt.size(); b++) {
+                        std::cout << stmt[b].str() << " ";
+                    }
+                    std::cout << std::endl;
                 }
+                token++;
             }
             index++;
         }
@@ -736,27 +818,27 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     return 1;
                 } else {
                     for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
                             error(*tok, "Run-time Error: Undefined variable.");
                             return 1;
                         }
                     }
                     //its good!
-                    if (!in(previous.str(), immutables)) {
+                    if (!in(previous.str(), scope.immutables)) {
                         std::vector<Token>::const_iterator beg = std::next(inner);
                         std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
                         std::vector<Token> rest(beg, end);
                         bool err = false;
-                        values.push_back(solve(rest, names, values, &err, precision));
+                        scope.values.push_back(solve(rest, scope.names, scope.values, &err, precision));
                         if (err) {
                             error(previous, "Run-time Error: Evaluation Error");
                             return 1;
                         }
-                        names.push_back(previous.str());
+                        scope.names.push_back(previous.str());
                         if (size > 2) {
                             Token first = *std::prev(std::prev(inner));
                             if (first.typ() == IMMUTABLE) {
-                                immutables.push_back(previous.str());
+                                scope.immutables.push_back(previous.str());
                             }
                         }
                     } else {
@@ -774,7 +856,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
-                        if ((*nd).typ() == IDENTIFIER && findInV(names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
                             error(*nd, "Run-time Error: Undefined variable.");
                             return 1;
                         }
@@ -801,7 +883,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     std::string solved;
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
                         if ((*ato).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*ato, names, values, error_occurred);
+                            std::string currentString = getVarVal(*ato, scope.names, scope.values, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -821,7 +903,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
-                        if ((*nd).typ() == IDENTIFIER && findInV(names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
                             error(*nd, "Run-time Error: Undefined variable.");
                             return 1;
                         }
@@ -843,7 +925,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, names, values, &err, precision);
+                    std::string solved = solve(segmented, scope.names, scope.values, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -903,7 +985,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         error(current, "Terminate after control finds repeating while loop, limit:" + std::to_string(limit));
                         return 1;
                     }
-                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
+                    int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);
                     if (result == 1) {
                         return 1;
                     } else if (result == 47) {
@@ -911,7 +993,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     } else if (result == 44) {
                         break;
                     }
-                } while (boolsolve(params, names, values, error_occurred));
+                } while (boolsolve(params, scope.names, scope.values, error_occurred));
                 break;
             } else if (current.typ() == SLEEP) {
                 Token next = *std::next(inner);
@@ -941,7 +1023,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, names, values, &err, precision);
+                    std::string solved = solve(segmented, scope.names, scope.values, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -1048,8 +1130,8 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     }
                     ifcontents.pop_back();
 
-                    if (boolsolve(params, names, values, error_occurred)) {
-                        int result = runtime(ifcontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
+                    if (boolsolve(params, scope.names, scope.values, error_occurred)) {
+                        int result = runtime(ifcontents, scope, error_occurred, limit, precision, return_variable);
                         if (result == 1) {
                             return 1;
                         } else if (result == 47) {
@@ -1057,7 +1139,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         }
                     } else {
                         if (!elsecontents.empty()) {
-                            int result = runtime(elsecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
+                            int result = runtime(elsecontents, scope, error_occurred, limit, precision, return_variable);
                             if (result == 1) {
                                 return 1;
                             } else if (result == 47) {
@@ -1119,13 +1201,13 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                 }
                 whilecontents.pop_back();
                 int stop = 0;
-                while (boolsolve(params, names, values, error_occurred)) {
+                while (boolsolve(params, scope.names, scope.values, error_occurred)) {
                     stop++;
                     if (stop == limit) {
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
                         return 1;
                     }
-                    int result = runtime(whilecontents, names, values, immutables, error_occurred, limit, precision, function_bodies, function_names, aware_functions, function_params, return_variable);
+                    int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);//here
                     if (result == 1) {
                         return 1;
                     } else if (result == 47) {
@@ -1140,10 +1222,10 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     error(*std::next(inner), "Run-time Error: Inadequite function name.");
                     return 1;
                 } else {
-                    function_names.push_back((*std::next(inner)).str());
+                    scope.function_names.push_back((*std::next(inner)).str());
                 }
                 if ((*std::prev(inner)).typ() == AWARE) {
-                    aware_functions.push_back((*std::next(inner)).str());
+                    scope.aware_functions.push_back((*std::next(inner)).str());
                 }
                 std::vector<Token> final = *outer;
                 std::vector<std::string> current_params;
@@ -1164,7 +1246,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         ps--;
                     }
                 }
-                function_params.push_back(current_params);
+                scope.function_params.push_back(current_params);
                 std::vector<std::vector<Token>> func_body;
                 int nested = 0;
                 Token fis;
@@ -1192,7 +1274,7 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                     return 1;
                 }
                 func_body.pop_back();
-                function_bodies.push_back(func_body);
+                scope.function_bodies.push_back(func_body);
                 break;
             } else if (current.typ() == ELSE) {
                 error(current, "Run-time Error: Stray else.");
@@ -1231,16 +1313,16 @@ int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string>
                         continue;
                     if ((*its).typ() == IDENTIFIER) {
                         Type t;
-                        if (getVarVal(*its, names, values, error_occurred).at(0) == '"') {
+                        if (getVarVal(*its, scope.names, scope.values, error_occurred).at(0) == '"') {
                             t = STRING;
-                        } else if (getVarVal(*its, names, values, error_occurred) == "true") {
+                        } else if (getVarVal(*its, scope.names, scope.values, error_occurred) == "true") {
                             t = TTRUE;
-                        } else if (getVarVal(*its, names, values, error_occurred) == "false") {
+                        } else if (getVarVal(*its, scope.names, scope.values, error_occurred) == "false") {
                             t = TFALSE;
                         } else {
                             t = NUMBER;
                         }
-                        return_variable.push_back(Token(getVarVal(*its, names, values, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line()));
+                        return_variable.push_back(Token(getVarVal(*its, scope.names, scope.values, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line()));
                     } else {
                         return_variable.push_back(*its);
                     }

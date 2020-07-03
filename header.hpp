@@ -27,7 +27,7 @@ enum Type {
   IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
   LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
-  RAND, AT, ARROW, DISPOSE
+  RAND, AT, ARROW, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR
                                            
 };
 
@@ -117,6 +117,12 @@ class Token {
         Assoc asso() {
             return associativity;
         }
+};
+
+struct Scope {
+    std::vector<std::string> names, values, immutables, function_names, aware_functions;
+    std::vector<std::vector<std::vector<Token>>> function_bodies;
+    std::vector<std::vector<std::string>> function_params;
 };
 
 template <typename S>
@@ -209,7 +215,7 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
 
 std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred, int precision);
 
-int runtime(std::vector<std::vector<Token>> statements, std::vector<std::string> &names, std::vector<std::string> &values, std::vector<std::string> &immutables, bool *error_occurred, int limit, int precision, std::vector<std::vector<std::vector<Token>>> function_bodies, std::vector<std::string> function_names, std::vector<std::string> aware_functions, std::vector<std::vector<std::string>> function_params, std::vector<Token> &return_variable);
+int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *error_occurred, int limit, int precision, std::vector<Token> &return_variable);
 
 bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
 

@@ -18,7 +18,8 @@ std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RI
                                       "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
                                       "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
                                       "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
-                                      "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW", "DISPOSE"};
+                                      "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW", "DISPOSE", "SET_SCOPE",
+                                      "SAVE_SCOPE", "STR"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
@@ -32,10 +33,8 @@ int main(int argc, char** argv) {
                 if (full.at(1) == '=') {
                     try {
                         limit = std::stoi(std::string(full.begin()+2, full.end()));
-                        //std::cout << limit;
                     } catch(...) {
                         std::cout << "the correct syntax to set the loop limit is: " << argv[0] << "c:/.../example.chc l=%desired limit%" << std::endl;
-                        //std::cout << "full: " << full << "\nsegmented: " << std::string(full.begin()+1, full.end()) << std::endl;
                     }
                 }
             }
@@ -52,20 +51,17 @@ int main(int argc, char** argv) {
     }
     //timer
     auto start = std::chrono::steady_clock::now();
-    //actual compiling part starts here:
     bool error_occurred = false;
-    std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);
+    std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);//lexing
     one.push_back(Token("", 0, 0, _EOF, ""));
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);
     int exit_status = 0;
     if (!error_occurred) {
-        std::vector<std::string> n, v, i, fn, aw;
-        std::vector<std::vector<std::vector<Token>>> f;
-        std::vector<std::vector<std::string>> fp;
+        Scope scope;
         std::vector<Token> rv;
         try {
-            exit_status = runtime(two, n, v, i, &error_occurred, limit, precision, f, fn, aw, fp, rv);
+            exit_status = runtime(two, scope, &error_occurred, limit, precision, rv);//runtime
         } catch(...) {
             std::cerr << "Error: Unknown Error.";
         }
