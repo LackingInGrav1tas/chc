@@ -4,6 +4,7 @@
 #include <fstream>
 #include <algorithm>
 #include "header.hpp"
+#include <climits>
 
 std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or",
                                       "print", "return", "true", "while", "run",
@@ -83,6 +84,8 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                         try {
                             precision = std::stoi(preprocessors[2]);
                         } catch (...) {
+                            if (preprocessors[2] == "inf")
+                                precision = INT_MAX;
                             continue;
                         }
                     }
@@ -287,6 +290,8 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
     for (int token_i = 1; token_i < tokens.size()-1 && token_i < 50; token_i++) {
         if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
             tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i+4), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line()));
         }
     }
     return tokens;

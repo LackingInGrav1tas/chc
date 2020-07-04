@@ -4,6 +4,8 @@
 #include <map>
 #include <stack>
 #include <utility>
+#include <sstream>
+#include <iomanip>
 
 enum Type {    
   BLANK, ERR, _EOF,
@@ -17,13 +19,14 @@ enum Type {
   EQUAL, EQUAL_EQUAL,                              
   GREATER, GREATER_EQUAL,                          
   LESS, LESS_EQUAL, MINUS_MINUS,
-  PLUS_PLUS,                               
+  PLUS_PLUS, PLUS_EQUALS, MINUS_EQUALS,
+  STAR_EQUALS, SLASH_EQUALS,
 
   // Literals.                                     
   IDENTIFIER, STRING, NUMBER, CONSTANT,
 
   // Keywords.                                     
-  AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,  
+  AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,
   PRINT, RETURN, TTRUE, WHILE, RUN,
   IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
@@ -126,6 +129,13 @@ struct Scope {
     std::vector<std::vector<std::string>> function_params;
 };
 
+template <typename T>//https://stackoverflow.com/a/16606128/13132049 thanks
+std::string to_string_with_precision(T a_value, int n) {
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(n) << a_value;
+    return out.str();
+}
+
 template <typename S>
 std::stack<S> stackify(std::vector<S> vec) {
     std::stack<S> ret;
@@ -143,28 +153,6 @@ std::vector<U> destackify(std::stack<U> sta) {
         sta.pop();
     }
     return ret;
-}
-
-template < typename T>
-std::pair<bool, int > findInVector(const std::vector<T>  & vecOfElements, const T  & element)
-{
-	std::pair<bool, int > result;
- 
-	// Find given element in vector
-	auto it = std::find(vecOfElements.begin(), vecOfElements.end(), element);
- 
-	if (it != vecOfElements.end())
-	{
-		result.second = distance(vecOfElements.begin(), it);
-		result.first = true;
-	}
-	else
-	{
-		result.first = false;
-		result.second = -1;
-	}
- 
-	return result;
 }
 
 template <typename R>
@@ -210,17 +198,17 @@ void errorCheck(std::vector<Token> line, bool *error_occurred);
 
 std::stack<Token> shunting_yard_algorithm(std::stack<Token> input_stack);
 
-std::string getVarVal(Token token, std::vector<std::string> varnames, std::vector<std::string> varvalues, bool *error_occurred);//
+std::string getVarVal(Token token, Scope scope, bool *error_occurred);//
 
 std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
 
-std::string solve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred, int precision);
+std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, int precision);
 
 int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *error_occurred, int limit, int precision, std::vector<Token> &return_variable);
 
-bool evaluate(Token lhs, Token op, Token rhs, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
+bool evaluate(Token lhs, Token op, Token rhs, Scope scope, bool *error_occurred);
 
-bool boolsolve(std::vector<Token> tokens, std::vector<std::string> names, std::vector<std::string> values, bool *error_occurred);
+bool boolsolve(std::vector<Token> tokens, Scope scope, bool *error_occurred);
 
 bool isOp(Token token);
 
@@ -229,3 +217,5 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
 std::string hash(std::string source);
 
 void cli();
+
+void shorten(std::string &str);

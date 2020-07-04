@@ -12,14 +12,6 @@ std::ifstream::pos_type filesize(const char* filename) {//not my code
     return in.tellg(); 
 }
 
-std::vector<std::string> TokenList = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
-                                      "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
-                                      "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "MINUS_MINUS", "PLUS_PLUS", "IDENTIFIER",
-                                      "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
-                                      "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
-                                      "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
-                                      "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW", "DISPOSE", "SET_SCOPE",
-                                      "SAVE_SCOPE", "STR"};
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
@@ -87,11 +79,20 @@ int main(int argc, char** argv) {
         std::cout << "compilation/run time...\n";
         infofile << "Time taken for compilation/runtime: " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) << " ms\n\n";
         std::cout << "token printout...\n";
+        std::vector<std::string> token_list = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
+                "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
+                "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "MINUS_MINUS", "PLUS_PLUS", "PLUS_EQUALS", "MINUS_EQUALS",
+                "STAR_EQUALS", "SLASH_EQUALS", "IDENTIFIER", "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", 
+                "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
+                "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
+                "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
+                "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW", "DISPOSE", "SET_SCOPE",
+                "SAVE_SCOPE", "STR"};
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
             tokenspo += (*it).str() + "  ";
-            typespo += TokenList[(*it).typ()] + "  ";
+            typespo += token_list[(*it).typ()] + "  ";
             if ((*it).typ() == SEMICOLON || (*it).typ() == LEFT_BRACE) {typespo += "\n";}
         }
         infofile << tokenspo << "\n\n";

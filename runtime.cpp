@@ -107,7 +107,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             if (in(scope.function_params[found.second][i], scope.immutables))
                                 nscope.immutables.push_back(scope.function_params[found.second][i]);
                             bool err = false;
-                            nscope.values.push_back(solve(call_params[i], scope.names, scope.values, &err, precision));
+                            nscope.values.push_back(solve(call_params[i], scope, &err, precision));
                             if (err) {
                                 error(*token, "Run-time Error: Evaluation Error.");
                                 return 1;
@@ -156,7 +156,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -194,7 +194,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string filename;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -204,7 +204,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string text;
                     for (auto cur = call_params[1].begin(); cur < call_params[1].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -219,7 +219,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             return 1;
                         }
                         bool e = false;
-                        if (getVarVal(call_params[2][0], scope.names, scope.values, &e) == "@append") {
+                        if (getVarVal(call_params[2][0], scope, &e) == "@append") {
                             std::ofstream output(filename, std::ios_base::app);
                             if (!output) {
                                 foundornot = TFALSE;
@@ -276,7 +276,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     if (eroc)
                         return 1;
                     for (auto param_segment = call_params.begin(); param_segment < call_params.end(); param_segment++) {
-                        if (!boolsolve(*param_segment, scope.names, scope.values, error_occurred)) {
+                        if (!boolsolve(*param_segment, scope, error_occurred)) {
                             error((*param_segment).front(), "Run-time Error: Assertion Failed.");
                             return 1;
                         }
@@ -327,7 +327,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                         stmt.erase(stmt.begin()+ct);
                     }
-                    stmt.insert(stmt.begin()+ct, Token(std::to_string(solve(call_params[0], scope.names, scope.values, &e, precision).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
+                    stmt.insert(stmt.begin()+ct, Token(std::to_string(solve(call_params[0], scope, &e, precision).length() - 2), (*token).lines(), (*token).col(), NUMBER, (*token).actual_line()));
                 } else if ((*token).typ() == HASH) {
                     if ((*std::next(token)).typ() != LEFT_PAREN) {
                         error(*std::next(token), "Run-time Error: Expected a left bracket token.");
@@ -344,7 +344,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -379,7 +379,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             solved += currentString;
                         }
                     }
@@ -412,7 +412,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -448,7 +448,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             solved += currentString;
                         }
                     }
@@ -483,7 +483,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     Type evaluated = TFALSE;
                     std::string bol = "false";
-                    if (boolsolve(call_params[0], scope.names, scope.values, error_occurred)) {
+                    if (boolsolve(call_params[0], scope, error_occurred)) {
                         evaluated = TTRUE;
                         bol = "true";
                     }
@@ -515,7 +515,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                         if ((*cur).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*cur, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*cur, scope, error_occurred);
                             if (currentString.at(0) == '"') {
                                 currentString = currentString.substr(1, currentString.length()-2);
                             }
@@ -537,7 +537,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string solved = solve(call_params[0], scope.names, scope.values, error_occurred, precision);
+                    std::string solved = solve(call_params[0], scope, error_occurred, precision);
                     std::string ret;
                     try {
                         srand(time(NULL));
@@ -575,8 +575,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         error(*token, "Run-time Error: Expected 2 parameters. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string value = solve(call_params[0], scope.names, scope.values, &e, precision).substr(1, solve(call_params[1], scope.names, scope.values, &e, precision).length()-2);
-                    std::string solved = solve(call_params[1], scope.names, scope.values, &e, precision);
+                    std::string value = solve(call_params[0], scope, &e, precision).substr(1, solve(call_params[1], scope, &e, precision).length()-2);
+                    std::string solved = solve(call_params[1], scope, &e, precision);
                     if (e) {
                         error(call_params[0][0], "Run-time Error: Solving error.");
                         return 1;
@@ -684,7 +684,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     bool gvve = false;
                     scopes.push_back(scope);
-                    scope_indices.push_back(getVarVal(*std::next(std::next(token)), scope.names, scope.values, &gvve));
+                    scope_indices.push_back(getVarVal(*std::next(std::next(token)), scope, &gvve));
                     if (gvve) {
                         error(*std::next(std::next(token)), "Run-time Error: Eval error.");
                         return 1;
@@ -717,7 +717,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         return 1;
                     }
                     bool gvve = false;
-                    auto found = findInV(scope_indices, getVarVal(*std::next(std::next(token)), scope.names, scope.values, &gvve));
+                    auto found = findInV(scope_indices, getVarVal(*std::next(std::next(token)), scope, &gvve));
                     if (gvve) {
                         error(*std::next(std::next(token)), "Run-time Error: Eval error.");
                         return 1;
@@ -757,7 +757,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                         return 1;
                     }
-                    std::string solved = solve(call_params[0], scope.names, scope.values, &e, precision);
+                    std::string solved = solve(call_params[0], scope, &e, precision);
                     if (solved.at(0) == '"') {
                         error(*token, "Run-time Error: Expected non-string as an input.");
                         return 1;
@@ -807,7 +807,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
                         std::vector<Token> rest(beg, end);
                         bool err = false;
-                        scope.values.push_back(solve(rest, scope.names, scope.values, &err, precision));
+                        scope.values.push_back(solve(rest, scope, &err, precision));
                         if (err) {
                             error(previous, "Run-time Error: Evaluation Error");
                             return 1;
@@ -824,6 +824,218 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         return 1;
                     }
                 }
+                break;
+            } else if (current.typ() == PLUS_EQUALS) {//+=
+                Token previous = *std::prev(inner);
+                if (previous.typ() != IDENTIFIER) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else if (!in((*std::prev(inner)).str(), scope.names)) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else {
+                    for (auto tok = inner; tok < stmt.end(); tok++) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                            error(*tok, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
+                    }
+                    //its good!
+                    if (!in(previous.str(), scope.immutables)) {
+                        std::vector<Token>::const_iterator beg = std::next(inner);
+                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
+                        std::vector<Token> rest(beg, end);
+                        bool err = false;
+                        std::string final;
+                        std::string solved = solve(rest, scope, &err, precision);
+                        try {
+                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) + std::stod(solved);
+                            final = to_string_with_precision(additive, precision);
+                            shorten(final);
+                        } catch (...) {
+                            final += getVarVal(*std::prev(inner), scope, &err).substr(1, getVarVal(*std::prev(inner), scope, &err).length()-2) + solved.substr(1, solved.length()-2);
+                        }
+                        scope.values.push_back(final);
+                        if (err) {
+                            error(previous, "Run-time Error: Evaluation Error");
+                            return 1;
+                        }
+                        scope.names.push_back(previous.str());
+                    } else {
+                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
+                        return 1;
+                    }
+                }
+                break;
+            } else if (current.typ() == MINUS_EQUALS) {//-=
+                Token previous = *std::prev(inner);
+                if (previous.typ() != IDENTIFIER) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else if (!in((*std::prev(inner)).str(), scope.names)) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else {
+                    for (auto tok = inner; tok < stmt.end(); tok++) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                            error(*tok, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
+                    }
+                    //its good!
+                    if (!in(previous.str(), scope.immutables)) {
+                        std::vector<Token>::const_iterator beg = std::next(inner);
+                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
+                        std::vector<Token> rest(beg, end);
+                        bool err = false;
+                        std::string final;
+                        std::string solved = solve(rest, scope, &err, precision);
+                        try {
+                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) - std::stod(solved);
+                            final = to_string_with_precision(additive, precision);
+                            shorten(final);
+                        } catch (...) {
+                            error(current, "Run-time Error: Expected numbers.");
+                            return 1;
+                        }
+                        scope.values.push_back(final);
+                        if (err) {
+                            error(previous, "Run-time Error: Evaluation Error");
+                            return 1;
+                        }
+                        scope.names.push_back(previous.str());
+                    } else {
+                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
+                        return 1;
+                    }
+                }
+                break;
+            } else if (current.typ() == STAR_EQUALS) {//*=
+                Token previous = *std::prev(inner);
+                if (previous.typ() != IDENTIFIER) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else if (!in((*std::prev(inner)).str(), scope.names)) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else {
+                    for (auto tok = inner; tok < stmt.end(); tok++) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                            error(*tok, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
+                    }
+                    //its good!
+                    if (!in(previous.str(), scope.immutables)) {
+                        std::vector<Token>::const_iterator beg = std::next(inner);
+                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
+                        std::vector<Token> rest(beg, end);
+                        bool err = false;
+                        std::string final;
+                        std::string solved = solve(rest, scope, &err, precision);
+                        try {
+                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) * std::stod(solved);
+                            final = to_string_with_precision(additive, precision);
+                            shorten(final);
+                        } catch (...) {
+                            error(current, "Run-time Error: Expected numbers.");
+                            return 1;
+                        }
+                        scope.values.push_back(final);
+                        if (err) {
+                            error(previous, "Run-time Error: Evaluation Error");
+                            return 1;
+                        }
+                        scope.names.push_back(previous.str());
+                    } else {
+                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
+                        return 1;
+                    }
+                }
+                break;
+            } else if (current.typ() == SLASH_EQUALS) {// /=
+                Token previous = *std::prev(inner);
+                if (previous.typ() != IDENTIFIER) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else if (!in((*std::prev(inner)).str(), scope.names)) {
+                    error(previous, "Runtime Error: Inadequite identifier.");
+                    return 1;
+                } else {
+                    for (auto tok = inner; tok < stmt.end(); tok++) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                            error(*tok, "Run-time Error: Undefined variable.");
+                            return 1;
+                        }
+                    }
+                    //its good!
+                    if (!in(previous.str(), scope.immutables)) {
+                        std::vector<Token>::const_iterator beg = std::next(inner);
+                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
+                        std::vector<Token> rest(beg, end);
+                        bool err = false;
+                        std::string final;
+                        std::string solved = solve(rest, scope, &err, precision);
+                        try {
+                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) / std::stod(solved);
+                            final = to_string_with_precision(additive, precision);
+                            shorten(final);
+                        } catch (...) {
+                            error(current, "Run-time Error: Expected numbers.");
+                            return 1;
+                        }
+                        scope.values.push_back(final);
+                        if (err) {
+                            error(previous, "Run-time Error: Evaluation Error");
+                            return 1;
+                        }
+                        scope.names.push_back(previous.str());
+                    } else {
+                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
+                        return 1;
+                    }
+                }
+                break;
+            } else if (current.typ() == MINUS_MINUS) {
+                if ((*std::next(inner)).typ() != SEMICOLON) {
+                    error((*std::next(inner)), "Run-time Error: Expected a semicolon.");
+                    return 1;
+                } else if ((*std::prev(inner)).typ() != IDENTIFIER) {
+                    error((*std::next(inner)), "Run-time Error: Expected an identifier.");
+                    return 1;
+                }
+                double pos;
+                bool err = false;
+                try {pos = std::stod(getVarVal((*std::prev(inner)), scope, &err)) - 1;}
+                catch (...) {
+                    error((*std::prev(inner)), "Run-time Error: Expected a number identifier.");
+                    return 1;
+                }
+                scope.names.push_back((*std::prev(inner)).str());
+                std::string preshortened = to_string_with_precision(pos, precision);
+                shorten(preshortened);
+                scope.values.push_back(preshortened);
+                break;
+            } else if (current.typ() == PLUS_PLUS) {
+                if ((*std::next(inner)).typ() != SEMICOLON) {
+                    error((*std::next(inner)), "Run-time Error: Expected a semicolon.");
+                    return 1;
+                } else if ((*std::prev(inner)).typ() != IDENTIFIER) {
+                    error((*std::next(inner)), "Run-time Error: Expected an identifier.");
+                    return 1;
+                }
+                double pos;
+                bool err = false;
+                try {pos = std::stod(getVarVal((*std::prev(inner)), scope, &err)) + 1;}
+                catch (...) {
+                    error((*std::prev(inner)), "Run-time Error: Expected a number identifier.");
+                    return 1;
+                }
+                scope.names.push_back((*std::prev(inner)).str());
+                std::string preshortened = to_string_with_precision(pos, precision);
+                shorten(preshortened);
+                scope.values.push_back(preshortened);
+                break;
             } else if (current.typ() == PRINT) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
@@ -861,7 +1073,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
                         if ((*ato).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*ato, scope.names, scope.values, error_occurred);
+                            std::string currentString = getVarVal(*ato, scope, error_occurred);
                             if (!currentString.empty()) {
                                 if (currentString.at(0) == '"') {
                                     currentString = currentString.substr(1, currentString.length()-2);
@@ -905,7 +1117,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, scope.names, scope.values, &err, precision);
+                    std::string solved = solve(segmented, scope, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -973,7 +1185,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else if (result == 44) {
                         break;
                     }
-                } while (boolsolve(params, scope.names, scope.values, error_occurred));
+                } while (boolsolve(params, scope, error_occurred));
                 break;
             } else if (current.typ() == SLEEP) {
                 Token next = *std::next(inner);
@@ -1003,7 +1215,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
-                    std::string solved = solve(segmented, scope.names, scope.values, &err, precision);
+                    std::string solved = solve(segmented, scope, &err, precision);
                     if (err) {
                         error(current, "Run-time Error: Evauation Error");
                         return 1;
@@ -1110,7 +1322,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     ifcontents.pop_back();
 
-                    if (boolsolve(params, scope.names, scope.values, error_occurred)) {
+                    if (boolsolve(params, scope, error_occurred)) {
                         int result = runtime(ifcontents, scope, error_occurred, limit, precision, return_variable);
                         if (result == 1) {
                             return 1;
@@ -1181,7 +1393,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 whilecontents.pop_back();
                 int stop = 0;
-                while (boolsolve(params, scope.names, scope.values, error_occurred)) {
+                while (boolsolve(params, scope, error_occurred)) {
                     stop++;
                     if (stop == limit) {
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
@@ -1293,16 +1505,16 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         continue;
                     if ((*its).typ() == IDENTIFIER) {
                         Type t;
-                        if (getVarVal(*its, scope.names, scope.values, error_occurred).at(0) == '"') {
+                        if (getVarVal(*its, scope, error_occurred).at(0) == '"') {
                             t = STRING;
-                        } else if (getVarVal(*its, scope.names, scope.values, error_occurred) == "true") {
+                        } else if (getVarVal(*its, scope, error_occurred) == "true") {
                             t = TTRUE;
-                        } else if (getVarVal(*its, scope.names, scope.values, error_occurred) == "false") {
+                        } else if (getVarVal(*its, scope, error_occurred) == "false") {
                             t = TFALSE;
                         } else {
                             t = NUMBER;
                         }
-                        return_variable.push_back(Token(getVarVal(*its, scope.names, scope.values, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line()));
+                        return_variable.push_back(Token(getVarVal(*its, scope, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line()));
                     } else {
                         return_variable.push_back(*its);
                     }
