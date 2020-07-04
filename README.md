@@ -226,7 +226,7 @@ Output of b:
 a's contents
 foo
 ```
-*precision (changes number precision, auto is 6)*
+*precision (changes number precision, auto is 6, inf for infinity)*
 ```
 $precision 1
 num = 3.75/2;
