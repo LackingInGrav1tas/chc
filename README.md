@@ -226,6 +226,16 @@ Output of b:
 a's contents
 foo
 ```
+Using files in lib:
+test.chc
+```
+$import lib:strings
+print(back("abc"));
+```
+output:
+```
+c
+```
 *precision (changes number precision, auto is 6, inf for infinity)*
 ```
 $precision 1
