@@ -82,9 +82,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             stmt.insert(stmt.begin()+ct, *ret);
                         }
                     }
-                    for (int b = 0; b < stmt.size(); b++)
-                        std::cout << stmt[b].str() << " ";
-                    std::cout << std::endl;
                 }
             } else if (in((*token).typ(), native_functions)) {
                 if ((*token).typ() == TOKEN_INPUT) {
