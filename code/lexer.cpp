@@ -122,10 +122,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                     //adding files
                     if (preprocessors[1] == "import") {
                         std::string import_file = preprocessors[2];
-                        if (preprocessors[2] == "strings") {
-                            import_file = ExeDir() + R"(lib\strings.chc)";
-                        } else if (preprocessors[2] == "math") {
-                            import_file = ExeDir() + R"(lib\math.chc)";
+                        if (import_file.length() > 4) {
+                            if (import_file.substr(0, 4) == "lib:") {
+                                import_file = ExeDir() + R"(lib\)" + import_file.substr(4, import_file.length()) + ".chc";
+                            }
                         }
                         auto import_tokens = lex(import_file, error_occurred, limit, precision);
                         tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
