@@ -16,7 +16,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
         std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR };
-        int size = 0;
         int index = 0;
         for (auto token = stmt.end()-1; token >= stmt.begin(); token--) {
             if (in((*token).str(), scope.function_names)) {
@@ -25,122 +24,67 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                 if (eroc)
                     return 1;
-                if (call_params.empty()) {
-                    if ((*std::prev(std::prev(token))).typ() == DISPOSE) {
-                        continue;
-                    }
-                    if ((*std::next(token)).typ() != LEFT_PAREN) {
-                        error(*std::next(token), "Run-time Error: Expected function parameters.");
+                std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
+                if (found.first) {
+                    if (call_params.size() != scope.function_params[found.second].size()) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(scope.function_params[found.second].size());
+                        error(*token, msg);
                         return 1;
                     }
-                    int n = std::next(token) - stmt.begin();
-                    auto nd = std::next(token);
+                    Scope nscope;
+                    std::vector<std::vector<std::vector<Token>>> f;
+                    std::vector<std::vector<std::string>> fp;
+                    std::string rv;
+                    if (in((*token).str(), scope.aware_functions)) {
+                        nscope.names = scope.names;
+                        nscope.values = scope.values;
+                        nscope.immutables = scope.immutables;
+                        nscope.function_names = scope.function_names;
+                        nscope.aware_functions = scope.aware_functions;
+                        nscope.function_bodies = scope.function_bodies;
+                        nscope.function_params = scope.function_params;
+                    }
+                    for (int i = 0; i < call_params.size(); i++) {
+                        nscope.names.push_back(scope.function_params[found.second][i]);
+                        if (in(scope.function_params[found.second][i], scope.immutables))
+                            nscope.immutables.push_back(scope.function_params[found.second][i]);
+                        bool err = false;
+                        nscope.values.push_back(solve(call_params[i], scope, &err, precision));
+                        if (err) {
+                            error(*token, "Run-time Error: Evaluation Error.");
+                            return 1;
+                        }
+                    }
+                    std::vector<Token> return_val;
+                    bool er = false;
+                    int result = runtime(scope.function_bodies[found.second], nscope, &er, limit, precision, return_val);
+                    if (result == 1) {
+                        return 1;
+                    }
+                    int ct = token - stmt.begin();
                     int nested = 0;
                     while (true) {
-                        nd++;
-                        n++;
-                        if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
-                            break;
-                        } else {
-                            if (stmt[n].typ() == LEFT_PAREN) {
-                                nested++;
-                            } else if (stmt[n].typ() == RIGHT_PAREN) {
-                                nested--;
-                            } else if (nd == stmt.end()) {
-                                error(stmt.back(), "Run-time Error: Unclosed parentheses");
-                                return 1;
-                            }
-                        }
-                    }
-                    nd--;
-                    std::vector<Token> new_params(std::next(token), nd);
-                    std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
-                    std::vector<std::vector<Token>> to_execute;
-                    if (found.first) {
-                        for (auto b = scope.function_bodies[found.second].begin(); b < scope.function_bodies[found.second].end(); b++) {
-                            to_execute.push_back(*b);
-                        }
-                        std::vector<Token> rv;
-                        int result;
-                        if (!in((*token).str(), scope.aware_functions)) {
-                            Scope nscope;
-                            result = runtime(to_execute, nscope, error_occurred, limit, precision, rv);
-                        } else {
-                            result = runtime(to_execute, scope, error_occurred, limit, precision, rv);
-                        }
-                        if (result == 1) {
-                            return 1;
-                        }
-                        Token replacement;
-                        if (rv.empty()) {
-                            replacement = Token("_void_func_holder", -47, -47, _VOID_FUNC_HOLDER, "_void_func_holder");
-                        }
-                        stmt.erase(std::next(token), std::next(std::next(nd)));
-                        stmt[index] = replacement;
-                    } else {
-                        error((*token), "Run-time Error: Call of a non-existent function.");
-                        return 1;
-                    }
-                } else {
-                    std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
-                    if (found.first) {
-                        if (call_params.size() != scope.function_params[found.second].size()) {
-                            std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(scope.function_params[found.second].size());
-                            error(*token, msg);
-                            return 1;
-                        }
-                        Scope nscope;
-                        std::vector<std::vector<std::vector<Token>>> f;
-                        std::vector<std::vector<std::string>> fp;
-                        std::string rv;
-                        if (in((*token).str(), scope.aware_functions)) {
-                            nscope.names = scope.names;
-                            nscope.values = scope.values;
-                            nscope.immutables = scope.immutables;
-                            nscope.function_names = scope.function_names;
-                            nscope.aware_functions = scope.aware_functions;
-                            nscope.function_bodies = scope.function_bodies;
-                            nscope.function_params = scope.function_params;
-                        }
-                        for (int i = 0; i < call_params.size(); i++) {
-                            nscope.names.push_back(scope.function_params[found.second][i]);
-                            if (in(scope.function_params[found.second][i], scope.immutables))
-                                nscope.immutables.push_back(scope.function_params[found.second][i]);
-                            bool err = false;
-                            nscope.values.push_back(solve(call_params[i], scope, &err, precision));
-                            if (err) {
-                                error(*token, "Run-time Error: Evaluation Error.");
-                                return 1;
-                            }
-                        }
-                        std::vector<Token> return_val;
-                        bool er = false;
-                        int result = runtime(scope.function_bodies[found.second], nscope, &er, limit, precision, return_val);
-                        if (result == 1) {
-                            return 1;
-                        }
-                        int ct = token - stmt.begin();
-                        int nested = 0;
-                        while (true) {
-                            if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
-                                stmt.erase(stmt.begin()+ct);
-                                break;
-                            }
-                            if (stmt[ct].typ() == RIGHT_PAREN) {
-                                nested--;
-                            } else if (stmt[ct].typ() == LEFT_PAREN) {
-                                nested++;
-                            }
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
                             stmt.erase(stmt.begin()+ct);
+                            break;
                         }
-                        if (return_val.empty())
-                            stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line()));
-                        else {
-                            for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
-                                stmt.insert(stmt.begin()+ct, *ret);
-                            }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    if (return_val.empty())
+                        stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line()));
+                    else {
+                        for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
+                            stmt.insert(stmt.begin()+ct, *ret);
                         }
                     }
+                    for (int b = 0; b < stmt.size(); b++)
+                        std::cout << stmt[b].str() << " ";
+                    std::cout << std::endl;
                 }
             } else if (in((*token).typ(), native_functions)) {
                 if ((*token).typ() == TOKEN_INPUT) {
@@ -786,6 +730,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
             }
             index++;
         }
+        int size = 0;
         for (auto inner = stmt.begin(); inner < stmt.end(); inner++) {
             size++;
             Token current = *inner;
@@ -1339,8 +1284,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             }
                         }
                     }
-                    break;
                 }
+                break;
             } else if (current.typ() == WHILE) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
@@ -1352,19 +1297,16 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     return 1;
                 }
                 std::vector<Token> final = *outer;
-                std::vector<Token> params;
-                int ps = 0;
-                for (auto token = final.begin(); token != final.end(); token++) {
-                    if (ps > 0 && !((*token).typ() == RIGHT_PAREN) && ps == 1) {
-                        params.push_back(*token);
-                    }
-                    if ((*token).typ() == LEFT_PAREN) {
-                        ps++;
-                    } else if ((*token).typ() == RIGHT_PAREN) {
-                        ps--;
-                    }
+                bool err = false;
+                std::vector<std::vector<Token>> params = findParams(stmt, inner, SEMICOLON, scope.names, err);
+                if (err) {
+                    error(current, "Run-time Error: Param error.");
+                    return 1;
+                } else if (params.size() != 1) {
+                    error(current, "Run-time Error: Semicolon why.");
+                    return 1;
                 }
-                
+
                 std::vector<std::vector<Token>> whilecontents;
                 int nested = 0;
                 Token fis;
@@ -1393,7 +1335,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 whilecontents.pop_back();
                 int stop = 0;
-                while (boolsolve(params, scope, error_occurred)) {
+                while (boolsolve(params[0], scope, error_occurred)) {
                     stop++;
                     if (stop == limit) {
                         error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
@@ -1428,7 +1370,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             if ((*token).typ() == IDENTIFIER)
                             current_params.push_back((*token).str());
                         } else {
-                            error(current, "Run-time Error: CHC is a poorly written language, therefore it only takes identifiers and commas in the function header.");
+                            error(current, "a.");
                             return 1;
                         }
                     }
@@ -1456,7 +1398,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (cline.back().typ() == LEFT_BRACE) {
+                        }
+                        if (cline.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }

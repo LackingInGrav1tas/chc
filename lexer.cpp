@@ -4,7 +4,37 @@
 #include <fstream>
 #include <algorithm>
 #include "header.hpp"
+#include <iterator>
+#include <sstream>
+#include <windows.h>
 #include <climits>
+
+std::string ExeDir(int times_back=1) {
+    char buffer[MAX_PATH];
+    GetModuleFileName( NULL, buffer, MAX_PATH );
+    std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
+    std::string path = std::string( buffer ).substr( 0, pos);;
+    std::vector<std::string> indiv;
+    std::string current = "";
+    for (int i = 0; i < path.size(); i++) {
+        std::string p = std::string(1, path[i]);
+        if (p == R"(\)") {
+            indiv.push_back(current);
+            current = "";
+        } else {
+            current += p;
+        }
+    }
+    for (int i = 1; i < times_back; i++) {
+        indiv.pop_back();
+    }
+    const char* const delim = "\\";
+    std::ostringstream imploded;
+    std::copy(indiv.begin(), indiv.end(),
+        std::ostream_iterator<std::string>(imploded, delim));
+    std::string dir = imploded.str();
+    return dir;
+}
 
 std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "for", "if", "nil", "or",
                                       "print", "return", "true", "while", "run",
@@ -91,7 +121,13 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                     }
                     //adding files
                     if (preprocessors[1] == "import") {
-                        auto import_tokens = lex(preprocessors[2], error_occurred, limit, precision);
+                        std::string import_file = preprocessors[2];
+                        if (preprocessors[2] == "strings") {
+                            import_file = ExeDir() + R"(lib\strings.chc)";
+                        } else if (preprocessors[2] == "math") {
+                            import_file = ExeDir() + R"(lib\math.chc)";
+                        }
+                        auto import_tokens = lex(import_file, error_occurred, limit, precision);
                         tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
                     }
                 }

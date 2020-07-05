@@ -79,8 +79,8 @@ int main(int argc, char** argv) {
         std::cout << "compilation/run time...\n";
         infofile << "Time taken for compilation/runtime: " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) << " ms\n\n";
         std::cout << "token printout...\n";
-        std::vector<std::string> token_list = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
-                "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
+        std::vector<std::string> token_list = {"BLANK", "ERROR", "EOF", "DNR", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
+                "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                 "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "MINUS_MINUS", "PLUS_PLUS", "PLUS_EQUALS", "MINUS_EQUALS",
                 "STAR_EQUALS", "SLASH_EQUALS", "IDENTIFIER", "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", 
                 "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
