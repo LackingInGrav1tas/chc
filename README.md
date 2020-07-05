@@ -227,6 +227,7 @@ a's contents
 foo
 ```
 Using files in lib:
+
 test.chc
 ```
 $import lib:strings
