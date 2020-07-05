@@ -1,0 +1,10 @@
+fun back(x) {
+    return(at(x, length(x)-1));
+};
+
+fun front(x) {
+    if (length(x) == 0) {
+        return("");
+    };
+    return(at(x, 0));
+};

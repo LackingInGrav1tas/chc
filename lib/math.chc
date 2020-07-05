@@ -1,0 +1,52 @@
+fun pow(base, times) {
+    if (times == 0) {
+        return(1);
+    };
+    times = times - 1;
+    final = base;
+    count = 0;
+    while (count < times) {
+        final = final * final;
+        count = count + 1;
+    };
+    return (final);
+};
+
+fun factorial(target) {
+    if (target == 0) {
+        return(0);
+    };
+    final = 1;
+    times = 1;
+    while (times <= target) {
+        final = final * times;
+        times = times + 1;
+    };
+    return (final);
+};
+
+fun fsqrt(x) {
+    if (x == 0 or x == 1) {
+        return(x);
+    };
+    i = 1;
+    result = 1;
+    while (result <= x) {
+        i = i + 1;
+        result = i * i;
+    };
+    return (i-1);
+};
+
+fun floor(num) {
+    final = "";
+    place = 0;
+    asstr = str(num);
+    current = at(asstr, place);
+    while(current != ".") {
+        final = final + at(asstr, place);
+        place = place + 1;
+        current = at(asstr, place);
+    };
+    return(final);
+};
