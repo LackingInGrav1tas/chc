@@ -8,3 +8,27 @@ fun front(x) {
     };
     return(at(x, 0));
 };
+
+fun replace(base_string, num, end) {
+    assert(num >= 0, num < length(base_string));
+    final = "";
+    placement = 0;
+
+    condition = eval(placement != num);
+    while (condition) {
+        final += at(base_string, placement);
+        placement++;
+        condition = eval(placement != num);
+    };
+
+    final += end;
+    placement++;
+
+    condition = eval(placement < length(base_string));
+    while (condition) {
+        final += at(base_string, placement);
+        placement++;
+        condition = eval(placement < length(base_string));
+    };
+    return(final);
+};

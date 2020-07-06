@@ -15,7 +15,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT };
         int index = 0;
         for (auto token = stmt.end()-1; token >= stmt.begin(); token--) {
             if (in((*token).str(), scope.function_names)) {
@@ -722,6 +722,54 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         stmt.erase(stmt.begin()+ct);
                     }
                     stmt.insert(stmt.begin()+ct, Token(R"(")" + solved + R"(")", (*token).lines(), (*token).col(), STRING, (*token).actual_line() ));
+                } else if ((*token).typ() == TOKEN_INT) {
+                    bool e = false;
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Expected a left bracket token.");
+                        return 1;
+                    }
+                    if (e) {
+                        error(*std::prev(std::prev(token)), "Run-time Error: ");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    std::string solved = solve(call_params[0], scope, &e, precision);
+                    if (solved.at(0) != '"' && solved != "true" && solved == "false") {
+                        error(*token, "Run-time Error: Expected non-number as an input.");
+                        return 1;
+                    } else if (solved == "true") {
+                        solved = "1";
+                    } else if (solved == "false") {
+                        solved = "0";
+                    } else {
+                        solved = solved.substr(1, solved.length()-2);
+                    }
+                    if (e) {
+                        error(*token, "Run-time Error: Solving error.");
+                        return 1;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(solved, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line() ));
                 }
                 token++;
             }
@@ -761,177 +809,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                                 scope.immutables.push_back(previous.str());
                             }
                         }
-                    } else {
-                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
-                        return 1;
-                    }
-                }
-                break;
-            } else if (current.typ() == PLUS_EQUALS) {//+=
-                Token previous = *std::prev(inner);
-                if (previous.typ() != IDENTIFIER) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else if (!in((*std::prev(inner)).str(), scope.names)) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else {
-                    for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
-                            error(*tok, "Run-time Error: Undefined variable.");
-                            return 1;
-                        }
-                    }
-                    //its good!
-                    if (!in(previous.str(), scope.immutables)) {
-                        std::vector<Token>::const_iterator beg = std::next(inner);
-                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
-                        std::vector<Token> rest(beg, end);
-                        bool err = false;
-                        std::string final;
-                        std::string solved = solve(rest, scope, &err, precision);
-                        try {
-                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) + std::stod(solved);
-                            final = to_string_with_precision(additive, precision);
-                            shorten(final);
-                        } catch (...) {
-                            final += getVarVal(*std::prev(inner), scope, &err).substr(1, getVarVal(*std::prev(inner), scope, &err).length()-2) + solved.substr(1, solved.length()-2);
-                        }
-                        scope.values.push_back(final);
-                        if (err) {
-                            error(previous, "Run-time Error: Evaluation Error");
-                            return 1;
-                        }
-                        scope.names.push_back(previous.str());
-                    } else {
-                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
-                        return 1;
-                    }
-                }
-                break;
-            } else if (current.typ() == MINUS_EQUALS) {//-=
-                Token previous = *std::prev(inner);
-                if (previous.typ() != IDENTIFIER) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else if (!in((*std::prev(inner)).str(), scope.names)) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else {
-                    for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
-                            error(*tok, "Run-time Error: Undefined variable.");
-                            return 1;
-                        }
-                    }
-                    //its good!
-                    if (!in(previous.str(), scope.immutables)) {
-                        std::vector<Token>::const_iterator beg = std::next(inner);
-                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
-                        std::vector<Token> rest(beg, end);
-                        bool err = false;
-                        std::string final;
-                        std::string solved = solve(rest, scope, &err, precision);
-                        try {
-                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) - std::stod(solved);
-                            final = to_string_with_precision(additive, precision);
-                            shorten(final);
-                        } catch (...) {
-                            error(current, "Run-time Error: Expected numbers.");
-                            return 1;
-                        }
-                        scope.values.push_back(final);
-                        if (err) {
-                            error(previous, "Run-time Error: Evaluation Error");
-                            return 1;
-                        }
-                        scope.names.push_back(previous.str());
-                    } else {
-                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
-                        return 1;
-                    }
-                }
-                break;
-            } else if (current.typ() == STAR_EQUALS) {//*=
-                Token previous = *std::prev(inner);
-                if (previous.typ() != IDENTIFIER) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else if (!in((*std::prev(inner)).str(), scope.names)) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else {
-                    for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
-                            error(*tok, "Run-time Error: Undefined variable.");
-                            return 1;
-                        }
-                    }
-                    //its good!
-                    if (!in(previous.str(), scope.immutables)) {
-                        std::vector<Token>::const_iterator beg = std::next(inner);
-                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
-                        std::vector<Token> rest(beg, end);
-                        bool err = false;
-                        std::string final;
-                        std::string solved = solve(rest, scope, &err, precision);
-                        try {
-                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) * std::stod(solved);
-                            final = to_string_with_precision(additive, precision);
-                            shorten(final);
-                        } catch (...) {
-                            error(current, "Run-time Error: Expected numbers.");
-                            return 1;
-                        }
-                        scope.values.push_back(final);
-                        if (err) {
-                            error(previous, "Run-time Error: Evaluation Error");
-                            return 1;
-                        }
-                        scope.names.push_back(previous.str());
-                    } else {
-                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
-                        return 1;
-                    }
-                }
-                break;
-            } else if (current.typ() == SLASH_EQUALS) {// /=
-                Token previous = *std::prev(inner);
-                if (previous.typ() != IDENTIFIER) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else if (!in((*std::prev(inner)).str(), scope.names)) {
-                    error(previous, "Runtime Error: Inadequite identifier.");
-                    return 1;
-                } else {
-                    for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
-                            error(*tok, "Run-time Error: Undefined variable.");
-                            return 1;
-                        }
-                    }
-                    //its good!
-                    if (!in(previous.str(), scope.immutables)) {
-                        std::vector<Token>::const_iterator beg = std::next(inner);
-                        std::vector<Token>::const_iterator end = stmt.begin() + (stmt.size()-1);
-                        std::vector<Token> rest(beg, end);
-                        bool err = false;
-                        std::string final;
-                        std::string solved = solve(rest, scope, &err, precision);
-                        try {
-                            double additive = std::stod(getVarVal(*std::prev(inner), scope, &err)) / std::stod(solved);
-                            final = to_string_with_precision(additive, precision);
-                            shorten(final);
-                        } catch (...) {
-                            error(current, "Run-time Error: Expected numbers.");
-                            return 1;
-                        }
-                        scope.values.push_back(final);
-                        if (err) {
-                            error(previous, "Run-time Error: Evaluation Error");
-                            return 1;
-                        }
-                        scope.names.push_back(previous.str());
                     } else {
                         error(previous, "Run-time Error: Immutable variable cannot be mutated.");
                         return 1;

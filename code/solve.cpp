@@ -312,7 +312,10 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, bool *error_occurred) {
                     final.push_back(true);
                 }
             } else {
-                final.push_back( evaluate( lhs[0], op, rhs[0], scope, error_occurred ) );
+                bool ev = false;
+                final.push_back( evaluate( lhs[0], op, rhs[0], scope, &ev ) );
+                if (ev)
+                    return false;
             }
         }
 

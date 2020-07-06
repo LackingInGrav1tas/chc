@@ -40,7 +40,7 @@ std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "f
                                       "print", "return", "true", "while", "run",
                                       "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto",
                                       "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval", "continue",
-                                      "rand", "at", "dispose", "set_scope", "save_scope", "str" };
+                                      "rand", "at", "dispose", "set_scope", "save_scope", "str", "int" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -124,7 +124,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                         std::string import_file = preprocessors[2];
                         if (import_file.length() > 4) {
                             if (import_file.substr(0, 4) == "lib:") {
-                                import_file = ExeDir() + R"(lib\)" + import_file.substr(4, import_file.length()) + ".chc";
+                                import_file = ExeDir(0) + R"(chc\lib\)" + import_file.substr(4, import_file.length()) + ".chc";
                             }
                         }
                         auto import_tokens = lex(import_file, error_occurred, limit, precision);
@@ -323,11 +323,28 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
     }
     nfile.close();
     //replacing valid MINUS NUMBER with 0 MINUS NUMBER
-    for (int token_i = 1; token_i < tokens.size()-1 && token_i < 50; token_i++) {
+    for (int token_i = 1; token_i < tokens.size()-1; token_i++) {
         if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
             tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line()));
             tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line()));
             tokens.insert(tokens.begin()+(token_i+4), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line()));
+        }
+        if (tokens[token_i].typ() == PLUS_EQUALS) {
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
+            tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line()));
+        } else if (tokens[token_i].typ() == MINUS_EQUALS) {
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
+            tokens.insert(tokens.begin()+(token_i+2), Token("-", tokens[token_i].lines(), tokens[token_i].col(), MINUS, tokens[token_i].actual_line()));
+        } else if (tokens[token_i].typ() == STAR_EQUALS) {
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
+            tokens.insert(tokens.begin()+(token_i+2), Token("*", tokens[token_i].lines(), tokens[token_i].col(), STAR, tokens[token_i].actual_line()));
+        } else if (tokens[token_i].typ() == SLASH_EQUALS) {
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
+            tokens.insert(tokens.begin()+(token_i+2), Token("/", tokens[token_i].lines(), tokens[token_i].col(), SLASH, tokens[token_i].actual_line()));
         }
     }
     return tokens;
