@@ -162,6 +162,14 @@ Type keyword(std::string full) {
         return STR;
     } else if (full == "int") {
         return TOKEN_INT;
+    } else if (full == "is_string") {
+        return IS_STRING;
+    } else if (full == "is_number") {
+        return IS_NUMBER;
+    } else if (full == "is_bool") {
+        return IS_BOOL;
+    } else if (full == "solve") {
+        return SOLVE;
     }
 }
 
@@ -380,7 +388,7 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
     std::vector<std::vector<Token>> variable_values;
     std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
     std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
-    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH };
+    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL };
     for (int num_l = 0; num_l < line.size()-1; num_l++) {
         Token cur = line[num_l];
         Token nex = line[num_l+1];

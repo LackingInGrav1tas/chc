@@ -10,25 +10,31 @@ fun front(x) {
 };
 
 fun replace(base_string, num, end) {
-    assert(num >= 0, num < length(base_string));
-    final = "";
-    placement = 0;
+    if (is_string(base_string) and is_number(num)) {
+        assert(num >= 0, num < length(base_string));
+        final = "";
+        placement = 0;
 
-    condition = eval(placement != num);
-    while (condition) {
-        final += at(base_string, placement);
-        placement++;
         condition = eval(placement != num);
-    };
+        while (condition) {
+            final += at(base_string, placement);
+            placement++;
+            condition = eval(placement != num);
+        };
 
-    final += end;
-    placement++;
-
-    condition = eval(placement < length(base_string));
-    while (condition) {
-        final += at(base_string, placement);
+        final += end;
         placement++;
+
         condition = eval(placement < length(base_string));
+        while (condition) {
+            final += at(base_string, placement);
+            placement++;
+            condition = eval(placement < length(base_string));
+        };
+        return(final);
+    } else {
+        fprint("is_str(base_string, param 1): " + is_string(base_string));
+        fprint("is_num(num, param 2): " + is_number(num));
+        throw("Bad input.");
     };
-    return(final);
 };

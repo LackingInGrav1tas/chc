@@ -15,7 +15,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
-        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT };
+        std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
         int index = 0;
         for (auto token = stmt.end()-1; token >= stmt.begin(); token--) {
             if (in((*token).str(), scope.function_names)) {
@@ -443,6 +443,39 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         stmt.erase(stmt.begin()+ct);
                     }
                     stmt.insert(stmt.begin()+ct, Token(bol, (*token).lines(), (*token).col(), evaluated, (*token).actual_line()));
+                } else if ((*token).typ() == SOLVE) {
+                    if ((*std::next(token)).typ() != LEFT_PAREN) {
+                        error(*std::next(token), "Run-time Error: Incorrect formatting of function call.");
+                        return 1;
+                    }
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        error(*token, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                        return 1;
+                    }
+                    Type evaluated = NUMBER;
+                    std::string solved = solve(call_params[0], scope, error_occurred, precision);
+                    if (solved.at(0) == '"') {
+                        evaluated = STRING;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(solved, (*token).lines(), (*token).col(), evaluated, (*token).actual_line()));
                 } else if ((*token).typ() == THROW) {
                     bool eroc = false;
                     auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
@@ -770,6 +803,111 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         stmt.erase(stmt.begin()+ct);
                     }
                     stmt.insert(stmt.begin()+ct, Token(solved, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line() ));
+                } else if ((*token).typ() == IS_STRING) {
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    } else if (call_params[0].size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string fon = "false";
+                    Type f_on = TFALSE;
+                    if (getVarVal(call_params[0][0], scope, &eroc).at(0) == '"') {
+                        fon = "true";
+                        f_on = TTRUE;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line()));
+                } else if ((*token).typ() == IS_NUMBER) {
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    } else if (call_params[0].size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string fon = "true";
+                    Type f_on = TTRUE;
+                    if (getVarVal(call_params[0][0], scope, &eroc).at(0) == '"' || getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {//here
+                        fon = "false";
+                        f_on = TFALSE;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line()));
+                } else if ((*token).typ() == IS_BOOL) {
+                    bool eroc = false;
+                    auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                    if (eroc)
+                        return 1;
+                    if (call_params.size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    } else if (call_params[0].size() != 1) {
+                        std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                        error(*token, msg);
+                        return 1;
+                    }
+                    std::string fon = "false";
+                    Type f_on = TFALSE;
+                    if (getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {//here
+                        fon = "true";
+                        f_on = TTRUE;
+                    }
+                    int ct = token - stmt.begin();
+                    int nested = 0;
+                    while (true) {
+                        if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                            stmt.erase(stmt.begin()+ct);
+                            break;
+                        }
+                        if (stmt[ct].typ() == RIGHT_PAREN) {
+                            nested--;
+                        } else if (stmt[ct].typ() == LEFT_PAREN) {
+                            nested++;
+                        }
+                        stmt.erase(stmt.begin()+ct);
+                    }
+                    stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line()));
                 }
                 token++;
             }
@@ -1059,10 +1197,9 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     return 1;
                 }
 
-                std::vector<Token> final = *outer;
                 std::vector<Token> params;
                 int ps = 0;
-                for (auto token = final.begin(); token != final.end(); token++) {
+                for (auto token = stmt.begin(); token != stmt.end(); token++) {
                     if (ps > 0 && !((*token).typ() == RIGHT_PAREN) && ps == 1) {
                         params.push_back(*token);
                     }
@@ -1072,7 +1209,6 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         ps--;
                     }
                 }
-                
                 std::vector<std::vector<Token>> ifcontents;
                 int nested = 0;
                 Token fis;

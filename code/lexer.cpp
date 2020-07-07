@@ -40,7 +40,8 @@ std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "f
                                       "print", "return", "true", "while", "run",
                                       "immutable", "do", "hash", "sleep", "break", "aware", "input", "writeto",
                                       "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval", "continue",
-                                      "rand", "at", "dispose", "set_scope", "save_scope", "str", "int" };
+                                      "rand", "at", "dispose", "set_scope", "save_scope", "str", "int", "is_string", "is_number", "is_bool",
+                                      "solve" };
 
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',

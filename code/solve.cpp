@@ -318,7 +318,6 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, bool *error_occurred) {
                     return false;
             }
         }
-
         while (final.size() > 1) {
             bool left = final[0];
             bool right = final[1];
