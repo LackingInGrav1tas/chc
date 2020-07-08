@@ -125,6 +125,19 @@ a = "a";
 set_scope(1);# sets environment
 fprint(a);# scope error
 ```
+*is_string, is_bool, is_number (returns: bool):*
+```
+a = "string";
+variable = is_bool(a);//false
+``` 
+*to_str (returns: string):*
+```
+variable = to_str(47); #"47"
+``` 
+*to_num (returns: number)*
+```
+variable = to_num("47"); #47
+``` 
 
 
 **User defined functions:**
