@@ -1,17 +1,16 @@
 fun back(x) {
+    assert (length(x) > 0); # function back, in lib:strings
     return(at(x, length(x)-1));
 };
 
 fun front(x) {
-    if (length(x) == 0) {
-        return("");
-    };
+    assert (length(x) > 0); # function front, in lib:strings
     return(at(x, 0));
 };
 
 fun replace(base_string, num, end) {
     if (is_string(base_string) and is_number(num)) {
-        assert(num >= 0, num < length(base_string));
+        assert(num >= 0, num < length(base_string)); # function replace, in lib:strings
         final = "";
         placement = 0;
 
@@ -35,13 +34,13 @@ fun replace(base_string, num, end) {
     } else {
         fprint("is_string(base_string, param 1): " + is_string(base_string));
         fprint("is_number(num, param 2): " + is_number(num));
-        throw("Bad input.");
+        throw("Bad input for replace.");
     };
 };
 
 fun substr(base_string, begin, end) {
-    assert(is_string(base_string), is_number(begin), is_number(end));
-    assert(begin > -1, end < length(base_string), begin < end);
+    assert(is_string(base_string), is_number(begin), is_number(end)); # function substr, in lib:strings
+    assert(begin > -1, end < length(base_string), begin < end); # function substr, in lib:strings
     final = "";
     position = begin;
     while (position != end) {

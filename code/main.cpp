@@ -6,10 +6,10 @@
 #include <ctime>
 #include <chrono>
 #include "header.hpp"
-
+#define EXIT_FAILURE 1
 std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
-    return in.tellg(); 
+    return in.tellg();
 }
 
 //g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     auto start = std::chrono::steady_clock::now();
     bool error_occurred = false;
     std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);//lexing
-    one.push_back(Token("", 0, 0, _EOF, ""));
+    one.push_back(Token("", 0, 0, _EOF, "", "outside of files"));
     errorCheck(one, &error_occurred);
     std::vector<std::vector<Token>> two = statementize(one);
     int exit_status = 0;

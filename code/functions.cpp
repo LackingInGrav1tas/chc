@@ -19,158 +19,89 @@ std::string getString(char x) {
 }
 
 void error(Token token, std::string message="") {
+    std::cout << "\nin " << token.filename() << ":";
     std::string a = std::to_string(token.lines()) + "| ";
     std::cerr << "\n" << a << token.actual_line() << "\n";
     for (int i = 0; i < a.length()+token.col()-2; i++) {
         std::cerr << " ";
     }
-    std::cerr << "^\n" << message << " (col: " << token.col() << "  token: " << token.str() << ")\n" << std::endl;
+    std::cerr << "^\n" << message << "\n( col: " << token.col() << "  token: " << token.str() << " )\n" << std::endl;
 }
 
 Type singleChar(char current_char) {
-    if (current_char == '!') {
-        return EXC;
-    } else if (current_char == '+') {
-        return PLUS;
-    } else if (current_char == '-') {
-        return MINUS;
-    } else if (current_char == '/') {
-        return SLASH;
-    } else if (current_char == '*') {
-        return STAR;
-    } else if (current_char == ',') {
-        return COMMA;
-    } else if (current_char == ';') {
-        return SEMICOLON;
-    } else if (current_char == ')') {
-        return RIGHT_PAREN;
-    } else if (current_char == '(') {
-        return LEFT_PAREN;
-    } else if (current_char == '}') {
-        return RIGHT_BRACE;
-    } else if (current_char == '{') {
-        return LEFT_BRACE;
-    } else if (current_char == '<') {
-        return LESS;
-    } else if (current_char == '>') {
-        return GREATER;
-    } else if (current_char == '=') {
-        return EQUAL;
-    } else if (current_char == '.') {
-        return DOT;
-    }
+    if (current_char == '!') return EXC;
+    else if (current_char == '+') return PLUS;
+    else if (current_char == '-') return MINUS;
+    else if (current_char == '/') return SLASH;
+    else if (current_char == '*') return STAR;
+    else if (current_char == ',') return COMMA;
+    else if (current_char == ';') return SEMICOLON;
+    else if (current_char == ')') return RIGHT_PAREN;
+    else if (current_char == '(') return LEFT_PAREN;
+    else if (current_char == '}') return RIGHT_BRACE;
+    else if (current_char == '{') return LEFT_BRACE;
+    else if (current_char == '<') return LESS;
+    else if (current_char == '>') return GREATER;
+    else if (current_char == '=') return EQUAL;
+    else if (current_char == '.') return DOT;
 }
 
 Type doubleChar(std::string full) {
-    if (full == "!=") {
-        return EXC_EQUAL;
-    } else if (full == "==") {
-        return EQUAL_EQUAL;
-    } else if (full == ">=") {
-        return GREATER_EQUAL;
-    } else if (full == "<=") {
-        return LESS_EQUAL;
-    } else if (full == "<-") {
-        return ARROW;
-    } else if (full == "--") {
-        return MINUS_MINUS;
-    } else if (full == "++") {
-        return PLUS_PLUS;
-    } else if (full == "+=") {
-        return PLUS_EQUALS;
-    } else if (full == "-=") {
-        return MINUS_EQUALS;
-    } else if (full == "*=") {
-        return STAR_EQUALS;
-    } else if (full == "/=") {
-        return SLASH_EQUALS;
-    }
+    if (full == "!=") return EXC_EQUAL;
+    else if (full == "==") return EQUAL_EQUAL;
+    else if (full == ">=") return GREATER_EQUAL;
+    else if (full == "<=") return LESS_EQUAL;
+    else if (full == "<-") return ARROW;
+    else if (full == "--") return MINUS_MINUS;
+    else if (full == "++") return PLUS_PLUS;
+    else if (full == "+=") return PLUS_EQUALS;
+    else if (full == "-=") return MINUS_EQUALS;
+    else if (full == "*=") return STAR_EQUALS;
+    else if (full == "/=") return SLASH_EQUALS;
 }
 
 Type keyword(std::string full) {
-    if (full == "and") {
-        return AND;
-    } else if (full == "class") {
-        return CLASS;
-    } else if (full == "else") {
-        return ELSE;
-    } else if (full == "false") {
-        return TFALSE;
-    } else if (full == "fun") {
-        return FUN;
-    } else if (full == "for") {
-        return FOR;
-    } else if (full == "if") {
-        return IF;
-    } else if (full == "nil") {
-        return NIL;
-    } else if (full == "or") {
-        return OR;
-    } else if (full == "print") {
-        return PRINT;
-    } else if (full == "return") {
-        return RETURN;
-    } else if (full == "true") {
-        return TTRUE;
-    } else if (full == "while") {
-        return WHILE;
-    } else if (full == "run") {
-        return RUN;
-    } else if (full == "immutable") {
-        return IMMUTABLE;
-    } else if (full == "do") {
-        return DO;
-    } else if (full == "hash") {
-        return HASH;
-    } else if (full == "sleep") {
-        return SLEEP;
-    } else if (full == "break") {
-        return BREAK;
-    } else if (full == "aware") {
-        return AWARE;
-    } else if (full == "input") {
-        return TOKEN_INPUT;
-    } else if (full == "writeto") {
-        return WRITETO;
-    } else if (full == "assert") {
-        return ASSERT;
-    } else if (full == "length") {
-        return LENGTH;
-    } else if (full == "rprint") {
-        return RPRINT;
-    } else if (full == "fprint") {
-        return FPRINT;
-    } else if (full == "rfprint") {
-        return RFPRINT;
-    } else if (full == "throw") {
-        return THROW;
-    } else if (full == "eval") {
-        return EVAL;
-    } else if (full == "continue") {
-        return CONTINUE;
-    } else if (full == "rand") {
-        return RAND;
-    } else if (full == "at") {
-        return AT;
-    } else if (full == "dispose") {
-        return DISPOSE;
-    } else if (full == "save_scope") {
-        return SAVE_SCOPE;
-    } else if (full == "set_scope") {
-        return SET_SCOPE;
-    } else if (full == "str") {
-        return STR;
-    } else if (full == "int") {
-        return TOKEN_INT;
-    } else if (full == "is_string") {
-        return IS_STRING;
-    } else if (full == "is_number") {
-        return IS_NUMBER;
-    } else if (full == "is_bool") {
-        return IS_BOOL;
-    } else if (full == "solve") {
-        return SOLVE;
-    }
+    if (full == "and") return AND;
+    else if (full == "class") return CLASS;
+    else if (full == "else") return ELSE;
+    else if (full == "false") return TFALSE;
+    else if (full == "fun") return FUN;
+    else if (full == "for") return FOR;
+    else if (full == "if") return IF;
+    else if (full == "nil") return NIL;
+    else if (full == "or") return OR;
+    else if (full == "print") return PRINT;
+    else if (full == "return") return RETURN;
+    else if (full == "true") return TTRUE;
+    else if (full == "while") return WHILE;
+    else if (full == "run") return RUN;
+    else if (full == "immutable") return IMMUTABLE;
+    else if (full == "do") return DO;
+    else if (full == "hash") return HASH;
+    else if (full == "sleep") return SLEEP;
+    else if (full == "break") return BREAK;
+    else if (full == "aware") return AWARE;
+    else if (full == "input") return TOKEN_INPUT;
+    else if (full == "writeto") return WRITETO;
+    else if (full == "assert") return ASSERT;
+    else if (full == "length") return LENGTH;
+    else if (full == "rprint") return RPRINT;
+    else if (full == "fprint") return FPRINT;
+    else if (full == "rfprint") return RFPRINT;
+    else if (full == "throw") return THROW;
+    else if (full == "eval") return EVAL;
+    else if (full == "continue") return CONTINUE;
+    else if (full == "rand") return RAND;
+    else if (full == "at") return AT;
+    else if (full == "dispose") return DISPOSE;
+    else if (full == "save_scope") return SAVE_SCOPE;
+    else if (full == "set_scope") return SET_SCOPE;
+    else if (full == "str") return STR;
+    else if (full == "int") return TOKEN_INT;
+    else if (full == "is_string") return IS_STRING;
+    else if (full == "is_number") return IS_NUMBER;
+    else if (full == "is_bool") return IS_BOOL;
+    else if (full == "solve") return SOLVE;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -417,7 +348,6 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
 }
 
 std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err) {
-    //std::vector<Token> line = { Token("callee", 0, 0, IDENTIFIER, ""), Token("(", 0, 0, LEFT_PAREN, ""), Token(")", 0, 0, RIGHT_PAREN, "") };
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };

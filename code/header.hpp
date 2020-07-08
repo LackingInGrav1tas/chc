@@ -55,6 +55,7 @@ class Token {
     int line;
     int column;
     std::string lin;
+    std::string file;
     Type type;
     int precedence;
     std::map<std::string, int> precedence_lookup;
@@ -64,12 +65,13 @@ class Token {
     std::vector<std::string> operators = { "+", "-", "/", "*", "%", "(", ")", "^", ">", "<", "<=", "=<",
                                            ">=", "=>", "!", "!=" };
     public:
-        Token(std::string init_lexeme="", int init_line=0, int init_column=0, Type init_type=BLANK, std::string init_lin="") {
+        Token(std::string init_lexeme="", int init_line=0, int init_column=0, Type init_type=BLANK, std::string init_lin="", std::string filename="unknown") {
             lexeme = init_lexeme;
             line = init_line;
             type = init_type;
             column = init_column;
             lin = init_lin;
+            file = filename;
             precedence_lookup.insert(std::pair<std::string, int>(">", 2));
             precedence_lookup.insert(std::pair<std::string, int>("<", 2));
             precedence_lookup.insert(std::pair<std::string, int>(">=", 2));
@@ -122,6 +124,9 @@ class Token {
         Assoc asso() {
             return associativity;
         }
+        std::string filename() {
+            return file;
+        };
 };
 
 struct Scope {
@@ -209,7 +214,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
 
 bool evaluate(Token lhs, Token op, Token rhs, Scope scope, bool *error_occurred);
 
-bool boolsolve(std::vector<Token> tokens, Scope scope, bool *error_occurred);
+bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision, std::vector<Scope> &scopes, std::vector<std::string> &scope_indices, bool *error_occurred);
 
 bool isOp(Token token);
 

@@ -165,7 +165,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
                     col++;
                     //checks if the character is acceptable
-                    Token errorcheck(getString(*current_char), row, col,  ERR, line);
+                    Token errorcheck(getString(*current_char), row, col,  ERR, line, f);
                     if (!in(*current_char , recognized_chars)) {
                         std::string errormsg = std::string("Compile-time Error: Unrecognized character: ") + *current_char;
                         error(errorcheck, errormsg);
@@ -182,13 +182,13 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             col++;
                             if (col >= line.length()) {
                                 *error_occurred == true;
-                                Token tok(literal, row, col, STRING, line);
+                                Token tok(literal, row, col, STRING, line, f);
                                 error(tok, "Compile-time Error: Unending string.");
                                 break;
                             }
                         }
                         literal += '"';
-                        Token tok(literal, row, col, STRING, line);
+                        Token tok(literal, row, col, STRING, line, f);
                         tokens.push_back(tok);
                     } else if (*current_char == '#') {//it's a comment
                         current_char++;
@@ -216,21 +216,21 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            tokens.push_back(Token(current_token, row, col, enumed, line));
+                            tokens.push_back(Token(current_token, row, col, enumed, line, f));
                             current_token = "";
                         }
                         //checks if the character is connectable, ex: !=
                         if (in(*current_char, doubleable)) {
                             if (!in(*std::prev(current_char), doubleable) && !in(*std::next(current_char), doubleable)) {
-                                tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line));
+                                tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, f));
                             } else if (in(*std::prev(current_char), doubleable)) {
                                 if (in(*current_char, doubleable)) {
                                     std::string done = getString(*std::prev(current_char)) + getString(*current_char);
-                                    tokens.push_back(Token(done, row, col, doubleChar(done), line));
+                                    tokens.push_back(Token(done, row, col, doubleChar(done), line, f));
                                 }
                             }
                         } else {
-                            tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line));
+                            tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, f));
                         }
                     //checks if it's whitespace/space in betwixt tokens
                     } else if (*current_char == ' ') {
@@ -250,7 +250,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            tokens.push_back(Token(current_token, row, col, enumed, line));
+                            tokens.push_back(Token(current_token, row, col, enumed, line, f));
                             current_token = "";
                         }
                     //anything else it adds to the token
@@ -282,7 +282,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 it--;
             }
         }
-        error(currenttok, "Compile-time Error: Unclosed parentheses.\n");
+        error(*it, "Compile-time Error: Unclosed parentheses.");
         *error_occurred = true;
     } else if (plcount < prcount) {
         std::vector<Token>::iterator it = tokens.end();
@@ -294,7 +294,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 it--;
             }
         }
-        error(currenttok, "Compile-time Error: Uncalled for end parentheses.\n");
+        error(*it, "Compile-time Error: Uncalled for end parentheses.");
         *error_occurred = true;
     }
     if (blcount > brcount) {
@@ -307,7 +307,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 it--;
             }
         }
-        error(currenttok, "Compile-time Error: Unclosed bracket.\n");
+        error(*it, "Compile-time Error: Unclosed bracket.");
         *error_occurred = true;
     } else if (blcount < brcount) {
         std::vector<Token>::iterator it = tokens.end();
@@ -319,34 +319,34 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 it--;
             }
         }
-        error(currenttok, "Compile-time Error: Uncalled for end bracket.\n");
+        error(*it, "Compile-time Error: Uncalled for end bracket.");
         *error_occurred = true;
     }
     nfile.close();
     //replacing valid MINUS NUMBER with 0 MINUS NUMBER
     for (int token_i = 1; token_i < tokens.size()-1; token_i++) {
         if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
-            tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line()));
-            tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line()));
-            tokens.insert(tokens.begin()+(token_i), Token("solve", tokens[token_i].lines(), tokens[token_i].col(), SOLVE, tokens[token_i].actual_line()));
-            tokens.insert(tokens.begin()+(token_i+5), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i), Token("solve", tokens[token_i].lines(), tokens[token_i].col(), SOLVE, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i+5), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line(), f));
         }
         if (tokens[token_i].typ() == PLUS_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line(), f));
         } else if (tokens[token_i].typ() == MINUS_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("-", tokens[token_i].lines(), tokens[token_i].col(), MINUS, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i+2), Token("-", tokens[token_i].lines(), tokens[token_i].col(), MINUS, tokens[token_i].actual_line(), f));
         } else if (tokens[token_i].typ() == STAR_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("*", tokens[token_i].lines(), tokens[token_i].col(), STAR, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i+2), Token("*", tokens[token_i].lines(), tokens[token_i].col(), STAR, tokens[token_i].actual_line(), f));
         } else if (tokens[token_i].typ() == SLASH_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line());
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("/", tokens[token_i].lines(), tokens[token_i].col(), SLASH, tokens[token_i].actual_line()));
+            tokens.insert(tokens.begin()+(token_i+2), Token("/", tokens[token_i].lines(), tokens[token_i].col(), SLASH, tokens[token_i].actual_line(), f));
         }
     }
     return tokens;
