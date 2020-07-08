@@ -1,5 +1,0 @@
-solution:
-add separate __condition__ variable which is eval(contents in while)
-change while to while (__condition__)
-at the end of whilebody, reevaluate __condition__
-dispose(__condition__)
