@@ -783,7 +783,7 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision,
                     error(*token, "Run-time Error: Expected 2 parameters. Received " + std::to_string(call_params.size()) + ".");
                     return EXIT_FAILURE;
                 }
-                std::string value = solve(call_params[0], scope, &e, precision).substr(1, solve(call_params[1], scope, &e, precision).length()-2);
+                std::string value = solve(call_params[0], scope, &e, precision).substr(1, solve(call_params[0], scope, &e, precision).length()-2);
                 std::string solved = solve(call_params[1], scope, &e, precision);
                 if (e) {
                     error(call_params[0][0], "Run-time Error: Solving error.");

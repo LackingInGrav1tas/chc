@@ -14,21 +14,16 @@ fun replace(base_string, num, end) {
         final = "";
         placement = 0;
 
-        condition = eval(placement != num);
-        while (condition) {
+        while (placement != num) {
             final += at(base_string, placement);
             placement++;
-            condition = eval(placement != num);
         };
-
         final += end;
         placement++;
 
-        condition = eval(placement < length(base_string));
-        while (condition) {
+        while (placement < length(base_string)) {
             final += at(base_string, placement);
             placement++;
-            condition = eval(placement < length(base_string));
         };
         return(final);
     } else {
