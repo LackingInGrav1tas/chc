@@ -96,8 +96,8 @@ Type keyword(std::string full) {
     else if (full == "dispose") return DISPOSE;
     else if (full == "save_scope") return SAVE_SCOPE;
     else if (full == "set_scope") return SET_SCOPE;
-    else if (full == "str") return STR;
-    else if (full == "int") return TOKEN_INT;
+    else if (full == "to_str") return STR;
+    else if (full == "to_num") return TOKEN_INT;
     else if (full == "is_string") return IS_STRING;
     else if (full == "is_number") return IS_NUMBER;
     else if (full == "is_bool") return IS_BOOL;
