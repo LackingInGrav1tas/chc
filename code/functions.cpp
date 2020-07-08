@@ -388,7 +388,7 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
     std::vector<std::vector<Token>> variable_values;
     std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
     std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
-    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL };
+    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
     for (int num_l = 0; num_l < line.size()-1; num_l++) {
         Token cur = line[num_l];
         Token nex = line[num_l+1];
@@ -410,7 +410,6 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
             error(cur, "Syntax Error: Stray parentheses.");
             *error_occurred = true;
         } else if ( isOp(cur) && ( !in(nex.typ(), OpOk ) || !in(line[num_l-1].typ(), OpOk ) ) ) {
-            std::cout << "n: " << nex.str() << "|p: " << line[num_l-1].str();
             error(cur, "Syntax Error: Stray Comparator.");
             *error_occurred = true;
         }

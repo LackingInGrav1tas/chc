@@ -33,8 +33,20 @@ fun replace(base_string, num, end) {
         };
         return(final);
     } else {
-        fprint("is_str(base_string, param 1): " + is_string(base_string));
-        fprint("is_num(num, param 2): " + is_number(num));
+        fprint("is_string(base_string, param 1): " + is_string(base_string));
+        fprint("is_number(num, param 2): " + is_number(num));
         throw("Bad input.");
     };
+};
+
+fun substr(base_string, begin, end) {
+    assert(is_string(base_string), is_number(begin), is_number(end));
+    assert(begin > -1, end < length(base_string), begin < end);
+    final = "";
+    position = begin;
+    while (position != end) {
+        final += at(base_string, position);
+        position++;
+    };
+    return (final);
 };
