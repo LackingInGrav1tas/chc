@@ -249,7 +249,7 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
 }
 
 bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision, std::vector<Scope> &scopes, std::vector<std::string> &scope_indices, bool *error_occurred) {
-    std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
+    std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
     std::vector<Token> stmt = tokens;
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
         if (in((*token).str(), scope.function_names)) {
@@ -541,108 +541,6 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision,
                     stmt.erase(stmt.begin()+ct);
                 }
                 stmt.insert(stmt.begin()+ct, Token('"' + hash(solved) + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line(), (*token).filename()));
-            } else if ((*token).typ() == RPRINT) {
-                bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
-                if (eroc)
-                    return EXIT_FAILURE;
-                if (call_params.size() != 1) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(*token, msg);
-                    return EXIT_FAILURE;
-                }
-                std::string solved;
-                for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
-                    if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
-                        solved += currentString;
-                    }
-                }
-                std::cout << solved;
-                int ct = token - stmt.begin();
-                int nested = 0;
-                while (true) {
-                    if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
-                        stmt.erase(stmt.begin()+ct);
-                        break;
-                    }
-                    if (stmt[ct].typ() == RIGHT_PAREN) {
-                        nested--;
-                    } else if (stmt[ct].typ() == LEFT_PAREN) {
-                        nested++;
-                    }
-                    stmt.erase(stmt.begin()+ct);
-                }
-                stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line(), (*token).filename()));
-            } else if ((*token).typ() == FPRINT) {
-                bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
-                if (eroc)
-                    return EXIT_FAILURE;
-                if (call_params.size() != 1) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(*token, msg);
-                    return EXIT_FAILURE;
-                }
-                std::string solved;
-                for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
-                    if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
-                        if (currentString.at(0) == '"') {
-                            currentString = currentString.substr(1, currentString.length()-2);
-                        }
-                        solved += currentString;
-                    }
-                }
-                std::cout << solved << std::endl;
-                int ct = token - stmt.begin();
-                int nested = 0;
-                while (true) {
-                    if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
-                        stmt.erase(stmt.begin()+ct);
-                        break;
-                    }
-                    if (stmt[ct].typ() == RIGHT_PAREN) {
-                        nested--;
-                    } else if (stmt[ct].typ() == LEFT_PAREN) {
-                        nested++;
-                    }
-                    stmt.erase(stmt.begin()+ct);
-                }
-                stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line(), (*token).filename()));
-            } else if ((*token).typ() == RFPRINT) {
-                bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
-                if (eroc)
-                    return EXIT_FAILURE;
-                if (call_params.size() != 1) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(*token, msg);
-                    return EXIT_FAILURE;
-                }
-                std::string solved;
-                for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
-                    if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
-                        solved += currentString;
-                    }
-                }
-                std::cout << solved << std::endl;
-                int ct = token - stmt.begin();
-                int nested = 0;
-                while (true) {
-                    if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
-                        stmt.erase(stmt.begin()+ct);
-                        break;
-                    }
-                    if (stmt[ct].typ() == RIGHT_PAREN) {
-                        nested--;
-                    } else if (stmt[ct].typ() == LEFT_PAREN) {
-                        nested++;
-                    }
-                    stmt.erase(stmt.begin()+ct);
-                }
-                stmt.insert(stmt.begin()+ct, Token("_void_func_holder", (*token).lines(), (*token).col(), _VOID_FUNC_HOLDER, (*token).actual_line(), (*token).filename()));
             } else if ((*token).typ() == EVAL) {
                 if ((*std::next(token)).typ() != LEFT_PAREN) {
                     error(*std::next(token), "Run-time Error: Incorrect formatting of function call.");
