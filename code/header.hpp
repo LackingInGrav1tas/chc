@@ -225,3 +225,5 @@ std::string hash(std::string source);
 void cli();
 
 void shorten(std::string &str);
+
+int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, std::vector<Scope> &scopes, std::vector<std::string> &scope_indices, bool *error_occurred);
