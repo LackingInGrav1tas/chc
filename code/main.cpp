@@ -12,7 +12,6 @@ std::ifstream::pos_type filesize(const char* filename) {//not my code
     return in.tellg();
 }
 
-//g++ main.cpp lexer.cpp functions.cpp solve.cpp syh.cpp runtime.cpp -o interpreter -lws2_32 && cls && interpreter "c:\users\owner\desktop\cpp\edu\compiler\2nd attempt\test.chc
 int main(int argc, char** argv) {
     bool i = false;
     int limit = 100;

@@ -250,7 +250,7 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
 
 bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision, std::vector<Scope> &scopes, std::vector<std::string> &scope_indices, bool *error_occurred) {
     std::vector<Token> stmt = tokens;
-    int result = handle_functions(stmt, scope, limit, precision, scopes, scope_indices, error_occurred);
+    int result = handle_functions(stmt, scope, limit, precision, error_occurred);
     if (result == 1)
         return 1;
     if (stmt.size() == 1) {

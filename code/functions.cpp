@@ -379,7 +379,7 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
         } else if ((*a).typ() == RIGHT_PAREN) {
             nested--;
         }
-        if ((*a).typ() == RIGHT_PAREN && nested == 1) {
+        if (((*a).typ() == RIGHT_PAREN && nested == 1) || (*a).typ() == SEMICOLON) {
             break;
         }
     }

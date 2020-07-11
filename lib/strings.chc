@@ -18,8 +18,34 @@ fun replace(base_string, num, end) {
             final += at(base_string, placement);
             placement++;
         };
+
         final += end;
         placement++;
+
+        while (placement < length(base_string)) {
+            final += at(base_string, placement);
+            placement++;
+        };
+        return(final);
+    } else {
+        fprint("is_string(base_string, param 1): " + is_string(base_string));
+        fprint("is_number(num, param 2): " + is_number(num));
+        throw("Bad input for replace.");
+    };
+};
+
+fun insert(base_string, num, end) {
+    if (is_string(base_string) and is_number(num)) {
+        assert(num >= 0, num < length(base_string)); # function replace, in lib:strings
+        final = "";
+        placement = 0;
+
+        while (placement != num) {
+            final += at(base_string, placement);
+            placement++;
+        };
+
+        final += end;
 
         while (placement < length(base_string)) {
             final += at(base_string, placement);
