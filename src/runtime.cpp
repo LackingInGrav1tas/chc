@@ -14,6 +14,29 @@ std::vector<std::string> fun_scope_names;
 int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, bool *error_occurred) {
     std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*std::next(stmt.begin())).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
+        if ((*token).typ() == LEFT_PAREN && (!in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names)) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && stmt[0].typ() != RFPRINT && stmt[0].typ() != PRINT && stmt[0].typ() != FPRINT) {
+            bool eroc = false;
+            auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+            if (eroc)
+                return EXIT_FAILURE;
+            if (call_params.size() != 1) {
+                error(*token, "Run-time Error: comma.");
+                return EXIT_FAILURE;
+            }
+            std::string return_type = "non-boolean";
+            std::vector<Type> bool_operators = { EQUAL_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL, EXC_EQUAL };
+            for (auto ret = call_params[0].rbegin(); ret < call_params[0].rend(); ret++) {
+                if (in((*ret).typ(), bool_operators))
+                    return_type = "boolean";
+            }
+            int ct = token - stmt.begin();
+            if (return_type == "non-boolean")
+                stmt.insert(stmt.begin()+ct, Token("solve", (*token).lines(), (*token).col(), SOLVE, (*token).actual_line(), (*token).filename()));
+            else
+                stmt.insert(stmt.begin()+ct, Token("eval", (*token).lines(), (*token).col(), EVAL, (*token).actual_line(), (*token).filename()));
+            token = stmt.end();
+        }
+
         if (in((*token).str(), scope.function_names)) {
             Token token_copy((*token).str(), (*token).lines(), (*token).col(), (*token).typ(), (*token).actual_line(), (*token).filename());
             bool eroc = false;
