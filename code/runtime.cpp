@@ -31,9 +31,8 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 Scope nscope = fun_scopes[findInV(fun_scope_names, (*token).str()).second];
                 std::string rv;
-                if (in((*token).str(), scope.aware_functions)) {
+                if (in((*token).str(), scope.aware_functions))
                     nscope = scope;
-                }
                 for (int i = 0; i < call_params.size(); i++) {
                     nscope.names.push_back(scope.function_params[found.second][i]);
                     if (in(scope.function_params[found.second][i], scope.immutables))
@@ -51,6 +50,8 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (result == EXIT_FAILURE) {
                     return EXIT_FAILURE;
                 }
+                if (in((*token).str(), scope.aware_functions))
+                    scope = nscope;
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -68,8 +69,25 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (return_val.empty())
                     stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line(), token_copy.filename()));
                 else {
-                    for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
-                        stmt.insert(stmt.begin()+ct, *ret);
+                    if (return_val.size() == 1)
+                        stmt.insert(stmt.begin()+ct, return_val.back());
+                    else {
+                        std::string return_type = "non-boolean";
+                        std::vector<Type> bool_operators = { EQUAL_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL, EXC_EQUAL };
+                        for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
+                            if (in((*ret).typ(), bool_operators))
+                                return_type = "boolean";
+                        }
+                        stmt.insert(stmt.begin()+ct, Token(")", (*token).lines(), (*token).col(), RIGHT_PAREN, (*token).actual_line(), (*token).filename()));
+                        for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
+                            stmt.insert(stmt.begin()+ct, *ret);
+                        }
+                        stmt.insert(stmt.begin()+ct, Token("(", (*token).lines(), (*token).col(), LEFT_PAREN, (*token).actual_line(), (*token).filename()));
+                        if (return_type == "non-boolean")
+                            stmt.insert(stmt.begin()+ct, Token("solve", (*token).lines(), (*token).col(), SOLVE, (*token).actual_line(), (*token).filename()));
+                        else
+                            stmt.insert(stmt.begin()+ct, Token("eval", (*token).lines(), (*token).col(), EVAL, (*token).actual_line(), (*token).filename()));
+                        token = stmt.end();
                     }
                 }
             }
@@ -682,7 +700,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 std::string fon = "true";
                 Type f_on = TTRUE;
-                if (getVarVal(call_params[0][0], scope, &eroc).at(0) == '"' || getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {//here
+                if (getVarVal(call_params[0][0], scope, &eroc).at(0) == '"' || getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {
                     fon = "false";
                     f_on = TFALSE;
                 }
@@ -717,7 +735,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 std::string fon = "false";
                 Type f_on = TFALSE;
-                if (getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {//here
+                if (getVarVal(call_params[0][0], scope, &eroc) == "true" || getVarVal(call_params[0][0], scope, &eroc) == "false") {
                     fon = "true";
                     f_on = TTRUE;
                 }
