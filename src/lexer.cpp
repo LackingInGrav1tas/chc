@@ -125,7 +125,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                         std::string import_file = preprocessors[2];
                         if (import_file.length() > 4) {
                             if (import_file.substr(0, 4) == "lib:") {
-                                import_file = ExeDir(0) + R"(chc\lib\)" + import_file.substr(4, import_file.length()) + ".chc";
+                                import_file = ExeDir(0) + R"(lib\)" + import_file.substr(4, import_file.length()) + ".chc";
                             }
                         }
                         auto import_tokens = lex(import_file, error_occurred, limit, precision);
