@@ -65,7 +65,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
     //PREPROCESSING
     std::string preline;
     while (std::getline(file, preline)) {
-        if (preline.length() > 0) {
+        if (preline.length() > 1) {
             if (preline.at(0) == '$') {
                 std::vector<std::string> preprocessors = { "$" };
                 std::string current;

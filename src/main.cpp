@@ -37,6 +37,10 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     std::string forsubstr = argv[1];
+    if (forsubstr.length() < 5) {
+        std::cerr << "Expected a .chc file.";
+        return EXIT_FAILURE;
+    }
     if (forsubstr.substr(forsubstr.length() - 4) != ".chc") {
         std::cerr << "Expected a .chc file.";
         return EXIT_FAILURE;
