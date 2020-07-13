@@ -3,8 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
-#include <winuser.h>
-#include <winbase.h>
 #include <shlobj.h>
 #include "wtypes.h"
 #include <winsock.h>
@@ -132,8 +130,7 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens) {
 //kinda my code
 std::string getClip() {
     std::string text;
-    if (OpenClipboard(NULL)) 
-    {
+    if (OpenClipboard(NULL)) {
         HANDLE clip;
         clip = GetClipboardData(CF_TEXT);
             // lock and copy
@@ -143,15 +140,6 @@ std::string getClip() {
         CloseClipboard();
     }
 	return text;
-}
-
-//NOT MY CODE
-void GetDesktopResolution(int& horizontal, int& vertical) {
-    RECT desktop;
-    const HWND hDesktop = GetDesktopWindow();
-    GetWindowRect(hDesktop, &desktop);
-    horizontal = desktop.right;
-    vertical = desktop.bottom;
 }
 
 //https://stackoverflow.com/a/122240/13132049
@@ -210,13 +198,13 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                     return std::to_string(p.front());
                 } 
             } else if (target == "@desktopW") {
-                int w, h;
-                GetDesktopResolution(w, h);
-                return std::to_string(w);
+                //int w, h;
+                //GetDesktopResolution(w, h);
+                return "0";
             } else if (target == "@desktopH") {
-                int w, h;
-                GetDesktopResolution(w, h);
-                return std::to_string(h);
+                //int w, h;
+                //GetDesktopResolution(w, h);
+                return "0";
             } else if (target == "@EOL") {
                 return "\n";
             } else if (target == "@environment") {

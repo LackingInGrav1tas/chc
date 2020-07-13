@@ -7,6 +7,7 @@
 #include <chrono>
 #include "header.hpp"
 #define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
     return in.tellg();

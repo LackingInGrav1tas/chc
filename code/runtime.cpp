@@ -3,8 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
-#include <winuser.h>
-#include <winbase.h>
 #include <windows.h>
 #include "header.hpp"
 
