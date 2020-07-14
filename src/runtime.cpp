@@ -1318,7 +1318,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     trycontents.pop_back();
                     std::cerr.setstate(std::ios_base::failbit);
-                    int result = runtime(catchcontents, scope, error_occurred, limit, precision, return_variable);
+                    int result = runtime(trycontents, scope, error_occurred, limit, precision, return_variable);
                     std::cerr.clear();
                     if (result == EXIT_FAILURE) {
                         if (!catchcontents.empty()) {
