@@ -100,6 +100,8 @@ Type keyword(std::string full) {
     else if (full == "is_number") return IS_NUMBER;
     else if (full == "is_bool") return IS_BOOL;
     else if (full == "solve") return SOLVE;
+    else if (full == "try") return TRY;
+    else if (full == "catch") return CATCH;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {

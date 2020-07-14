@@ -1243,6 +1243,95 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
+            } else if (current.typ() == TRY) {
+                Token next = *std::next(inner);
+                if (next.typ() != LEFT_BRACE) {
+                    error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
+                    return EXIT_FAILURE;
+                }
+                
+                std::vector<std::vector<Token>> trycontents;
+                int nested = 0;
+                Token fis;
+                while (true) {
+                    outer++;
+                    std::vector<Token> cline = *outer;
+                    if (cline.front().typ() == _EOF) {
+                        error(current, "Run-time Error: Unending if statement.");
+                        return EXIT_FAILURE;
+                    }
+                    fis = cline.front();
+                    trycontents.push_back(cline);
+                    for (auto cur = cline.begin(); cur < cline.end(); cur++) {
+                    }
+                    if (fis.typ() == RIGHT_BRACE && nested == 0) {
+                        break;
+                    } else {
+                        if (fis.typ() == RIGHT_BRACE) {
+                            nested--;
+                        } else if (cline.back().typ() == LEFT_BRACE) {
+                            nested++;
+                        }
+                    }
+                }
+                if (trycontents.back().size() == 1) {
+                    error(trycontents.back().back(), "Run-time Error: Expected a ; at the end of the try statement.");
+                    return EXIT_FAILURE;
+                } else {
+                    if (trycontents.back()[1].typ() != SEMICOLON && trycontents.back()[1].typ() != CATCH) {
+                        error(trycontents.back()[1], "Run-time Error: Expected a ; at the end of the try statement.");
+                        return EXIT_FAILURE;
+                    }
+
+                    std::vector<std::vector<Token>> catchcontents;
+                    if (trycontents.back()[1].typ() == CATCH) {
+                        nested = 0;
+                        while (true) {
+                            outer++;
+                            std::vector<Token> cline = *outer;
+                            if (cline.front().typ() == _EOF) {
+                                error(current, "Run-time Error: Unending else.");
+                                return EXIT_FAILURE;
+                            }
+                            fis = cline.front();
+                            catchcontents.push_back(cline);
+                            if (fis.typ() == RIGHT_BRACE && nested == 0) {
+                                break;
+                            } else {
+                                if (fis.typ() == RIGHT_BRACE) {
+                                    nested--;
+                                } else if (cline.back().typ() == LEFT_BRACE) {
+                                    nested++;
+                                }
+                            }
+                        }
+                        if (catchcontents.back().size() == 1) {
+                            error(catchcontents.back().back(), "Run-time Error: Expected a ; at the end of the catch statement.");
+                            return EXIT_FAILURE;
+                        } else {
+                            if (catchcontents.back()[1].typ() != SEMICOLON) {
+                                error(catchcontents.back()[1], "Run-time Error: Expected a ; at the end of the catch statement.");
+                                return EXIT_FAILURE;
+                            }
+                            catchcontents.pop_back();
+                        }
+                    }
+                    trycontents.pop_back();
+                    std::cerr.setstate(std::ios_base::failbit);
+                    int result = runtime(catchcontents, scope, error_occurred, limit, precision, return_variable);
+                    std::cerr.clear();
+                    if (result == EXIT_FAILURE) {
+                        if (!catchcontents.empty()) {
+                            int result = runtime(catchcontents, scope, error_occurred, limit, precision, return_variable);
+                            if (result == 1) {
+                                return EXIT_FAILURE;
+                            } else if (result == 47) {
+                                return 47;
+                            }
+                        }
+                    }
+                }
+                break;
             } else if (current.typ() == WHILE) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
