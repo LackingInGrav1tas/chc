@@ -14,7 +14,7 @@ std::vector<std::string> fun_scope_names;
 int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, bool *error_occurred) {
     std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*std::next(stmt.begin())).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
-        if ((*token).typ() == LEFT_PAREN && (!in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names)) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && stmt[0].typ() != RFPRINT && stmt[0].typ() != PRINT && stmt[0].typ() != FPRINT) {
+        if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT) {
             bool eroc = false;
             auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
             if (eroc)
@@ -34,7 +34,8 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 stmt.insert(stmt.begin()+ct, Token("solve", (*token).lines(), (*token).col(), SOLVE, (*token).actual_line(), (*token).filename()));
             else
                 stmt.insert(stmt.begin()+ct, Token("eval", (*token).lines(), (*token).col(), EVAL, (*token).actual_line(), (*token).filename()));
-            token = stmt.end();
+            token = stmt.end()-1;
+            continue;
         }
 
         if (in((*token).str(), scope.function_names)) {
