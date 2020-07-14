@@ -10,6 +10,7 @@
 #include <functional>
 #include "header.hpp"
 
+extern std::string errors_so_far;
 
 std::string getString(char x) { 
     std::string s(1, x); 
@@ -17,13 +18,17 @@ std::string getString(char x) {
 }
 
 void error(Token token, std::string message="") {
-    std::cout << "\nin " << token.filename() << ":";
+    std::cerr << "\nin " << token.filename() << ":";
+    errors_so_far += "\nin " + token.filename() + ":";
     std::string a = std::to_string(token.lines()) + "| ";
+    errors_so_far += "\n" + a + token.actual_line() + "\n";
     std::cerr << "\n" << a << token.actual_line() << "\n";
     for (int i = 0; i < a.length()+token.col()-2; i++) {
         std::cerr << " ";
+        errors_so_far += " ";
     }
     std::cerr << "^\n" << message << "\n( col: " << token.col() << "  token: " << token.str() << " )\n" << std::endl;
+    errors_so_far += "^\n" + message + + "\n( col: " + std::to_string(token.col()) + "  token: " + token.str() + " )\n\n";
 }
 
 Type singleChar(char current_char) {
