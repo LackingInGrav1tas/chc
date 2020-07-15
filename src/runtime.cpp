@@ -12,7 +12,7 @@ std::vector<Scope> fun_scopes;
 std::vector<std::string> fun_scope_names;
 
 int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, bool *error_occurred) {
-    std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
+    std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*std::next(stmt.begin())).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
         if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT && (*std::prev(token)).typ() != IF && (*std::prev(token)).typ() != SLEEP && (*std::prev(token)).typ() != RUN && (*std::prev(token)).typ() != RETURN) {
             bool eroc = false;
@@ -626,7 +626,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
             } else if ((*token).typ() == TOKEN_INT) {
                 bool e = false;
                 if ((*std::next(token)).typ() != LEFT_PAREN) {
-                    error(*std::next(token), "Run-time Error: Expected a left bracket token.");
+                    error(*std::next(token), "Run-time Error: Expected a left parentheses token.");
                     return EXIT_FAILURE;
                 }
                 if (e) {
@@ -672,6 +672,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 stmt.insert(stmt.begin()+ct, Token(solved, (*token).lines(), (*token).col(), NUMBER, (*token).actual_line(), (*token).filename() ));
             } else if ((*token).typ() == IS_STRING) {
+                if ((*std::next(token)).typ() != LEFT_PAREN) {
+                    error(*std::next(token), "Run-time Error: Expected a left parentheses token.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                 if (eroc)
@@ -707,6 +711,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line(), (*token).filename()));
             } else if ((*token).typ() == IS_NUMBER) {
+                if ((*std::next(token)).typ() != LEFT_PAREN) {
+                    error(*std::next(token), "Run-time Error: Expected a left parentheses token.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                 if (eroc)
@@ -742,6 +750,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line(), (*token).filename()));
             } else if ((*token).typ() == IS_BOOL) {
+                if ((*std::next(token)).typ() != LEFT_PAREN) {
+                    error(*std::next(token), "Run-time Error: Expected a left parentheses token.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
                 if (eroc)
@@ -776,6 +788,54 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     stmt.erase(stmt.begin()+ct);
                 }
                 stmt.insert(stmt.begin()+ct, Token(fon, (*token).lines(), (*token).col(), f_on, (*token).actual_line(), (*token).filename()));
+            } else if ((*token).typ() == GETCONTENTS) {
+                if ((*std::next(token)).typ() != LEFT_PAREN) {
+                    error(*std::next(token), "Run-time Error: Expected a left parentheses token.");
+                    return EXIT_FAILURE;
+                }
+                bool eroc = false;
+                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                if (eroc)
+                    return EXIT_FAILURE;
+                if (call_params.size() != 1) {
+                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                    error(*token, msg);
+                    return EXIT_FAILURE;
+                }
+
+                std::string filename = solve(call_params[0], scope, error_occurred, precision);
+                if (filename.at(0) != '"') {
+                    error(*token, "Expected string as input.");
+                    return EXIT_FAILURE;
+                }
+                filename = filename.substr(1, filename.length()-2);
+                std::ifstream target_file(filename);
+                std::string to_return;
+                if (!target_file)
+                    to_return = R"("")";
+                else {
+                    to_return += '"';
+                    std::string currentline;
+                    while (std::getline(target_file, currentline)) {
+                        to_return += currentline + "\n";
+                    }
+                    to_return += '"';
+                }
+                int ct = token - stmt.begin();
+                int nested = 0;
+                while (true) {
+                    if (nested == 1 && stmt[ct].typ() == RIGHT_PAREN) {
+                        stmt.erase(stmt.begin()+ct);
+                        break;
+                    }
+                    if (stmt[ct].typ() == RIGHT_PAREN) {
+                        nested--;
+                    } else if (stmt[ct].typ() == LEFT_PAREN) {
+                        nested++;
+                    }
+                    stmt.erase(stmt.begin()+ct);
+                }
+                stmt.insert(stmt.begin()+ct, Token(to_return, (*token).lines(), (*token).col(), STRING, (*token).actual_line(), (*token).filename()));
             }
             token++;
         }

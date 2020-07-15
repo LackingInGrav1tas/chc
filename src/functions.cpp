@@ -107,6 +107,7 @@ Type keyword(std::string full) {
     else if (full == "solve") return SOLVE;
     else if (full == "try") return TRY;
     else if (full == "catch") return CATCH;
+    else if (full == "getcontents") return GETCONTENTS;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -314,7 +315,7 @@ void errorCheck(std::vector<Token> line, bool *error_occurred) {
     std::vector<std::vector<Token>> variable_values;
     std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
     std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
-    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE };
+    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
     for (int num_l = 0; num_l < line.size()-1; num_l++) {
         Token cur = line[num_l];
         Token nex = line[num_l+1];
