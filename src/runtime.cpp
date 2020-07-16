@@ -47,12 +47,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
             std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
             if (found.first) {
                 if (call_params.size() != scope.function_params[found.second].size()) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(scope.function_params[found.second].size());
-                    error(*token, msg);
+                    error(*token, "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected " + std::to_string(scope.function_params[found.second].size()));
                     return EXIT_FAILURE;
                 }
                 Scope nscope = fun_scopes[findInV(fun_scope_names, (*token).str()).second];
-                std::string rv;
                 if (in((*token).str(), scope.aware_functions))
                     nscope = scope;
                 for (int i = 0; i < call_params.size(); i++) {
@@ -69,9 +67,8 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::vector<Token> return_val;
                 bool er = false;
                 int result = runtime(scope.function_bodies[found.second], nscope, &er, limit, precision, return_val);
-                if (result == EXIT_FAILURE) {
+                if (result == EXIT_FAILURE)
                     return EXIT_FAILURE;
-                }
                 if (in((*token).str(), scope.aware_functions))
                     scope = nscope;
                 int ct = token - stmt.begin();
@@ -120,8 +117,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(*token, msg);
+                    error(*token, "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.");
                     return EXIT_FAILURE;
                 }
                 std::string solved;
@@ -158,8 +154,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() < 2) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 3.";
-                    error(*token, msg);
+                    error(*token, "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 3.");
                     return EXIT_FAILURE;
                 }
                 std::string filename;
@@ -798,8 +793,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
-                    std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(*token, msg);
+                    error(*token, "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.");
                     return EXIT_FAILURE;
                 }
 
@@ -836,6 +830,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     stmt.erase(stmt.begin()+ct);
                 }
                 stmt.insert(stmt.begin()+ct, Token(to_return, (*token).lines(), (*token).col(), STRING, (*token).actual_line(), (*token).filename()));
+                target_file.close();
             }
             token++;
         }
@@ -848,14 +843,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
         std::vector<Token> stmt = *outer;
         
         int result = handle_functions(stmt, scope, limit, precision, error_occurred);
-        if (result == 1)
-            return 1;
+        if (result == EXIT_FAILURE)
+            return EXIT_FAILURE;
 
         int size = 0;
         for (auto inner = stmt.begin(); inner < stmt.end(); inner++) {
             size++;
-            Token current = *inner;
-            if (current.typ() == EQUAL) {//setting variable values
+            if ((*inner).typ() == EQUAL) {//setting variable values
                 Token previous = *std::prev(inner);
                 if (previous.typ() != IDENTIFIER) {
                     error(previous, "Runtime Error: Inadequite identifier.");
@@ -891,7 +885,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
-            } else if (current.typ() == MINUS_MINUS) {
+            } else if ((*inner).typ() == MINUS_MINUS) {
                 if ((*std::next(inner)).typ() != SEMICOLON) {
                     error((*std::next(inner)), "Run-time Error: Expected a semicolon.");
                     return EXIT_FAILURE;
@@ -911,7 +905,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 shorten(preshortened);
                 scope.values.push_back(preshortened);
                 break;
-            } else if (current.typ() == PLUS_PLUS) {
+            } else if ((*inner).typ() == PLUS_PLUS) {
                 if ((*std::next(inner)).typ() != SEMICOLON) {
                     error((*std::next(inner)), "Run-time Error: Expected a semicolon.");
                     return EXIT_FAILURE;
@@ -931,7 +925,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 shorten(preshortened);
                 scope.values.push_back(preshortened);
                 break;
-            } else if (current.typ() == PRINT) {
+            } else if ((*inner).typ() == PRINT) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -962,7 +956,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     n++;
                     if (stmt[n].typ() != SEMICOLON) {
-                        error(current, "Warning: It's prudent to postfix the statement with a semicolon.");
+                        error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     std::string solved;
@@ -980,14 +974,14 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::cout << solved;
                 }
                 break;
-            } else if (current.typ() == FPRINT) {
+            } else if ((*inner).typ() == FPRINT) {
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
                     std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(current, msg);
+                    error((*inner), msg);
                     return EXIT_FAILURE;
                 }
                 std::string solved;
@@ -1005,14 +999,14 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 std::cout << solved << std::endl;
                 break;
-            } else if (current.typ() == RPRINT) {
+            } else if ((*inner).typ() == RPRINT) {
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
                     std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(current, msg);
+                    error((*inner), msg);
                     return EXIT_FAILURE;
                 }
                 std::string solved;
@@ -1027,14 +1021,14 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 std::cout << solved;
                 break;
-            } else if (current.typ() == RFPRINT) {
+            } else if ((*inner).typ() == RFPRINT) {
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
                     std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
-                    error(current, msg);
+                    error((*inner), msg);
                     return EXIT_FAILURE;
                 }
                 std::string solved;
@@ -1049,7 +1043,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 std::cout << solved << std::endl;
                 break;
-            } else if (current.typ() == RUN) {
+            } else if ((*inner).typ() == RUN) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1077,13 +1071,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     n++;
                     if (stmt[n].typ() != SEMICOLON) {
-                        error(current, "Warning: It's prudent to postfix the statement with a semicolon.");
+                        error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
                     std::string solved = solve(segmented, scope, &err, precision);
                     if (err) {
-                        error(current, "Run-time Error: Evauation Error");
+                        error((*inner), "Run-time Error: Evauation Error");
                         return EXIT_FAILURE;
                     }
                     if (solved.at(0) == '"') {
@@ -1092,7 +1086,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     system(solved.c_str());
                 }
                 break;
-            } else if (current.typ() == DO) {
+            } else if ((*inner).typ() == DO) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_BRACE) {
                     error(next, "Run-time Error: Expected a left bracket token. None were provided.");
@@ -1105,7 +1099,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> line = *outer;
                     if (line.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending do...while loop.");
+                        error((*inner), "Run-time Error: Unending do...while loop.");
                         return EXIT_FAILURE;
                     }
                     fis = line[0];
@@ -1138,7 +1132,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 do {
                     stop++;
                     if (stop == limit) {
-                        error(current, "Terminate after control finds repeating while loop, limit:" + std::to_string(limit));
+                        error((*inner), "Terminate after control finds repeating while loop, limit:" + std::to_string(limit));
                         return EXIT_FAILURE;
                     }
                     int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);
@@ -1151,7 +1145,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 } while (boolsolve(params, scope, limit, precision, scopes, scope_indices, error_occurred));
                 break;
-            } else if (current.typ() == SLEEP) {
+            } else if ((*inner).typ() == SLEEP) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1175,25 +1169,25 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     n++;
                     if (stmt[n].typ() != SEMICOLON) {
-                        error(current, "Warning: It's prudent to postfix the statement with a semicolon.");
+                        error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
                     };
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
                     std::string solved = solve(segmented, scope, &err, precision);
                     if (err) {
-                        error(current, "Run-time Error: Evauation Error");
+                        error((*inner), "Run-time Error: Evauation Error");
                         return EXIT_FAILURE;
                     }
                     if (solved.at(0) == '"') {
-                        error(current, "Run-time Error: Improper argument.");
+                        error((*inner), "Run-time Error: Improper argument.");
                         return EXIT_FAILURE;
                     }
                     Sleep(std::stod(solved));
                 }
                 break;
-            } else if (current.typ() == BREAK) {
+            } else if ((*inner).typ() == BREAK) {
                 return 47;
-            } else if (current.typ() == IF) {
+            } else if ((*inner).typ() == IF) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1223,7 +1217,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending if statement.");
+                        error((*inner), "Run-time Error: Unending if statement.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();
@@ -1256,7 +1250,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             outer++;
                             std::vector<Token> cline = *outer;
                             if (cline.front().typ() == _EOF) {
-                                error(current, "Run-time Error: Unending else.");
+                                error((*inner), "Run-time Error: Unending else.");
                                 return EXIT_FAILURE;
                             }
                             fis = cline.front();
@@ -1303,7 +1297,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
-            } else if (current.typ() == TRY) {
+            } else if ((*inner).typ() == TRY) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_BRACE) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1317,7 +1311,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending if statement.");
+                        error((*inner), "Run-time Error: Unending if statement.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();
@@ -1350,7 +1344,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             outer++;
                             std::vector<Token> cline = *outer;
                             if (cline.front().typ() == _EOF) {
-                                error(current, "Run-time Error: Unending else.");
+                                error((*inner), "Run-time Error: Unending else.");
                                 return EXIT_FAILURE;
                             }
                             fis = cline.front();
@@ -1392,7 +1386,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
-            } else if (current.typ() == WHILE) {
+            } else if ((*inner).typ() == WHILE) {
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1419,7 +1413,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     inner++;
                 }
                 if (err) {
-                    error(current, "Run-time Error: Param error.");
+                    error((*inner), "Run-time Error: Param error.");
                     return EXIT_FAILURE;
                 }
 
@@ -1430,7 +1424,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending while loop.");
+                        error((*inner), "Run-time Error: Unending while loop.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();
@@ -1454,7 +1448,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 while (boolsolve(params, scope, limit, precision, scopes, scope_indices, error_occurred)) {
                     stop++;
                     if (stop == limit) {
-                        error(current, "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
+                        error((*inner), "Terminate after control finds repeating while loop, limit: " + std::to_string(limit));
                         return EXIT_FAILURE;
                     }
                     int result = runtime(whilecontents, scope, error_occurred, limit, precision, return_variable);
@@ -1467,7 +1461,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
-            } else if (current.typ() == FUN) {
+            } else if ((*inner).typ() == FUN) {
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error(*std::next(inner), "Run-time Error: Inadequite function name.");
                     return EXIT_FAILURE;
@@ -1504,7 +1498,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error(current, "Run-time Error: Unending function.");
+                        error((*inner), "Run-time Error: Unending function.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();
@@ -1529,13 +1523,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 fun_scope_names.push_back((*std::next(inner)).str());
                 fun_scopes.push_back(scope);
                 break;
-            } else if (current.typ() == ELSE) {
-                error(current, "Run-time Error: Stray else.");
+            } else if ((*inner).typ() == ELSE) {
+                error((*inner), "Run-time Error: Stray else.");
                 return EXIT_FAILURE;
-            } else if (current.typ() == RIGHT_BRACE || current.typ() == LEFT_BRACE || current.typ() == RIGHT_PAREN || current.typ() == LEFT_PAREN) {
-                error(current, "Run-time Error: Stray token.");
+            } else if ((*inner).typ() == RIGHT_BRACE || (*inner).typ() == LEFT_BRACE || (*inner).typ() == RIGHT_PAREN || (*inner).typ() == LEFT_PAREN) {
+                error((*inner), "Run-time Error: Stray token.");
                 return EXIT_FAILURE;
-            } else if (current.typ() == RETURN) {
+            } else if ((*inner).typ() == RETURN) {
                 int n = std::next(inner) - stmt.begin();
                 auto nd = std::next(inner);
                 int nested = 0;
@@ -1557,7 +1551,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 n++;
                 if (stmt[n].typ() != SEMICOLON) {
-                    error(current, "Warning: It's prudent to postfix the statement with a semicolon.");
+                    error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
                 };
                 std::vector<Token> segmented(std::next(inner), nd);
                 bool boolean = false;
@@ -1581,7 +1575,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 return 47;
-            } else if (current.typ() == DISPOSE) {
+            } else if ((*inner).typ() == DISPOSE) {
                 if ((*std::next(inner)).typ() != LEFT_PAREN) {
                     error(*std::next(inner), "Run-time Error: Incorrect formatting of call.");
                     return EXIT_FAILURE;
@@ -1592,10 +1586,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     return EXIT_FAILURE;
                 }
                 if (call_params.size() != 1) {
-                    error(current, "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
+                    error((*inner), "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
                     return EXIT_FAILURE;
                 } else if (call_params[0].size() != 1 || call_params[0][0].typ() != IDENTIFIER) {
-                    error(current, "Run-time Error: Expected a single identifier as a parameter. Received " + std::to_string(call_params.size()) + ".");
+                    error((*inner), "Run-time Error: Expected a single identifier as a parameter. Received " + std::to_string(call_params.size()) + ".");
                     return EXIT_FAILURE;
                 }
                 for (int i = 0; i < scope.names.size(); i++) {

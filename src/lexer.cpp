@@ -135,18 +135,20 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
             }
         }
     }
-    //finding dismissed keywords in keywords
-    std::vector<std::vector<std::string>::iterator> to_del;
-    for (auto it = keywords.begin(); it < keywords.end(); it++) {
-        if (in(*it, dismissed)) {
-            to_del.push_back(it);
+    if (!dismissed.empty()) {
+        //finding dismissed keywords in keywords
+        std::vector<std::vector<std::string>::iterator> to_del;
+        for (auto it = keywords.begin(); it < keywords.end(); it++) {
+            if (in(*it, dismissed)) {
+                to_del.push_back(it);
+            }
         }
+        //deleting dismissed keywords from keywords
+        for (auto it = to_del.begin(); it < to_del.end(); it++) {
+            keywords.erase(*it);
+        }
+        file.close();
     }
-    //deleting dismissed keywords from keywords
-    for (auto it = to_del.begin(); it < to_del.end(); it++) {
-        keywords.erase(*it);
-    }
-    file.close();
     
     //SCANNING
     std::ifstream nfile(f);
@@ -157,9 +159,9 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         row++;
         col = 0;
         if (line.length() > 0) {
-            if (line.at(0) == '$') {//ignore preprocessors
+            if (line.at(0) == '$')//ignore preprocessors
                 continue;
-            } else {
+            else {
                 std::string current_token = "";
                 //iterating though the file, char by char
                 for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
@@ -176,32 +178,24 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                         std::string literal = "";
                         current_char++;
                         literal += '"';
-                        bool r = false;
                         for (current_char; *current_char != '"'; current_char++) {
                             literal += *current_char;
                             col++;
                             if (col >= line.length()) {
                                 *error_occurred == true;
-                                Token tok(literal, row, col, STRING, line, f);
-                                error(tok, "Compile-time Error: Unending string.");
+                                error(Token(literal, row, col, STRING, line, f), "Compile-time Error: Unending string.");
                                 break;
                             }
                         }
                         literal += '"';
-                        Token tok(literal, row, col, STRING, line, f);
-                        tokens.push_back(tok);
+                        tokens.push_back(Token(literal, row, col, STRING, line, f));
                     } else if (*current_char == '#') {//it's a comment
                         current_char++;
-                        bool r = false;
-                        std::string literal = "#";
                         for (current_char; *current_char != '#'; current_char++) {
-                            literal += *current_char;
                             col++;
-                            if (col >= line.length()) {
+                            if (col >= line.length())
                                 break;
-                            }
                         }
-                        literal += '#';
                     } else if (in(*current_char, important_characters)) {
                         if (!current_token.empty()) {
                             Type enumed;
@@ -238,13 +232,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             Type enumed;
                             //checking if token is a keyword
                             if (!in(current_token, keywords)) {
-                                //std::cout << R"(")" << current_token << R"(")" << "\n";
                                 //at this point, the literal is either an identifier or a number. This will check.
                                 if ((current_token.at(0) - 48) >= 0 && (current_token.at(0) - 48) <= 9) {
-                                    //std::cout << "num\n";
                                     enumed = NUMBER;
                                 } else {
-                                    //std::cout << "ident\n";
                                     enumed = IDENTIFIER;
                                 }
                             } else {
@@ -271,16 +262,14 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
     int prcount = std::count(n.begin(), n.end(), ")");
     int blcount = std::count(n.begin(), n.end(), "{");
     int brcount = std::count(n.begin(), n.end(), "}");
-    Token currenttok;
     if (plcount > prcount) {
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            if ((*it).str() == "(") {
+            if ((*it).str() == "(")
                 errcont = false;
-            } else {
+            else
                 it--;
-            }
         }
         error(*it, "Compile-time Error: Unclosed parentheses.");
         *error_occurred = true;
@@ -288,11 +277,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            if ((*it).str() == ")") {
+            if ((*it).str() == ")")
                 errcont = false;
-            } else {
+            else
                 it--;
-            }
         }
         error(*it, "Compile-time Error: Uncalled for end parentheses.");
         *error_occurred = true;
@@ -301,11 +289,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            if ((*it).str() == "{") {
+            if ((*it).str() == "{")
                 errcont = false;
-            } else {
+            else
                 it--;
-            }
         }
         error(*it, "Compile-time Error: Unclosed bracket.");
         *error_occurred = true;
@@ -313,11 +300,10 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         std::vector<Token>::iterator it = tokens.end();
         bool errcont = true;
         while (errcont) {
-            if ((*it).str() == "}") {
+            if ((*it).str() == "}")
                 errcont = false;
-            } else {
+            else
                 it--;
-            }
         }
         error(*it, "Compile-time Error: Uncalled for end bracket.");
         *error_occurred = true;
@@ -330,8 +316,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
             tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line(), f));
             tokens.insert(tokens.begin()+(token_i), Token("solve", tokens[token_i].lines(), tokens[token_i].col(), SOLVE, tokens[token_i].actual_line(), f));
             tokens.insert(tokens.begin()+(token_i+5), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line(), f));
-        }
-        if (tokens[token_i].typ() == PLUS_EQUALS) {
+        } else if (tokens[token_i].typ() == PLUS_EQUALS) {
             tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
             tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line(), f));

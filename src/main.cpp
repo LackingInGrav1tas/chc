@@ -52,20 +52,20 @@ int main(int argc, char** argv) {
     auto start = std::chrono::steady_clock::now();
     bool error_occurred = false;
     std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);//lexing
-    one.push_back(Token("", 0, 0, _EOF, "", "outside of files"));
+    one.push_back(Token("EOF", 0, 0, _EOF, "EOF", "outside of files"));
     std::vector<std::vector<Token>> two = statementize(one, error_occurred);
-    int exit_status = 0;
+    int exit_status = EXIT_SUCCESS;
     if (!error_occurred) {
         Scope scope;
         std::vector<Token> rv;
         try {
             exit_status = runtime(two, scope, &error_occurred, limit, precision, rv);//runtime
-        } catch(...) {
+        } catch (...) {
             std::cerr << "Error: Unknown Error.";
         }
     } else {
-        std::cout << "RUNTIME TERMINATED\n";
-        exit_status = 1;
+        std::cerr << "RUNTIME CANCELLED\n";
+        exit_status = EXIT_FAILURE;
     }
     auto end = std::chrono::steady_clock::now();
     //if the user added the postfix command "i"
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {
             tokenspo += (*it).str() + "  ";
             typespo += token_list[(*it).typ()] + "  ";
-            if ((*it).typ() == SEMICOLON || (*it).typ() == LEFT_BRACE) {typespo += "\n";}
+            if ((*it).typ() == SEMICOLON || (*it).typ() == LEFT_BRACE) typespo += "\n";
         }
         infofile << tokenspo << "\n\n";
         std::cout << "type printout...\n";
