@@ -1188,13 +1188,12 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
             } else if ((*inner).typ() == BREAK) {
                 return 47;
             } else if ((*inner).typ() == IF) {
-                Token next = *std::next(inner);
-                if (next.typ() != LEFT_PAREN) {
-                    error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
+                if ((*std::next(inner)).typ() != LEFT_PAREN) {
+                    error((*std::next(inner)), "Run-time Error: Expected a left parentheses token. None were provided.");
                     return EXIT_FAILURE;
                 }
                 if (stmt.back().typ() != LEFT_BRACE) {
-                    error(next, "Run-time Error: Expected a left bracket token. None were provided.");
+                    error(stmt.back(), "Run-time Error: Expected a left bracket token. None were provided.");
                     return EXIT_FAILURE;
                 }
 
