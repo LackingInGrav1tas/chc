@@ -200,13 +200,11 @@ Type singleChar(char current_char);
 
 std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision);
 
-void errorCheck(std::vector<Token> line, bool *error_occurred);
-
 std::stack<Token> shunting_yard_algorithm(std::stack<Token> input_stack);
 
 std::string getVarVal(Token token, Scope scope, bool *error_occurred);//
 
-std::vector<std::vector<Token>> statementize(std::vector<Token> tokens);
+std::vector<std::vector<Token>> statementize(std::vector<Token> tokens, bool &error_occurred);
 
 std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, int precision);
 

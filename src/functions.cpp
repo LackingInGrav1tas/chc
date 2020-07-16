@@ -119,10 +119,30 @@ std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
     return lexemes;
 }
 
-std::vector<std::vector<Token>> statementize(std::vector<Token> tokens) {
+std::vector<std::vector<Token>> statementize(std::vector<Token> tokens, bool &error_occurred) {
     std::vector<std::vector<Token>> statementalized;
     std::vector<Token> current_statement;
+    std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
+    std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
+    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
     for (std::vector<Token>::iterator c = tokens.begin(); c != tokens.end(); c++) {
+        if (in((*c).typ(), literals) && in((*std::next(c)).typ(), literals)) {
+            error((*c), "Syntax Error: Stray token.");
+            error_occurred = true;
+        } else if (in((*c).typ(), notok) && in((*std::next(c)).typ(), notok)) {
+            error((*c), "Syntax Error: Stray operator.");
+            error_occurred = true;
+        } else if ((*c).typ() == IMMUTABLE && (*std::next(c)).typ() != IDENTIFIER) {
+            error((*c), "Syntax Error: Immutable not followed by an identifier.");
+            error_occurred = true; 
+        } else if (((*c).typ() == STRING || (*c).typ() == NUMBER || (*c).typ() == TTRUE || (*c).typ() == TFALSE) && (*std::next(c)).typ() == LEFT_PAREN) {
+            error((*c), "Syntax Error: Stray parentheses.");
+            error_occurred = true;
+        } else if ( isOp((*c)) && ( !in((*std::next(c)).typ(), OpOk ) || !in((*std::prev(c)).typ(), OpOk ) ) ) {
+            error((*c), "Syntax Error: Stray Comparator.");
+            error_occurred = true;
+        }
+
         Token current = *c;
         current_statement.push_back(current);
         if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE || current.typ() == _EOF) {
@@ -307,39 +327,6 @@ bool isOp(Token token) {
         return true;
     } else {
         return false;
-    }
-}
-
-void errorCheck(std::vector<Token> line, bool *error_occurred) {
-    std::vector<std::string> variables;
-    std::vector<std::vector<Token>> variable_values;
-    std::vector<Type> literals = { STRING, NUMBER, TTRUE, TFALSE, IDENTIFIER };
-    std::vector<Type> notok = { EQUAL_EQUAL, EQUAL, EXC_EQUAL, GREATER, LESS, LESS_EQUAL, GREATER_EQUAL };
-    std::vector<Type> OpOk = { STRING, CONSTANT, NUMBER, IDENTIFIER, RIGHT_PAREN, LEFT_PAREN, TTRUE, TFALSE, LENGTH, AT, EVAL, RAND, STR, TOKEN_INT, TOKEN_INPUT, HASH, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
-    for (int num_l = 0; num_l < line.size()-1; num_l++) {
-        Token cur = line[num_l];
-        Token nex = line[num_l+1];
-        //ERROR CHECKING
-        //if there are two literals together, ex "string literal" 1672
-        if (in(cur.typ(), literals) && in(nex.typ(), literals)) {
-            error(cur, "Syntax Error: Stray token.");
-            *error_occurred = true;
-        }
-        //if there are two identifiers next to each other, ex variable1 variable2
-        //if two non-compatible operators are adjacent
-        else if (in(cur.typ(), notok) && in(nex.typ(), notok)) {
-            error(cur, "Syntax Error: Stray operator.");
-            *error_occurred = true;
-        } else if (cur.typ() == IMMUTABLE && nex.typ() != IDENTIFIER) {
-            error(cur, "Syntax Error: Immutable not followed by an identifier.");
-            *error_occurred = true; 
-        } else if ((cur.typ() == STRING || cur.typ() == NUMBER || cur.typ() == TTRUE || cur.typ() == TFALSE) && nex.typ() == LEFT_PAREN) {
-            error(cur, "Syntax Error: Stray parentheses.");
-            *error_occurred = true;
-        } else if ( isOp(cur) && ( !in(nex.typ(), OpOk ) || !in(line[num_l-1].typ(), OpOk ) ) ) {
-            error(cur, "Syntax Error: Stray Comparator.");
-            *error_occurred = true;
-        }
     }
 }
 

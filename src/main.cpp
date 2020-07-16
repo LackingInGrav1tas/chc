@@ -53,8 +53,7 @@ int main(int argc, char** argv) {
     bool error_occurred = false;
     std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);//lexing
     one.push_back(Token("", 0, 0, _EOF, "", "outside of files"));
-    errorCheck(one, &error_occurred);
-    std::vector<std::vector<Token>> two = statementize(one);
+    std::vector<std::vector<Token>> two = statementize(one, error_occurred);
     int exit_status = 0;
     if (!error_occurred) {
         Scope scope;
