@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
                 std::vector<std::vector<Token>> two = statementize(one, e);
                 if (e) break;
                 int rt = runtime(two, scope, &e, limit, precision, rv);//runtime
+                std::cout << std::endl;
             } catch (...) {}
         }
         return EXIT_SUCCESS;
