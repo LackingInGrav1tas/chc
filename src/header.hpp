@@ -198,7 +198,7 @@ Type doubleChar(std::string full);
 
 Type singleChar(char current_char);
 
-std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision);
+std::vector<Token> lex(std::vector<std::string> f, bool *error_occurred, int &limit, int &precision, std::string file_name);
 
 std::stack<Token> shunting_yard_algorithm(std::stack<Token> input_stack);
 

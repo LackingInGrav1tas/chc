@@ -53,18 +53,13 @@ std::vector<char> important_characters = { '(', ')', '=', '+', '-', '*', '/', '{
 
 std::vector<char> doubleable = { '=', '+', '-', '/', '*', '>', '<', '!' };
 
-std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &precision) {
+std::vector<Token> lex(std::vector<std::string> f, bool *error_occurred, int &limit, int &precision, std::string file_name) {
     std::vector<Token> tokens;
-    std::ifstream file(f);
-    if (!file) {
-        std::cerr << R"(")" << f << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
-        exit(EXIT_FAILURE);
-    }
     std::vector<std::string> dismissed;
-    
     //PREPROCESSING
     std::string preline;
-    while (std::getline(file, preline)) {
+    for (auto fileline = f.begin(); fileline < f.end(); fileline++) {
+        preline = *fileline;
         if (preline.length() > 1) {
             if (preline.at(0) == '$') {
                 std::vector<std::string> preprocessors = { "$" };
@@ -128,7 +123,13 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                                 import_file = ExeDir(0) + R"(lib\)" + import_file.substr(4, import_file.length()) + ".chc";
                             }
                         }
-                        auto import_tokens = lex(import_file, error_occurred, limit, precision);
+                        std::ifstream file(import_file);
+                        std::vector<std::string> string_vec;
+                        std::string current_line;
+                        while (std::getline(file, current_line)) {
+                            string_vec.push_back(current_line);
+                        }
+                        auto import_tokens = lex(string_vec, error_occurred, limit, precision, import_file);
                         tokens.insert(tokens.end(), import_tokens.begin(), import_tokens.end());
                     }
                 }
@@ -147,15 +148,14 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         for (auto it = to_del.begin(); it < to_del.end(); it++) {
             keywords.erase(*it);
         }
-        file.close();
     }
     
     //SCANNING
-    std::ifstream nfile(f);
     std::string line;
     int row = 0;
     int col = 0;
-    while (std::getline(nfile, line)) {
+    for (auto current_line = f.begin(); current_line < f.end(); current_line++) {
+        line = *current_line;
         row++;
         col = 0;
         if (line.length() > 0) {
@@ -167,7 +167,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                 for (std::string::iterator current_char = line.begin(); current_char != line.end(); current_char++) {
                     col++;
                     //checks if the character is acceptable
-                    Token errorcheck(getString(*current_char), row, col,  ERR, line, f);
+                    Token errorcheck(getString(*current_char), row, col,  ERR, line, file_name);
                     if (!in(*current_char , recognized_chars)) {
                         std::string errormsg = std::string("Compile-time Error: Unrecognized character: ") + *current_char;
                         error(errorcheck, errormsg);
@@ -183,12 +183,12 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             col++;
                             if (col >= line.length()) {
                                 *error_occurred == true;
-                                error(Token(literal, row, col, STRING, line, f), "Compile-time Error: Unending string.");
+                                error(Token(literal, row, col, STRING, line, file_name), "Compile-time Error: Unending string.");
                                 break;
                             }
                         }
                         literal += '"';
-                        tokens.push_back(Token(literal, row, col, STRING, line, f));
+                        tokens.push_back(Token(literal, row, col, STRING, line, file_name));
                     } else if (*current_char == '#') {//it's a comment
                         current_char++;
                         for (current_char; *current_char != '#'; current_char++) {
@@ -210,21 +210,21 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            tokens.push_back(Token(current_token, row, col, enumed, line, f));
+                            tokens.push_back(Token(current_token, row, col, enumed, line, file_name));
                             current_token = "";
                         }
                         //checks if the character is connectable, ex: !=
                         if (in(*current_char, doubleable)) {
                             if (!in(*std::prev(current_char), doubleable) && !in(*std::next(current_char), doubleable)) {
-                                tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, f));
+                                tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, file_name));
                             } else if (in(*std::prev(current_char), doubleable)) {
                                 if (in(*current_char, doubleable)) {
                                     std::string done = getString(*std::prev(current_char)) + getString(*current_char);
-                                    tokens.push_back(Token(done, row, col, doubleChar(done), line, f));
+                                    tokens.push_back(Token(done, row, col, doubleChar(done), line, file_name));
                                 }
                             }
                         } else {
-                            tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, f));
+                            tokens.push_back(Token(getString(*current_char), row, col, singleChar(*current_char), line, file_name));
                         }
                     //checks if it's whitespace/space in betwixt tokens
                     } else if (*current_char == ' ') {
@@ -241,7 +241,7 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
                             } else {
                                 enumed = keyword(current_token);
                             }
-                            tokens.push_back(Token(current_token, row, col, enumed, line, f));
+                            tokens.push_back(Token(current_token, row, col, enumed, line, file_name));
                             current_token = "";
                         }
                     //anything else it adds to the token
@@ -308,30 +308,29 @@ std::vector<Token> lex(std::string f, bool *error_occurred, int &limit, int &pre
         error(*it, "Compile-time Error: Uncalled for end bracket.");
         *error_occurred = true;
     }
-    nfile.close();
     //replacing valid MINUS NUMBER with 0 MINUS NUMBER
     for (int token_i = 1; token_i < tokens.size()-1; token_i++) {
         if (tokens[token_i].typ() == MINUS && tokens[token_i-1].typ() != NUMBER && tokens[token_i-1].typ() != IDENTIFIER && tokens[token_i-1].typ() != RIGHT_PAREN && tokens[token_i+1].typ() == NUMBER) {
-            tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line(), f));
-            tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line(), f));
-            tokens.insert(tokens.begin()+(token_i), Token("solve", tokens[token_i].lines(), tokens[token_i].col(), SOLVE, tokens[token_i].actual_line(), f));
-            tokens.insert(tokens.begin()+(token_i+5), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i), Token("0", tokens[token_i].lines(), tokens[token_i].col(), NUMBER, tokens[token_i].actual_line(), file_name));
+            tokens.insert(tokens.begin()+(token_i), Token("(", tokens[token_i].lines(), tokens[token_i].col(), LEFT_PAREN, tokens[token_i].actual_line(), file_name));
+            tokens.insert(tokens.begin()+(token_i), Token("solve", tokens[token_i].lines(), tokens[token_i].col(), SOLVE, tokens[token_i].actual_line(), file_name));
+            tokens.insert(tokens.begin()+(token_i+5), Token(")", tokens[token_i].lines(), tokens[token_i].col(), RIGHT_PAREN, tokens[token_i].actual_line(), file_name));
         } else if (tokens[token_i].typ() == PLUS_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), file_name);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i+2), Token("+", tokens[token_i].lines(), tokens[token_i].col(), PLUS, tokens[token_i].actual_line(), file_name));
         } else if (tokens[token_i].typ() == MINUS_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), file_name);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("-", tokens[token_i].lines(), tokens[token_i].col(), MINUS, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i+2), Token("-", tokens[token_i].lines(), tokens[token_i].col(), MINUS, tokens[token_i].actual_line(), file_name));
         } else if (tokens[token_i].typ() == STAR_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), file_name);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("*", tokens[token_i].lines(), tokens[token_i].col(), STAR, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i+2), Token("*", tokens[token_i].lines(), tokens[token_i].col(), STAR, tokens[token_i].actual_line(), file_name));
         } else if (tokens[token_i].typ() == SLASH_EQUALS) {
-            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), f);
+            tokens[token_i] = Token("=", tokens[token_i].lines(), tokens[token_i].col(), EQUAL, tokens[token_i].actual_line(), file_name);
             tokens.insert(tokens.begin()+(token_i+1), tokens[token_i-1]);
-            tokens.insert(tokens.begin()+(token_i+2), Token("/", tokens[token_i].lines(), tokens[token_i].col(), SLASH, tokens[token_i].actual_line(), f));
+            tokens.insert(tokens.begin()+(token_i+2), Token("/", tokens[token_i].lines(), tokens[token_i].col(), SLASH, tokens[token_i].actual_line(), file_name));
         }
     }
     return tokens;

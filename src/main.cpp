@@ -17,6 +17,31 @@ std::ifstream::pos_type filesize(const char* filename) {//not my code
 }
 
 int main(int argc, char** argv) {
+
+    if (argc == 1) {
+        int limit = 100;
+        int precision = 6;
+        Scope scope;
+        std::vector<Token> rv;
+        while (true) {
+            try {
+                std::cout << ">>>";
+                std::string command;
+                std::getline(std::cin, command);
+                if (command == "exit" || command == "quit") return EXIT_SUCCESS;
+                std::vector<std::string> command_source = { command };
+                bool e = false;
+                std::vector<Token> one = lex(command_source, &e, limit, precision, "command line");
+                if (e) break;
+                one.push_back(Token("EOF", 0, 0, _EOF, "EOF", "outside of files"));
+                std::vector<std::vector<Token>> two = statementize(one, e);
+                if (e) break;
+                int rt = runtime(two, scope, &e, limit, precision, rv);//runtime
+            } catch (...) {}
+        }
+        return EXIT_SUCCESS;
+    }
+
     bool i = false;
     int limit = 100;
     int precision = 6;
@@ -51,7 +76,17 @@ int main(int argc, char** argv) {
     //timer
     auto start = std::chrono::steady_clock::now();
     bool error_occurred = false;
-    std::vector<Token> one = lex(argv[1], &error_occurred, limit, precision);//lexing
+    std::ifstream file(argv[1]);
+    if (!file) {
+        std::cerr << R"(")" << argv[1] << R"(")" << " not found.\nIf you're file has spaces in it's path, make sure to surround the path with quotes, ex. " << R"("c:\...\exam ple.chc")";
+        exit(EXIT_FAILURE);
+    }
+    std::vector<std::string> string_vec;
+    std::string current_line;
+    while (std::getline(file, current_line)) {
+        string_vec.push_back(current_line);
+    }
+    std::vector<Token> one = lex(string_vec, &error_occurred, limit, precision, argv[1]);//lexing
     one.push_back(Token("EOF", 0, 0, _EOF, "EOF", "outside of files"));
     std::vector<std::vector<Token>> two = statementize(one, error_occurred);
     int exit_status = EXIT_SUCCESS;
@@ -76,7 +111,7 @@ int main(int argc, char** argv) {
         std::ofstream infofile;
         infofile.open (newpath);
         std::cout << "\n\nWRITING INFO (" << newpath << ")\nnewpath opened...\n";
-        infofile << "Source size: " << filesize(argv[1]) << "b\n";// << "  Compiled size: " << filesize(final file) << "b\n\n";
+        infofile << "Source size: " << filesize(argv[1]) << "b\n";
         std::cout << "source size...\n";
         std::cout << "date...\n";
         time_t now = time(0);
