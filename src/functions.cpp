@@ -11,6 +11,7 @@
 #include "header.hpp"
 
 extern std::string errors_so_far;
+extern bool disable_errors;
 
 std::string getString(char x) { 
     std::string s(1, x); 
@@ -18,6 +19,7 @@ std::string getString(char x) {
 }
 
 void error(Token token, std::string message="") {
+    if (disable_errors) return;
     std::cerr << "\nin " << token.filename() << ":";
     errors_so_far += "\nin " + token.filename() + ":";
     std::string a = std::to_string(token.lines()) + "| ";
@@ -108,6 +110,8 @@ Type keyword(std::string full) {
     else if (full == "try") return TRY;
     else if (full == "catch") return CATCH;
     else if (full == "getcontents") return GETCONTENTS;
+    else if (full == "use") return USE;
+    else if (full == "disable") return DISABLE;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -225,14 +229,6 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                     std::string p = path;
                     return std::to_string(p.front());
                 } 
-            } else if (target == "@desktopW") {
-                //int w, h;
-                //GetDesktopResolution(w, h);
-                return "0";
-            } else if (target == "@desktopH") {
-                //int w, h;
-                //GetDesktopResolution(w, h);
-                return "0";
             } else if (target == "@EOL") {
                 return "\n";
             } else if (target == "@environment") {
@@ -245,10 +241,8 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                 return '"' + IP() + '"';
             } else if (target == "@inf") {
                 return std::to_string(std::numeric_limits<double>::max());
-            } else if (target == "@write") {
-                return "@write";
-            } else if (target == "@append") {
-                return "@append";
+            } else if (target == "@write" || target == "@append" || target == "@errors" || target == "@output") {
+                return target;
             } else {
                 *error_occurred = true;
                 error(token, "Run-time Error: " + token.str() + " is an undefined macro.");
@@ -333,7 +327,7 @@ bool isOp(Token token) {
 std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err) {
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
-    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
+    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@environment", "@IP", "@inf", "@write", "@append" };
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
         if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants) && a != start) {

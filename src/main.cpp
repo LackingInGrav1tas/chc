@@ -11,13 +11,17 @@
 
 std::string errors_so_far;
 
+bool disable_errors;
+bool disable_output;
+
 std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
     return in.tellg();
 }
 
 int main(int argc, char** argv) {
-
+    disable_errors = false;
+    disable_output = false;
     if (argc == 1) {
         int limit = 100;
         int precision = 6;
@@ -31,7 +35,7 @@ int main(int argc, char** argv) {
                 if (command == "exit" || command == "quit") return EXIT_SUCCESS;
                 std::vector<std::string> command_source = { command };
                 bool e = false;
-                std::vector<Token> one = lex(command_source, &e, limit, precision, "command line");
+                std::vector<Token> one = lex(command_source, &e, limit, precision, "stdin");
                 if (e) break;
                 one.push_back(Token("EOF", 0, 0, _EOF, "EOF", "outside of files"));
                 std::vector<std::vector<Token>> two = statementize(one, e);

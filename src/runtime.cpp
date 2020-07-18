@@ -6,6 +6,10 @@
 #include <windows.h>
 #include "header.hpp"
 
+extern bool disable_errors;
+extern bool disable_output;
+extern bool disable_warnings;
+
 std::vector<Scope> scopes;
 std::vector<std::string> scope_indices;
 std::vector<Scope> fun_scopes;
@@ -838,7 +842,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
 }
 
 int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *error_occurred, int limit, int precision, std::vector<Token> &return_variable) {
-    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@desktopW", "@desktopH", "@environment", "@IP", "@inf", "@write", "@append" };
+    std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@environment", "@IP", "@inf", "@write", "@append", "@errors", "@output" };
     for (auto outer = statements.begin(); outer < statements.end(); std::advance(outer, 1)) {
         std::vector<Token> stmt = *outer;
         
@@ -1611,6 +1615,38 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         scope.function_bodies.erase(scope.function_bodies.begin()+i);
                         i--;
                     }
+                }
+                break;
+            } else if ((*inner).typ() == USE) {
+                if ((*std::next(inner)).typ() != IDENTIFIER) {
+                    error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
+                    return EXIT_FAILURE;
+                }
+                std::string gvv = getVarVal((*std::next(inner)), scope, error_occurred);
+                if (gvv == "@errors") {
+                    disable_errors = false;
+                } else if (gvv == "@output") {
+                    disable_output = false;
+                    std::cout.clear();
+                }
+                if (stmt.size() > 3) {
+                    error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
+                }
+                break;
+            } else if ((*inner).typ() == DISABLE) {
+                if ((*std::next(inner)).typ() != IDENTIFIER) {
+                    error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
+                    return EXIT_FAILURE;
+                }
+                std::string gvv = getVarVal((*std::next(inner)), scope, error_occurred);
+                if (gvv == "@errors") {
+                    disable_errors = true;
+                } else if (gvv == "@output") {
+                    disable_output = true;
+                    std::cout.setstate(std::ios_base::failbit);
+                }
+                if (stmt.size() > 3) {
+                    error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
                 break;
             }
