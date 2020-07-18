@@ -264,4 +264,4 @@ print(num);
 
 Just type ```drive:/.../chc``` into cmd/command line to open interface. 
 Type anything that crashes the lexer, or "quit" or "exit" to exit the cli.
-Preprocessors don't work, neither do multiline things such as functions because I dont care enough to implement them.
+Preprocessors don't work, nor do multiline things such as functions because I dont care enough to implement them.
