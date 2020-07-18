@@ -177,6 +177,8 @@ Supported macros:
 ```
 @write #used to define the mode of file handling
 @append #^
+@errors #used for use and disable
+@output #^
 @sec #second of the minute
 @min #minute of the hour
 @hour #hour of the day
@@ -186,8 +188,6 @@ Supported macros:
 @year #guess
 @clipboard #clipboard
 @home #returns the home drive letter
-@desktopH #desktop height in pixels
-@desktopW #desktop width in pixels
 @environment #prints out the current variable information
 @IP #returns the IP address of the PC
 @EOL #end of line signifier for strings
@@ -259,3 +259,9 @@ print(num);
 ```
 1.9
 ```
+
+### Command Line Interface ###
+
+Just type ```drive:/.../chc``` into cmd/command line to open interface. 
+Type anything that crashes the lexer, or "quit" or "exit" to exit the cli.
+Preprocessors don't work, neither do multiline things such as functions because I dont care enough to implement them.
