@@ -1227,6 +1227,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 break;
             } else if ((*inner).typ() == BREAK) {
                 return 47;
+            } else if ((*inner).typ() == CONTINUE) {
+                return 33;
             } else if ((*inner).typ() == IF) {
                 if ((*std::next(inner)).typ() != LEFT_PAREN) {
                     error((*std::next(inner)), "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1323,6 +1325,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             return EXIT_FAILURE;
                         } else if (result == 47) {
                             return 47;
+                        } else if (result == 33) {
+                            return EXIT_SUCCESS;
                         }
                     } else {
                         if (!elsecontents.empty()) {
@@ -1331,6 +1335,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                                 return EXIT_FAILURE;
                             } else if (result == 47) {
                                 return 47;
+                            } else if (result == 33) {
+                                return EXIT_SUCCESS;
                             }
                         }
                     }
