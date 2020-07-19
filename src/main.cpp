@@ -11,8 +11,10 @@
 
 std::string errors_so_far;
 
+bool strict;
 bool disable_errors;
 bool disable_output;
+bool disable_warnings;
 
 std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
@@ -22,6 +24,8 @@ std::ifstream::pos_type filesize(const char* filename) {//not my code
 int main(int argc, char** argv) {
     disable_errors = false;
     disable_output = false;
+    disable_warnings = false;
+    strict = false;
     if (argc == 1) {
         int limit = 100;
         int precision = 6;

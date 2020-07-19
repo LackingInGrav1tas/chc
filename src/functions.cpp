@@ -241,7 +241,7 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                 return '"' + IP() + '"';
             } else if (target == "@inf") {
                 return std::to_string(std::numeric_limits<double>::max());
-            } else if (target == "@write" || target == "@append" || target == "@errors" || target == "@output") {
+            } else if (target == "@write" || target == "@append" || target == "@errors" || target == "@output" || target == "@strict" || target == "@warnings") {
                 return target;
             } else {
                 *error_occurred = true;

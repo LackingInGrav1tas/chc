@@ -9,6 +9,7 @@
 extern bool disable_errors;
 extern bool disable_output;
 extern bool disable_warnings;
+extern bool strict;
 
 std::vector<Scope> scopes;
 std::vector<std::string> scope_indices;
@@ -883,9 +884,11 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                                 scope.immutables.push_back(previous.str());
                             }
                         }
-                    } else {
-                        error(previous, "Run-time Error: Immutable variable cannot be mutated.");
+                    } else if (strict) {
+                        error(previous, "Run-time Strict Error: Immutable variable cannot be mutated.");
                         return EXIT_FAILURE;
+                    } else if (!disable_warnings) {
+                        error(previous, "Warning: Immutable variable cannot be mutated.");
                     }
                 }
                 break;
@@ -959,9 +962,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                     }
                     n++;
-                    if (stmt[n].typ() != SEMICOLON) {
+                    if (stmt[n].typ() != SEMICOLON && strict) {
+                        error((*inner), "Run-time Strict Error: It's prudent to postfix the statement with a semicolon.");
+                        return EXIT_FAILURE;
+                    }
+                    if (stmt[n].typ() != SEMICOLON && !disable_warnings) {
                         error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
-                    };
+                    }
                     std::vector<Token> segmented(std::next(inner), nd);
                     std::string solved;
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
@@ -1002,6 +1009,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved << std::endl;
+                if (stmt.size() > (4 + call_params.size()) && strict) {
+                    error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                    error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
+                }
                 break;
             } else if ((*inner).typ() == RPRINT) {
                 bool eroc = false;
@@ -1024,6 +1038,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved;
+                if (stmt.size() > (4 + call_params.size()) && strict) {
+                    error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                    error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
+                }
                 break;
             } else if ((*inner).typ() == RFPRINT) {
                 bool eroc = false;
@@ -1046,6 +1067,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved << std::endl;
+                if (stmt.size() > (4 + call_params.size()) && strict) {
+                    error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                    error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
+                }
                 break;
             } else if ((*inner).typ() == RUN) {
                 Token next = *std::next(inner);
@@ -1074,9 +1102,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                     }
                     n++;
-                    if (stmt[n].typ() != SEMICOLON) {
+                    if (stmt[n].typ() != SEMICOLON && strict) {
+                        error((*inner), "Run-time Strict Error: It's prudent to postfix the statement with a semicolon.");
+                        return EXIT_FAILURE;
+                    }
+                    if (stmt[n].typ() != SEMICOLON && !disable_warnings) {
                         error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
-                    };
+                    }
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
                     std::string solved = solve(segmented, scope, &err, precision);
@@ -1172,9 +1204,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         }
                     }
                     n++;
-                    if (stmt[n].typ() != SEMICOLON) {
+                    if (stmt[n].typ() != SEMICOLON && strict) {
+                        error((*inner), "Run-time Strict Error: It's prudent to postfix the statement with a semicolon.");
+                        return EXIT_FAILURE;
+                    }
+                    if (stmt[n].typ() != SEMICOLON && !disable_warnings) {
                         error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
-                    };
+                    }
                     std::vector<Token> segmented(std::next(inner), nd);
                     bool err = false;
                     std::string solved = solve(segmented, scope, &err, precision);
@@ -1529,8 +1565,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
             } else if ((*inner).typ() == ELSE) {
                 error((*inner), "Run-time Error: Stray else.");
                 return EXIT_FAILURE;
-            } else if ((*inner).typ() == RIGHT_BRACE || (*inner).typ() == LEFT_BRACE || (*inner).typ() == RIGHT_PAREN || (*inner).typ() == LEFT_PAREN) {
-                error((*inner), "Run-time Error: Stray token.");
+            } else if ((*inner).typ() == IDENTIFIER && (*std::next(inner)).typ() != EQUAL && (*std::next(inner)).typ() != PLUS_PLUS && (*std::next(inner)).typ() != MINUS_MINUS && strict) {
+                error((*inner), "Run-time Strict Error: Stray token.");
                 return EXIT_FAILURE;
             } else if ((*inner).typ() == RETURN) {
                 int n = std::next(inner) - stmt.begin();
@@ -1553,9 +1589,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 n++;
-                if (stmt[n].typ() != SEMICOLON) {
+                if (stmt[n].typ() != SEMICOLON && strict) {
+                    error((*inner), "Run-time Strict Error: It's prudent to postfix the statement with a semicolon.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt[n].typ() != SEMICOLON && !disable_warnings) {
                     error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
-                };
+                }
                 std::vector<Token> segmented(std::next(inner), nd);
                 bool boolean = false;
                 for (auto its = segmented.begin(); its < segmented.end(); its++) {
@@ -1583,33 +1623,31 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     error(*std::next(inner), "Run-time Error: Incorrect formatting of call.");
                     return EXIT_FAILURE;
                 }
-                bool eroc = false;
-                auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
-                if (eroc) {
-                    return EXIT_FAILURE;
-                }
-                if (call_params.size() != 1) {
-                    error((*inner), "Run-time Error: Expected 1 parameter. Received " + std::to_string(call_params.size()) + ".");
-                    return EXIT_FAILURE;
-                } else if (call_params[0].size() != 1 || call_params[0][0].typ() != IDENTIFIER) {
-                    error((*inner), "Run-time Error: Expected a single identifier as a parameter. Received " + std::to_string(call_params.size()) + ".");
-                    return EXIT_FAILURE;
+                if ((*std::next(std::next(inner))).typ() != IDENTIFIER) {
+                    if (strict) {
+                        error((*std::next(std::next(inner))), "Run-time Strict Error: Expected an identifier.");
+                        return EXIT_FAILURE;
+                    } else if (!disable_warnings) {
+                        error((*std::next(std::next(inner))), "Warning: Expected an identifier.");
+                    } else {
+                        break;
+                    }
                 }
                 for (int i = 0; i < scope.names.size(); i++) {
-                    if (scope.names[i] == call_params[0][0].str()) {
+                    if (scope.names[i] == (*std::next(std::next(inner))).str()) {
                         scope.names.erase(scope.names.begin()+i);
                         scope.values.erase(scope.values.begin()+i);
                         i--;
                     }
                 }
                 for (int i = 0; i < scope.immutables.size(); i++) {
-                    if (scope.immutables[i] == call_params[0][0].str()) {
+                    if (scope.immutables[i] == (*std::next(std::next(inner))).str()) {
                         scope.immutables.erase(scope.immutables.begin()+i);
                         i--;
                     }
                 }
                 for (int i = 0; i < scope.function_names.size(); i++) {
-                    if (scope.function_names[i] == call_params[0][0].str()) {
+                    if (scope.function_names[i] == (*std::next(std::next(inner))).str()) {
                         scope.function_names.erase(scope.function_names.begin()+i);
                         scope.function_params.erase(scope.function_params.begin()+i);
                         scope.function_bodies.erase(scope.function_bodies.begin()+i);
@@ -1628,8 +1666,19 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 } else if (gvv == "@output") {
                     disable_output = false;
                     std::cout.clear();
+                } else if (gvv == "@strict") {
+                    strict = true;
+                } else if (gvv == "@warnings") {
+                    disable_warnings = false;
+                } else if (strict) {
+                    error((*std::next(inner)), "Run-time Strict Error: Unrecognized variable.");
+                    return EXIT_FAILURE;
                 }
-                if (stmt.size() > 3) {
+                if (stmt.size() > 3 && strict) {
+                    error(stmt[3], "Run-time Strict Error: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.size() > 3 && !disable_warnings) {
                     error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
                 break;
@@ -1644,8 +1693,19 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 } else if (gvv == "@output") {
                     disable_output = true;
                     std::cout.setstate(std::ios_base::failbit);
+                } else if (gvv == "@strict") {
+                    strict = false;
+                } else if (gvv == "@warnings") {
+                    disable_warnings = true;
+                } else if (strict) {
+                    error((*std::next(inner)), "Run-time Strict Error: Unrecognized variable.");
+                    return EXIT_FAILURE;
                 }
-                if (stmt.size() > 3) {
+                if (stmt.size() > 3 && strict) {
+                    error(stmt[3], "Run-time Strict Error: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.size() > 3 && !disable_warnings) {
                     error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
                 break;
