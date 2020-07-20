@@ -137,7 +137,8 @@ int main(int argc, char** argv) {
                 "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
                 "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",
                 "FPRINT", "RFPRINT", "THROW", "EVAL", "CONTINUE", "RAND", "AT", "ARROW", "DISPOSE", "SET_SCOPE",
-                "SAVE_SCOPE", "STR", "INT", "IS_STRING", "IS_NUMBER", "IS_BOOL", "SOLVE", "TRY", "CATCH", "GETCONTENTS"};
+                "SAVE_SCOPE", "STR", "INT", "IS_STRING", "IS_NUMBER", "IS_BOOL", "SOLVE", "TRY", "CATCH", "GETCONTENTS",
+                "USE", "DISABLE"};
         std::string tokenspo = "";
         std::string typespo = "";
         for (std::vector<Token>::iterator it = one.begin(); it < one.end(); it++) {

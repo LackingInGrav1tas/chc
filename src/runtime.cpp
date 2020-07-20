@@ -91,7 +91,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     stmt.erase(stmt.begin()+ct);
                 }
                 if (return_val.empty())
-                    stmt.insert(stmt.begin()+ct, Token("_void_func_holder", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line(), token_copy.filename()));
+                    stmt.insert(stmt.begin()+ct, Token("_ _void_func_holder_ _", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line(), token_copy.filename()));
                 else {
                     if (return_val.size() == 1)
                         stmt.insert(stmt.begin()+ct, return_val.back());
@@ -1571,7 +1571,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
             } else if ((*inner).typ() == ELSE) {
                 error((*inner), "Run-time Error: Stray else.");
                 return EXIT_FAILURE;
-            } else if ((*inner).typ() == IDENTIFIER && (*std::next(inner)).typ() != EQUAL && (*std::next(inner)).typ() != PLUS_PLUS && (*std::next(inner)).typ() != MINUS_MINUS && strict) {
+            } else if ((*inner).typ() == IDENTIFIER && (*std::next(inner)).typ() != EQUAL && (*std::next(inner)).typ() != PLUS_PLUS && (*std::next(inner)).typ() != MINUS_MINUS && (*inner).str() != "_ _void_func_holder_ _" && strict) {
                 error((*inner), "Run-time Strict Error: Stray token.");
                 return EXIT_FAILURE;
             } else if ((*inner).typ() == RETURN) {

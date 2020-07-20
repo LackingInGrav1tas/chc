@@ -42,12 +42,12 @@ std::vector<std::string> keywords = { "and", "class", "else", "false", "fun", "f
                                       "assert", "length", "rprint", "fprint", "rfprint", "throw", "eval", "continue",
                                       "rand", "at", "dispose", "set_scope", "save_scope", "to_str", "to_num", "is_string", "is_number", "is_bool",
                                       "solve", "try", "catch", "getcontents", "use", "disable" };
-
+std::string probably_a_better_way = "'";
 std::vector<char> recognized_chars = { '(', ')', '.', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';', 'a', 'b', 'c',
                                        'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
                                        'v', 'w', 'x', 'y', 'z', ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                                        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
-                                       '5', '6', '7', '8', '9', '0', '"', '#', '_', '@' };
+                                       '5', '6', '7', '8', '9', '0', '"', '#', '_', '@', probably_a_better_way.at(0)};
 
 std::vector<char> important_characters = { '(', ')', '=', '+', '-', '*', '/', '{', '}', ',', '!', '<', '>', ';' };
 
@@ -174,11 +174,12 @@ std::vector<Token> lex(std::vector<std::string> f, bool *error_occurred, int &li
                         *error_occurred = true;
                     }
                     //checks if the current character is independent of anything it might be attached to
-                    if (*current_char == '"') {//it's a string literal
+                    if (*current_char == '"' || getString(*current_char) == "'") {//it's a string literal
+                        std::string end = getString(*current_char);
                         std::string literal = "";
                         current_char++;
                         literal += '"';
-                        for (current_char; *current_char != '"'; current_char++) {
+                        for (current_char; getString(*current_char) != end; current_char++) {
                             literal += *current_char;
                             col++;
                             if (col >= line.length()) {
