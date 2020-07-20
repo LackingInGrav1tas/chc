@@ -177,8 +177,13 @@ Supported macros:
 ```
 @write #used to define the mode of file handling
 @append #^
-@errors #used for use and disable
-@output #^
+
+@errors #used for use and disable, turns off/on error printout
+@output #^, turns off/on print output
+@strict #^, turns off/on strict mode
+@warnings #^, turns off/on warnings
+@assume #^, turns off/on assume mode. When chc detects a variable out of scope, instead of throwing an error, it finds the closest variable to it in scope.
+
 @sec #second of the minute
 @min #minute of the hour
 @hour #hour of the day
