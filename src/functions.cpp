@@ -12,6 +12,9 @@
 
 extern std::string errors_so_far;
 extern bool disable_errors;
+extern bool strict;
+extern bool assume;
+extern bool disable_warnings;
 
 std::string getString(char x) { 
     std::string s(1, x); 
@@ -159,6 +162,22 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens, bool &er
     return statementalized;
 }
 
+int levenshtein(std::string string1, std::string string2) {
+    int moves = 0;
+    int smaller;
+    if (string1.length() > string2.length()) {
+        moves += string1.length() - string2.length();
+        smaller = string2.length();
+    } else {
+        moves += string2.length() - string1.length();
+        smaller = string1.length();
+    }
+    for (int i = 0; i < smaller; i++) {
+        if (string1.at(i) != string2.at(i)) moves++;
+    }
+    return moves;
+}
+
 //kinda my code
 std::string getClip() {
     std::string text;
@@ -241,7 +260,7 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                 return '"' + IP() + '"';
             } else if (target == "@inf") {
                 return std::to_string(std::numeric_limits<double>::max());
-            } else if (target == "@write" || target == "@append" || target == "@errors" || target == "@output" || target == "@strict" || target == "@warnings") {
+            } else if (target == "@write" || target == "@append" || target == "@errors" || target == "@output" || target == "@strict" || target == "@warnings" || target == "@assume") {
                 return target;
             } else {
                 *error_occurred = true;
@@ -254,8 +273,27 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                 if (in(token.str(), ops)) {
                     return token.str();
                 } else {
-                    if (token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')) {
-                        *error_occurred = true;
+                    if (token.typ() == IDENTIFIER) {//token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')
+                        if (assume) {
+                            int best_i = 0;
+                            int current_best_num = INT_MAX;
+                            for (int i = 0; i < scope.names.size(); i++) {
+                                int distance = levenshtein(token.str(),scope.names[i]);
+                                if (distance <= current_best_num) {
+                                    current_best_num = distance;
+                                    best_i = i;
+                                }
+                            }
+                            bool asdasdasd = false;
+                            return getVarVal(Token(scope.names[best_i], token.lines(), token.col(), IDENTIFIER, token.actual_line(), token.filename()), scope, &asdasdasd);
+                        } else {
+                            if (strict) {
+                                error(token, "Run-time Strict Error: Undefined variable.");
+                                *error_occurred = true;
+                            } else if (!disable_warnings) {
+                                error(token, "Warning: Undefined variable.");
+                            }
+                        }
                     } else {
                         return token.str();
                     }
@@ -330,7 +368,7 @@ std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@environment", "@IP", "@inf", "@write", "@append" };
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
-        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants) && a != start) {
+        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants) && a != start && !assume) {
             error(*a, "Run-time Error: Undefined variable.");
             err = true;
             break;

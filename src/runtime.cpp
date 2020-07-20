@@ -10,6 +10,7 @@ extern bool disable_errors;
 extern bool disable_output;
 extern bool disable_warnings;
 extern bool strict;
+extern bool assume;
 
 std::vector<Scope> scopes;
 std::vector<std::string> scope_indices;
@@ -128,7 +129,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -165,7 +168,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::string filename;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -175,7 +180,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::string text;
                 for (auto cur = call_params[1].begin(); cur < call_params[1].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -200,7 +207,6 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                             output.close();
                         }
                     } else if (e) {
-                        error(call_params[2][0], "Run-time Error: Evaluation Error.");
                         return EXIT_FAILURE;
                     } else {
                         std::ofstream output(filename);
@@ -315,7 +321,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -417,7 +425,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -527,10 +537,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 bool gvve = false;
                 scopes.push_back(scope);
                 scope_indices.push_back(getVarVal(*std::next(std::next(token)), scope, &gvve));
-                if (gvve) {
-                    error(*std::next(std::next(token)), "Run-time Error: Eval error.");
-                    return EXIT_FAILURE;
-                }
+                if (gvve) return EXIT_FAILURE;
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -560,10 +567,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 bool gvve = false;
                 auto found = findInV(scope_indices, getVarVal(*std::next(std::next(token)), scope, &gvve));
-                if (gvve) {
-                    error(*std::next(std::next(token)), "Run-time Error: Eval error.");
-                    return EXIT_FAILURE;
-                }
+                if (gvve) return EXIT_FAILURE;
                 if (found.first) {
                     scope = scopes[found.second];
                 }
@@ -695,6 +699,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     fon = "true";
                     f_on = TTRUE;
                 }
+                if (eroc) return EXIT_FAILURE;
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -734,6 +739,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     fon = "false";
                     f_on = TFALSE;
                 }
+                if (eroc) return EXIT_FAILURE;
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -773,6 +779,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     fon = "true";
                     f_on = TTRUE;
                 }
+                if (eroc) return EXIT_FAILURE;
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -861,7 +868,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     return EXIT_FAILURE;
                 } else {
                     for (auto tok = inner; tok < stmt.end(); tok++) {
-                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants)) {
+                        if ((*tok).typ() == IDENTIFIER && findInV(scope.names, (*tok).str()).first == false && !in((*tok).str(), constants) && !assume) {
                             error(*tok, "Run-time Error: Undefined variable.");
                             return EXIT_FAILURE;
                         }
@@ -907,6 +914,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     error((*std::prev(inner)), "Run-time Error: Expected a number identifier.");
                     return EXIT_FAILURE;
                 }
+                if (err) return EXIT_FAILURE;
                 scope.names.push_back((*std::prev(inner)).str());
                 std::string preshortened = to_string_with_precision(pos, precision);
                 shorten(preshortened);
@@ -922,11 +930,13 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 double pos;
                 bool err = false;
-                try {pos = std::stod(getVarVal((*std::prev(inner)), scope, &err)) + 1;}
-                catch (...) {
+                try {
+                    pos = std::stod(getVarVal((*std::prev(inner)), scope, &err)) + 1;
+                } catch (...) {
                     error((*std::prev(inner)), "Run-time Error: Expected a number identifier.");
                     return EXIT_FAILURE;
                 }
+                if (err) return EXIT_FAILURE;
                 scope.names.push_back((*std::prev(inner)).str());
                 std::string preshortened = to_string_with_precision(pos, precision);
                 shorten(preshortened);
@@ -942,7 +952,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
-                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants) && !assume) {
                             error(*nd, "Run-time Error: Undefined variable.");
                             return EXIT_FAILURE;
                         }
@@ -973,7 +983,9 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::string solved;
                     for (auto ato = segmented.begin(); ato < segmented.end(); ato++) {
                         if ((*ato).syhtyp() == TERMINAL) {
-                            std::string currentString = getVarVal(*ato, scope, error_occurred);
+                            bool bgvv = false;
+                            std::string currentString = getVarVal(*ato, scope, &bgvv);
+                            if (bgvv) return EXIT_FAILURE;
                             if (!currentString.empty()) {
                                 if (currentString.at(0) == '"') {
                                     currentString = currentString.substr(1, currentString.length()-2);
@@ -998,7 +1010,9 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         if (currentString.at(0) == '"') {
                             currentString = currentString.substr(1, currentString.length()-2);
                         }
@@ -1009,11 +1023,11 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved << std::endl;
-                if (stmt.size() > (4 + call_params.size()) && strict) {
+                if (stmt.size() != (4 + call_params[0].size()) && strict) {
                     error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
                     return EXIT_FAILURE;
                 }
-                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                if (stmt.size() != (4 + call_params[0].size()) && !disable_warnings) {
                     error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
                 }
                 break;
@@ -1030,7 +1044,9 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         solved += currentString;
                     } else if ((*cur).typ() != PLUS) {
                         error(*cur, "Run-time Error: Stray operator.");
@@ -1038,11 +1054,11 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved;
-                if (stmt.size() > (4 + call_params.size()) && strict) {
+                if (stmt.size() > (4 + call_params[0].size()) && strict) {
                     error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
                     return EXIT_FAILURE;
                 }
-                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                if (stmt.size() > (4 + call_params[0].size()) && !disable_warnings) {
                     error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
                 }
                 break;
@@ -1059,7 +1075,9 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 std::string solved;
                 for (auto cur = call_params[0].begin(); cur < call_params[0].end(); cur++) {
                     if ((*cur).syhtyp() == TERMINAL) {
-                        std::string currentString = getVarVal(*cur, scope, error_occurred);
+                        bool bgvv = false;
+                        std::string currentString = getVarVal(*cur, scope, &bgvv);
+                        if (bgvv) return EXIT_FAILURE;
                         solved += currentString;
                     } else if ((*cur).typ() != PLUS) {
                         error(*cur, "Run-time Error: Stray operator.");
@@ -1067,11 +1085,11 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 std::cout << solved << std::endl;
-                if (stmt.size() > (4 + call_params.size()) && strict) {
+                if (stmt.size() > (4 + call_params[0].size()) && strict) {
                     error(stmt[4], "Run-time Strict Error: It's prudent to end a print statement with a semicolon.");
                     return EXIT_FAILURE;
                 }
-                if (stmt.size() > (4 + call_params.size()) && !disable_warnings) {
+                if (stmt.size() > (4 + call_params[0].size()) && !disable_warnings) {
                     error(stmt[4], "Warning: It's prudent to end a print statement with a semicolon.");
                 }
                 break;
@@ -1085,7 +1103,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     auto nd = std::next(inner);
                     int nested = 0;
                     while (true) {
-                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants)) {
+                        if ((*nd).typ() == IDENTIFIER && findInV(scope.names, (*nd).str()).first == false && !in((*nd).str(), constants) && !assume) {
                             error(*nd, "Run-time Error: Undefined variable.");
                             return EXIT_FAILURE;
                         }
@@ -1609,16 +1627,19 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         continue;
                     if ((*its).typ() == IDENTIFIER) {
                         Type t;
-                        if (getVarVal(*its, scope, error_occurred).at(0) == '"') {
+                        bool bgvv = false;
+                        std::string gvv = getVarVal(*its, scope, error_occurred);
+                        if (bgvv) return EXIT_FAILURE;
+                        if (gvv.at(0) == '"') {
                             t = STRING;
-                        } else if (getVarVal(*its, scope, error_occurred) == "true") {
+                        } else if (gvv == "true") {
                             t = TTRUE;
-                        } else if (getVarVal(*its, scope, error_occurred) == "false") {
+                        } else if (gvv == "false") {
                             t = TFALSE;
                         } else {
                             t = NUMBER;
                         }
-                        return_variable.push_back(Token(getVarVal(*its, scope, error_occurred), (*its).lines(), (*its).col(), t, (*its).actual_line(), (*its).filename()));
+                        return_variable.push_back(Token(gvv, (*its).lines(), (*its).col(), t, (*its).actual_line(), (*its).filename()));
                     } else {
                         return_variable.push_back(*its);
                     }
@@ -1666,7 +1687,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
                     return EXIT_FAILURE;
                 }
-                std::string gvv = getVarVal((*std::next(inner)), scope, error_occurred);
+                bool bgvv = false;
+                std::string gvv = getVarVal((*std::next(inner)), scope, &bgvv);
                 if (gvv == "@errors") {
                     disable_errors = false;
                 } else if (gvv == "@output") {
@@ -1676,6 +1698,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     strict = true;
                 } else if (gvv == "@warnings") {
                     disable_warnings = false;
+                } else if (gvv == "@assume") {
+                    assume = true;
                 } else if (strict) {
                     error((*std::next(inner)), "Run-time Strict Error: Unrecognized variable.");
                     return EXIT_FAILURE;
@@ -1687,13 +1711,15 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 if (stmt.size() > 3 && !disable_warnings) {
                     error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
+                if (bgvv) return EXIT_FAILURE;
                 break;
             } else if ((*inner).typ() == DISABLE) {
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
                     return EXIT_FAILURE;
                 }
-                std::string gvv = getVarVal((*std::next(inner)), scope, error_occurred);
+                bool bgvv = false;
+                std::string gvv = getVarVal((*std::next(inner)), scope, &bgvv);
                 if (gvv == "@errors") {
                     disable_errors = true;
                 } else if (gvv == "@output") {
@@ -1701,6 +1727,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     std::cout.setstate(std::ios_base::failbit);
                 } else if (gvv == "@strict") {
                     strict = false;
+                } else if (gvv == "@assume") {
+                    assume = false;
                 } else if (gvv == "@warnings") {
                     disable_warnings = true;
                 } else if (strict) {
@@ -1714,6 +1742,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 if (stmt.size() > 3 && !disable_warnings) {
                     error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
+                if (bgvv) return EXIT_FAILURE;
                 break;
             }
         }

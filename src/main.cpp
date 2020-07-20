@@ -15,6 +15,7 @@ bool strict;
 bool disable_errors;
 bool disable_output;
 bool disable_warnings;
+bool assume;
 
 std::ifstream::pos_type filesize(const char* filename) {//not my code
     std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
@@ -26,6 +27,7 @@ int main(int argc, char** argv) {
     disable_output = false;
     disable_warnings = false;
     strict = false;
+    assume = false;
     if (argc == 1) {
         int limit = 100;
         int precision = 6;
