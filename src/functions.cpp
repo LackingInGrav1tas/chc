@@ -274,7 +274,7 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                     return token.str();
                 } else {
                     if (token.typ() == IDENTIFIER) {//token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')
-                        if (assume) {
+                        if (assume && scope.names.size() > 0) {
                             int best_i = 0;
                             int current_best_num = INT_MAX;
                             for (int i = 0; i < scope.names.size(); i++) {
@@ -287,12 +287,8 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                             bool asdasdasd = false;
                             return getVarVal(Token(scope.names[best_i], token.lines(), token.col(), IDENTIFIER, token.actual_line(), token.filename()), scope, &asdasdasd);
                         } else {
-                            if (strict) {
-                                error(token, "Run-time Strict Error: Undefined variable.");
-                                *error_occurred = true;
-                            } else if (!disable_warnings) {
-                                error(token, "Warning: Undefined variable.");
-                            }
+                            error(token, "Run-time Strict Error: Undefined variable.");
+                            *error_occurred = true;
                         }
                     } else {
                         return token.str();
