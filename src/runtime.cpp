@@ -20,9 +20,9 @@ std::vector<std::string> fun_scope_names;
 int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, bool *error_occurred) {
     std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*std::next(stmt.begin())).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
-        if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT && (*std::prev(token)).typ() != IF && (*std::prev(token)).typ() != SLEEP && (*std::prev(token)).typ() != RUN && (*std::prev(token)).typ() != RETURN) {
+        if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT && (*std::prev(token)).typ() != IF && (*std::prev(token)).typ() != SLEEP && (*std::prev(token)).typ() != RUN && (*std::prev(token)).typ() != RETURN && (*std::prev(token)).typ() != PASTE) {
             bool eroc = false;
-            auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+            auto call_params = findParams(stmt, token, COMMA, scope, eroc);
             if (eroc)
                 return EXIT_FAILURE;
             if (call_params.size() != 1) {
@@ -44,10 +44,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
             continue;
         }
 
-        if (in((*token).str(), scope.function_names)) {
+        if (in((*token).str(), scope.function_names) && stmt[0].typ() != PASTE) {
             Token token_copy((*token).str(), (*token).lines(), (*token).col(), (*token).typ(), (*token).actual_line(), (*token).filename());
             bool eroc = false;
-            auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+            auto call_params = findParams(stmt, token, COMMA, scope, eroc);
             if (eroc)
                 return EXIT_FAILURE;
             std::pair<bool, int> found = findInV(scope.function_names, (*token).str());
@@ -119,7 +119,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
         } else if (in((*token).typ(), native_functions)) {
             if ((*token).typ() == TOKEN_INPUT) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -158,7 +158,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 stmt.insert(stmt.begin()+ct, Token('"' + raw_input + '"', (*token).lines(), (*token).col(), STRING, (*token).actual_line(), (*token).filename()));
             } else if ((*token).typ() == WRITETO) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() < 2) {
@@ -249,7 +249,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 for (auto param_segment = call_params.begin(); param_segment < call_params.end(); param_segment++) {
@@ -283,7 +283,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -311,7 +311,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -351,7 +351,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -385,7 +385,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -414,7 +414,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 stmt.insert(stmt.begin()+ct, Token(solved, (*token).lines(), (*token).col(), evaluated, (*token).actual_line(), (*token).filename()));
             } else if ((*token).typ() == THROW) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -442,7 +442,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -480,7 +480,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 }
                 bool e = false;
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 2) {
@@ -524,7 +524,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -558,7 +558,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -596,7 +596,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -638,7 +638,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -681,7 +681,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -721,7 +721,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -761,7 +761,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -801,7 +801,7 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 bool eroc = false;
-                auto call_params = findParams(stmt, token, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, token, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -999,7 +999,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 break;
             } else if ((*inner).typ() == FPRINT) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -1033,7 +1033,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 break;
             } else if ((*inner).typ() == RPRINT) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -1064,7 +1064,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 break;
             } else if ((*inner).typ() == RFPRINT) {
                 bool eroc = false;
-                auto call_params = findParams(stmt, inner, COMMA, scope.names, eroc);
+                auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
@@ -1743,6 +1743,60 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     error(stmt[3], "Warning: It's prudent to end a statement with a semicolon. Not doing so will likely cause problems later in the program.");
                 }
                 if (bgvv) return EXIT_FAILURE;
+                break;
+            } else if ((*inner).typ() == PASTE) {
+                if ((*std::next(inner)).typ() != LEFT_PAREN) {
+                    error(*std::next(inner), "Run-time Error: Expected a left parentheses token.");
+                    return EXIT_FAILURE;
+                }
+                if (stmt.back().typ() != LEFT_BRACE) {
+                    error(stmt.back(), "Run-time Error: Expected a left bracket token. None were provided.");
+                    return EXIT_FAILURE;
+                }
+                bool eroc = false;
+                auto call_params = findParams(stmt, inner, COMMA, scope, eroc, false);
+                if (eroc) return EXIT_FAILURE;
+                if (call_params.size() == 0) {
+                    error(*inner, "Run-time Error: Expected parameters.");
+                    return EXIT_FAILURE;
+                }
+                std::vector<std::vector<Token>> pastecontents;
+                int nested = 0;
+                Token fis;
+                while (true) {
+                    outer++;
+                    std::vector<Token> cline = *outer;
+                    if (cline.front().typ() == _EOF) {
+                        error((*inner), "Run-time Error: Unending if statement.");
+                        return EXIT_FAILURE;
+                    }
+                    fis = cline.front();
+                    pastecontents.push_back(cline);
+                    for (auto cur = cline.begin(); cur < cline.end(); cur++) {
+                    }
+                    if (fis.typ() == RIGHT_BRACE && nested == 0) {
+                        break;
+                    } else {
+                        if (fis.typ() == RIGHT_BRACE) {
+                            nested--;
+                        } else if (cline.back().typ() == LEFT_BRACE) {
+                            nested++;
+                        }
+                    }
+                }
+                if (pastecontents.back().size() != 2) {
+                    error(pastecontents.back().back(), "Run-time Error: Expected a ; at the end of the paste statement.");
+                    return EXIT_FAILURE;
+                }
+                pastecontents.pop_back();
+                for (auto cp = call_params.begin(); cp < call_params.end(); cp++) {
+                    if ((*cp).size() != 1) {
+                        error(*inner, "Run-time Error: Expected function names in the format of paste(f1, f2, f3);");
+                        return EXIT_FAILURE;
+                    }
+                    auto found = findInV(scope.function_names, (*cp)[0].str());
+                    scope.function_bodies[found.second].insert(scope.function_bodies[found.second].end(), pastecontents.begin(), pastecontents.end());
+                }
                 break;
             }
         }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <climits>
 #include <shlobj.h>
 #include "wtypes.h"
 #include <winsock.h>
@@ -115,6 +116,7 @@ Type keyword(std::string full) {
     else if (full == "getcontents") return GETCONTENTS;
     else if (full == "use") return USE;
     else if (full == "disable") return DISABLE;
+    else if (full == "paste") return PASTE;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -150,9 +152,8 @@ std::vector<std::vector<Token>> statementize(std::vector<Token> tokens, bool &er
             error_occurred = true;
         }
 
-        Token current = *c;
-        current_statement.push_back(current);
-        if (current.typ() == SEMICOLON || current.typ() == LEFT_BRACE || current.typ() == _EOF) {
+        current_statement.push_back((*c));
+        if ((*c).typ() == SEMICOLON || (*c).typ() == LEFT_BRACE || (*c).typ() == _EOF) {
             if (!current_statement.empty()) {
                 statementalized.push_back(current_statement);
             }
@@ -358,16 +359,24 @@ bool isOp(Token token) {
     }
 }
 
-std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err) {
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, Scope scope, bool &err, bool exclude_functions) {
     std::vector<std::vector<Token>> final;
     std::vector<Token> current;
     std::vector<std::string> constants = { "@EOL", "@sec", "@min", "@hour", "@mday", "@yday", "@mon", "@year", "@clipboard", "@home", "@environment", "@IP", "@inf", "@write", "@append" };
     int nested = 0;
     for (auto a = start; a < line.end(); a++) {
-        if ((*a).typ() == IDENTIFIER && findInV(names, (*a).str()).first == false && !in((*a).str(), constants) && a != start && !assume) {
-            error(*a, "Run-time Error: Undefined variable.");
-            err = true;
-            break;
+        if ((*a).typ() == IDENTIFIER && findInV(scope.names, (*a).str()).first == false && !in((*a).str(), constants) && a != start && !assume) {
+            if (!exclude_functions) {
+                if (!in((*a).str(), scope.function_names)) {
+                    error(*a, "Run-time Error: Undefined variable.");
+                    err = true;
+                    break;
+                }
+            } else {
+                error(*a, "Run-time Error: Undefined variable.");
+                err = true;
+                break;
+            }
         }
         //std::cout << "nested: " << nested << std::endl;
         if ((*a).typ() == delimiter) {

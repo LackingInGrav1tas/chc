@@ -33,7 +33,7 @@ enum Type {
   LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
   RAND, AT, ARROW, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT,
   IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, TRY, CATCH, GETCONTENTS, USE,
-  DISABLE
+  DISABLE, PASTE
                                            
 };
 
@@ -217,7 +217,7 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision,
 
 bool isOp(Token token);
 
-std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, std::vector<std::string> names, bool &err);
+std::vector<std::vector<Token>> findParams(std::vector<Token> &line, std::vector<Token>::iterator start, Type delimiter, Scope scope, bool &err, bool exclude_functions=true);
 
 std::string hash(std::string source);
 
