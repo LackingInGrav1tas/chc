@@ -171,6 +171,47 @@ aware fun recursive(n) {
 
 r = recursive(2);
 ```
+
+### TOOLS ###
+
+if:
+```
+if (condition) {
+    #execute
+};
+```
+while:
+```
+while (condition) {
+    #execute
+};
+do {
+    #execute
+} while (condition);
+```
+use/disable:
+```
+use #@strict, @errors, @output, @warnings, @assume#;
+disable #^#;
+```
+paste (adds code to existing functions):
+```
+fun foo() {
+    fprint("line 1" + @EOL);
+};
+foo();
+paste(foo) {
+    fprint("line 2");
+};
+foo();
+```
+returns:
+```
+line 1
+
+line 1
+line 2
+```
 ### MACROS: ###
 
 Supported macros:
