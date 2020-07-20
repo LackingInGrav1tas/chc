@@ -205,7 +205,7 @@ paste(foo) {
 };
 foo();
 ```
-returns:
+
 ```
 line 1
 
