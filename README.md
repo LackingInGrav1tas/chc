@@ -197,18 +197,19 @@ disable #^#;
 paste (adds code to existing functions):
 ```
 fun foo() {
-    fprint("line 1" + @EOL);
+    fprint("line 1");
 };
 foo();
 paste(foo) {
     fprint("line 2");
 };
+fprint("after paste:");
 foo();
 ```
 
 ```
 line 1
-
+after paste:
 line 1
 line 2
 ```
