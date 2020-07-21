@@ -305,48 +305,50 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
 
 //evaluates operation in the form of: lhs op rhs
 bool evaluate(Token lhs, Token op, Token rhs, Scope scope, bool *error_occurred) {
+    std::string glhs = getVarVal(lhs, scope, error_occurred);
+    std::string grhs = getVarVal(rhs, scope, error_occurred);
     if (op.str() == "==") {
-        return getVarVal(lhs, scope, error_occurred) == getVarVal(rhs, scope, error_occurred);
+        return glhs == grhs;
     } else if (op.str() == ">") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) > std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) > std::stod(grhs);
         } else {
             error(op, "Run-time Error: Invalid Argument.");
             *error_occurred = true;
         }
     } else if (op.str() == "<") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) < std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) < std::stod(grhs);
         } else {
             error(op, "Run-time Error: Invalid Argument.");
             *error_occurred = true;
         }
     } else if (op.str() == ">=" || op.str() == "=>") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) >= std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) >= std::stod(grhs);
         } else {
             error(op, "Run-time Error: Invalid Argument.");
             *error_occurred = true;
         }
     } else if (op.str() == "<=" || op.str() == "=<") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) <= std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) <= std::stod(grhs);
         } else {
             error(op, "Run-time Error: Invalid Argument.");
             *error_occurred = true;
         }
     } else if (op.str() == ">") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) > std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) > std::stod(grhs);
         } else {
             error(op, "Run-time Error: Invalid Argument.");
             *error_occurred = true;
         }
     } else if (op.str() == "!=") {
-        if (getVarVal(lhs, scope, error_occurred).at(0) != '"' && getVarVal(rhs, scope, error_occurred).at(0) != '"') {
-            return std::stod(getVarVal(lhs, scope, error_occurred)) != std::stod(getVarVal(rhs, scope, error_occurred));
+        if (glhs.at(0) != '"' && grhs.at(0) != '"') {
+            return std::stod(glhs) != std::stod(grhs);
         } else {
-            return getVarVal(lhs, scope, error_occurred) != getVarVal(rhs, scope, error_occurred);
+            return glhs != grhs;
         }
     }
 }
