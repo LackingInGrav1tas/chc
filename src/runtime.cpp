@@ -860,6 +860,11 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
 
         int size = 0;
         for (auto inner = stmt.begin(); inner < stmt.end(); inner++) {
+            if (outer < statements.end()-1) {
+                if ((*std::next(outer))[0].typ() == CUTBACK) {
+                    break;
+                }
+            }
             size++;
             if ((*inner).typ() == EQUAL) {//setting variable values
                 Token previous = *std::prev(inner);
@@ -943,6 +948,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 scope.values.push_back(preshortened);
                 break;
             } else if ((*inner).typ() == PRINT) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before print.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -998,6 +1007,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == FPRINT) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before fprint.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
@@ -1032,6 +1045,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == RPRINT) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before rprint.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
@@ -1063,6 +1080,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == RFPRINT) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before rfprint.");
+                    return EXIT_FAILURE;
+                }
                 bool eroc = false;
                 auto call_params = findParams(stmt, inner, COMMA, scope, eroc);
                 if (eroc)
@@ -1094,6 +1115,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == RUN) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before run.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1141,6 +1166,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == DO) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before do.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_BRACE) {
                     error(next, "Run-time Error: Expected a left bracket token. None were provided.");
@@ -1200,6 +1229,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 } while (boolsolve(params, scope, limit, precision, scopes, scope_indices, error_occurred));
                 break;
             } else if ((*inner).typ() == SLEEP) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before sleep.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1244,10 +1277,22 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == BREAK) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before break.");
+                    return EXIT_FAILURE;
+                }
                 return 47;
             } else if ((*inner).typ() == CONTINUE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before continue.");
+                    return EXIT_FAILURE;
+                }
                 return 33;
             } else if ((*inner).typ() == IF) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before if.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != LEFT_PAREN) {
                     error((*std::next(inner)), "Run-time Error: Expected a left parentheses token. None were provided.");
                     return EXIT_FAILURE;
@@ -1361,6 +1406,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == TRY) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before try.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_BRACE) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1450,6 +1499,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == WHILE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before while.");
+                    return EXIT_FAILURE;
+                }
                 Token next = *std::next(inner);
                 if (next.typ() != LEFT_PAREN) {
                     error(next, "Run-time Error: Expected a left parentheses token. None were provided.");
@@ -1525,6 +1578,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == FUN) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before fun.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error(*std::next(inner), "Run-time Error: Inadequite function name.");
                     return EXIT_FAILURE;
@@ -1593,6 +1650,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 error((*inner), "Run-time Strict Error: Stray token.");
                 return EXIT_FAILURE;
             } else if ((*inner).typ() == RETURN) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before return.");
+                    return EXIT_FAILURE;
+                }
                 int n = std::next(inner) - stmt.begin();
                 auto nd = std::next(inner);
                 int nested = 0;
@@ -1646,6 +1707,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 return 47;
             } else if ((*inner).typ() == DISPOSE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before dispose.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != LEFT_PAREN) {
                     error(*std::next(inner), "Run-time Error: Incorrect formatting of call.");
                     return EXIT_FAILURE;
@@ -1683,6 +1748,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 }
                 break;
             } else if ((*inner).typ() == USE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before use.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
                     return EXIT_FAILURE;
@@ -1714,6 +1783,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 if (bgvv) return EXIT_FAILURE;
                 break;
             } else if ((*inner).typ() == DISABLE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before disable.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != IDENTIFIER) {
                     error((*std::next(inner)), "Run-time Error: Expected either '@errors' or 'output'.");
                     return EXIT_FAILURE;
@@ -1745,6 +1818,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                 if (bgvv) return EXIT_FAILURE;
                 break;
             } else if ((*inner).typ() == PASTE) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before paste.");
+                    return EXIT_FAILURE;
+                }
                 if ((*std::next(inner)).typ() != LEFT_PAREN) {
                     error(*std::next(inner), "Run-time Error: Expected a left parentheses token.");
                     return EXIT_FAILURE;
@@ -1796,6 +1873,20 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                     auto found = findInV(scope.function_names, (*cp)[0].str());
                     scope.function_bodies[found.second].insert(scope.function_bodies[found.second].end(), pastecontents.begin(), pastecontents.end());
+                }
+                break;
+            } else if ((*inner).typ() == CUTBACK) {
+                if (inner - stmt.begin() != 0) {
+                    error(*inner, "Run-time Error: Expected ; before cutback.");
+                    return EXIT_FAILURE;
+                }
+                if ((*std::next(inner)).typ() != SEMICOLON) {
+                    if (strict) {
+                        error(*std::next(inner), "Run-time Strict Error: Expected a semicolon.");
+                        return EXIT_FAILURE;
+                    } else if (!disable_warnings) {
+                        error(*std::next(inner), "Warning: Expected a semicolon.");
+                    }
                 }
                 break;
             }

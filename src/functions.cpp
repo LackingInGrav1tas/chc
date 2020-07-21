@@ -117,6 +117,7 @@ Type keyword(std::string full) {
     else if (full == "use") return USE;
     else if (full == "disable") return DISABLE;
     else if (full == "paste") return PASTE;
+    else if (full == "cutback") return CUTBACK;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
