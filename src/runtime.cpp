@@ -1204,7 +1204,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (line.back().typ() == LEFT_BRACE) {
+                        }
+                        if (line.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }
@@ -1345,7 +1346,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (cline.back().typ() == LEFT_BRACE) {
+                        }
+                        if (cline.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }
@@ -1447,7 +1449,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (cline.back().typ() == LEFT_BRACE) {
+                        }
+                        if (cline.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }
@@ -1562,7 +1565,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (cline.back().typ() == LEFT_BRACE) {
+                        }
+                        if (cline.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }
@@ -1868,7 +1872,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else {
                         if (fis.typ() == RIGHT_BRACE) {
                             nested--;
-                        } else if (cline.back().typ() == LEFT_BRACE) {
+                        }
+                        if (cline.back().typ() == LEFT_BRACE) {
                             nested++;
                         }
                     }
