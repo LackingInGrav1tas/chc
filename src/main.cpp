@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> token_list = {"BLANK", "ERROR", "EOF", "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "COMMA",
                 "DOT", "MINUS", "PLUS", "SEMICOLON", "SLASH", "STAR", "EXC", "EXC_EQUAL", "EQUAL",
                 "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL", "MINUS_MINUS", "PLUS_PLUS", "PLUS_EQUALS", "MINUS_EQUALS",
-                "STAR_EQUALS", "SLASH_EQUALS", "IDENTIFIER", "STRING", "NUMBER", "CONSTANT", "AND", "CLASS", 
+                "STAR_EQUALS", "SLASH_EQUALS", "IDENTIFIER", "STRING", "NUMBER", "CONSTANT", "AND", "STRUCT", 
                 "ELSE", "FALSE", "FUN", "FOR", "IF", "NIL", "OR",
                 "PRINT", "RETURN", "TRUE", "WHILE", "RUN", "IMMUTABLE", "DO", "HASH",
                 "SLEEP", "BREAK", "AWARE", "_VOID_FUNC_HOLDER", "INPUT", "WRITETO", "ASSERT", "LENGTH", "RPRINT",

@@ -71,7 +71,7 @@ Type doubleChar(std::string full) {
 
 Type keyword(std::string full) {
     if (full == "and") return AND;
-    else if (full == "class") return CLASS;
+    else if (full == "struct") return TOKEN_STRUCT;
     else if (full == "else") return ELSE;
     else if (full == "false") return TFALSE;
     else if (full == "fun") return FUN;

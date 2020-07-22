@@ -25,9 +25,21 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
             auto call_params = findParams(stmt, token, COMMA, scope, eroc);
             if (eroc)
                 return EXIT_FAILURE;
-            if (call_params.size() != 1) {
+            if (call_params.size() > 1) {
                 error(*token, "Run-time Error: comma.");
                 return EXIT_FAILURE;
+            }
+            if (call_params.size() == 0) {
+                if (strict) {
+                    error(*token, "Run-time Strict Error: Stray parentheses.");
+                    return EXIT_FAILURE;
+                } else if (!disable_warnings) {
+                    error(*token, "Warning: Stray parentheses.");
+                }
+                int fmw = token - stmt.begin();
+                stmt.erase(stmt.begin() + fmw);
+                stmt.erase(stmt.begin() + fmw);
+                continue;
             }
             std::string return_type = "non-boolean";
             std::vector<Type> bool_operators = { EQUAL_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL, EXC_EQUAL };
@@ -1423,7 +1435,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error((*inner), "Run-time Error: Unending if statement.");
+                        error((*inner), "Run-time Error: Unending try statement.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();
@@ -1844,7 +1856,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     outer++;
                     std::vector<Token> cline = *outer;
                     if (cline.front().typ() == _EOF) {
-                        error((*inner), "Run-time Error: Unending if statement.");
+                        error((*inner), "Run-time Error: Unending paste statement.");
                         return EXIT_FAILURE;
                     }
                     fis = cline.front();

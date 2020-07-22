@@ -26,7 +26,7 @@ enum Type {
   IDENTIFIER, STRING, NUMBER, CONSTANT,
 
   // Keywords.                                     
-  AND, CLASS, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,
+  AND, TOKEN_STRUCT, ELSE, TFALSE, FUN, FOR, IF, NIL, OR,
   PRINT, RETURN, TTRUE, WHILE, RUN,
   IMMUTABLE, DO, HASH, SLEEP, BREAK, AWARE,
   _VOID_FUNC_HOLDER, TOKEN_INPUT, WRITETO, ASSERT,
@@ -130,7 +130,7 @@ class Token {
 };
 
 struct Scope {
-    std::vector<std::string> names, values, immutables, function_names, aware_functions;
+    std::vector<std::string> names, values, immutables, function_names, aware_functions, class_names;
     std::vector<std::vector<std::vector<Token>>> function_bodies;
     std::vector<std::vector<std::string>> function_params;
 };
