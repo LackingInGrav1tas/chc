@@ -127,6 +127,10 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                         token = stmt.end();
                     }
                 }
+                token = stmt.end()-1;
+                /*if (result == 47 || result == 44) {
+                    return result;
+                }*/
             }
         } else if (in((*token).typ(), native_functions)) {
             if ((*token).typ() == TOKEN_INPUT) {
@@ -1033,6 +1037,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     return EXIT_FAILURE;
                 if (call_params.size() != 1) {
                     std::string msg = "Run-time Error: Received " + std::to_string(call_params.size()) + " params but expected 1.";
+                    for (int b = 0; b < stmt.size(); b++) std::cout << stmt[b].str() << " "; std::cout << std::endl;
                     error((*inner), msg);
                     return EXIT_FAILURE;
                 }
@@ -1406,8 +1411,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             return EXIT_FAILURE;
                         } else if (result == 47) {
                             return 47;
-                        } else if (result == 33) {
-                            return EXIT_SUCCESS;
+                        } else if (result == 44) {
+                            return 44;
                         }
                     } else {
                         if (!elsecontents.empty()) {
@@ -1416,8 +1421,8 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                                 return EXIT_FAILURE;
                             } else if (result == 47) {
                                 return 47;
-                            } else if (result == 33) {
-                                return EXIT_SUCCESS;
+                            } else if (result == 44) {
+                                return 44;
                             }
                         }
                     }
@@ -1510,10 +1515,12 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                             int result = runtime(catchcontents, scope, error_occurred, limit, precision, return_variable);
                             if (result == 1) {
                                 return EXIT_FAILURE;
-                            } else if (result == 47) {
-                                return 47;
+                            } else if (result == 47 || result == 44) {
+                                return result;
                             }
                         }
+                    } else if (result == 47 || result == 44) {
+                        return result;
                     }
                 }
                 break;
@@ -1593,7 +1600,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else if (result == 47) {
                         break;
                     } else if (result == 44) {
-                        break;
+                        return 44;
                     }
                 }
                 break;
@@ -1698,7 +1705,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         return_variable.push_back(*its);
                     }
                 }
-                return 47;
+                return 44;
             } else if ((*inner).typ() == DISPOSE) {
                 if (inner - stmt.begin() != 0) {
                     error(*inner, "Run-time Error: Expected ; before dispose.");

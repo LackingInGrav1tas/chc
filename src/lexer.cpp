@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <climits>
 
+extern std::string errors_so_far;
+
 std::string ExeDir(int times_back=1) {
     char buffer[MAX_PATH];
     GetModuleFileName( NULL, buffer, MAX_PATH );
@@ -172,6 +174,10 @@ std::vector<Token> lex(std::vector<std::string> f, bool *error_occurred, int &li
                         std::string errormsg = std::string("Compile-time Error: Unrecognized character: ") + *current_char;
                         error(errorcheck, errormsg);
                         *error_occurred = true;
+                        if (errors_so_far.length() > 100) {
+                            std::cout << line.length() << std::endl;
+                            return tokens;
+                        }
                     }
                     //checks if the current character is independent of anything it might be attached to
                     if (*current_char == '"' || getString(*current_char) == "'") {//it's a string literal

@@ -68,7 +68,29 @@ fun substr(base_string, begin, end) {
         final += at(base_string, position);
         position++;
     };
-    return (final);
+    return final;
+};
+
+fun contains(container, containee) {
+    if (length(container) < length(containee)) {
+        return false;
+    };
+    to_return = false;
+    if (length(container) == length(containee)) {
+        if (container == containee) {
+            return true;
+        };
+    } else {
+        index = 0;
+        while (index < (length(container) - length(containee))) {
+            if (substr(container, index, (index+length(containee))) == containee) {
+                #to_return = true;
+                return true;
+            };
+            index++;
+        };
+    };
+    return to_return;
 };
 
 fun asciival(target_string) {
