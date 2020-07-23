@@ -20,6 +20,10 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
                 } else {
                     combined += gvv;
                 }
+            } else if ((*token).typ() == GREATER || (*token).typ() == GREATER_EQUAL || (*token).typ() == LESS || (*token).typ() == LESS_EQUAL || (*token).typ() == EXC_EQUAL || (*token).typ() == EXC || (*token).typ() == EQUAL_EQUAL || (*token).typ() == EQUAL) {
+                error(*token, "Run-time Error: Invalid operator.");
+                *error_occurred = true;
+                return "";
             }
         }
         return '"' + combined + '"';
@@ -31,6 +35,11 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
         //it is a string variable.
         std::string combined;
         for (auto current_token = shunted.begin(); current_token != shunted.end(); current_token++) {
+            if ((*current_token).typ() == GREATER || (*current_token).typ() == GREATER_EQUAL || (*current_token).typ() == LESS || (*current_token).typ() == LESS_EQUAL || (*current_token).typ() == EXC_EQUAL || (*current_token).typ() == EXC || (*current_token).typ() == EQUAL_EQUAL || (*current_token).typ() == EQUAL) {
+                error(*current_token, "Run-time Error: Invalid operator.");
+                *error_occurred = true;
+                return "";
+            }
             Token ct = *current_token;
             if (ct.typ() == NUMBER || ct.typ() == TTRUE || ct.typ() == TFALSE) {//supporting adding numbers
                 combined += ct.str();
@@ -61,6 +70,10 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
                         break;
                     } else if (shunted[i].typ() == STRING) {
                         error(shunted[i], R"(Run-time Error: String )" + shunted[i].str() + R"( attempted to be added to a number.)");
+                        *error_occurred = true;
+                        return "";
+                    } else if (shunted[i].typ() == GREATER || shunted[i].typ() == GREATER_EQUAL || shunted[i].typ() == LESS || shunted[i].typ() == LESS_EQUAL || shunted[i].typ() == EXC_EQUAL || shunted[i].typ() == EXC || shunted[i].typ() == EQUAL_EQUAL || shunted[i].typ() == EQUAL) {
+                        error(shunted[i], "Run-time Error: Invalid operator.");
                         *error_occurred = true;
                         return "";
                     }
@@ -190,6 +203,11 @@ std::string solve(std::vector<Token> tokens, Scope scope, bool *error_occurred, 
             //it is a string variable.
             std::string combined;
             for (auto current_token = shunted.begin(); current_token != shunted.end(); current_token++) {
+                if ((*current_token).typ() == GREATER || (*current_token).typ() == GREATER_EQUAL || (*current_token).typ() == LESS || (*current_token).typ() == LESS_EQUAL || (*current_token).typ() == EXC_EQUAL || (*current_token).typ() == EXC || (*current_token).typ() == EQUAL_EQUAL || (*current_token).typ() == EQUAL) {
+                    error(*current_token, "Run-time Error: Invalid operator.");
+                    *error_occurred = true;
+                    return "";
+                }
                 if ((*current_token).typ() == NUMBER || (*current_token).typ() == TTRUE || (*current_token).typ() == TFALSE) {//supporting adding numbers
                     combined += (*current_token).str();
                 } else if (in((*current_token).str(), scope.names) || (*current_token).str().at(0) == '@') {//if it's an or macro

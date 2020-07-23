@@ -879,6 +879,10 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
             }
             size++;
             if ((*inner).typ() == EQUAL) {//setting variable values
+                if (inner - stmt.begin() == 0) {
+                    error(*inner, "Run-time Error: Stray =.");
+                    return EXIT_FAILURE;
+                }
                 Token previous = *std::prev(inner);
                 if (previous.typ() != IDENTIFIER) {
                     error(previous, "Runtime Error: Inadequite identifier.");
@@ -898,7 +902,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                         bool err = false;
                         scope.values.push_back(solve(rest, scope, &err, precision));
                         if (err) {
-                            error(previous, "Run-time Error: Evaluation Error");
+                            error(previous, "Run-time Error: Evaluation Error. For valid boolean operations add parentheses around the operation.");
                             return EXIT_FAILURE;
                         }
                         scope.names.push_back(previous.str());
