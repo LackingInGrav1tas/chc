@@ -20,7 +20,7 @@ std::vector<std::string> fun_scope_names;
 int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int precision, bool *error_occurred) {
     std::vector<Type> native_functions = { TOKEN_INPUT, ASSERT, WRITETO, LENGTH, HASH, THROW, EVAL, RAND, AT, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT, IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, GETCONTENTS };
     for (auto token = stmt.end()-1; token >= stmt.begin() && (*stmt.begin()).typ() != WHILE && (*std::next(stmt.begin())).typ() != WHILE && (*stmt.begin()).typ() != DISPOSE; token--) {
-        if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT && (*std::prev(token)).typ() != IF && (*std::prev(token)).typ() != SLEEP && (*std::prev(token)).typ() != RUN && (*std::prev(token)).typ() != RETURN && (*std::prev(token)).typ() != PASTE) {
+        if ((*token).typ() == LEFT_PAREN && !in((*std::prev(token)).typ(), native_functions) && !in((*std::prev(token)).str(), scope.function_names) && stmt[0].typ() != FUN && stmt[0].typ() != AWARE && (*std::prev(token)).typ() != RFPRINT && (*std::prev(token)).typ() != PRINT && (*std::prev(token)).typ() != FPRINT && (*std::prev(token)).typ() != IF && (*std::prev(token)).typ() != SLEEP && (*std::prev(token)).typ() != RUN && (*std::prev(token)).typ() != PASTE) {
             bool eroc = false;
             auto call_params = findParams(stmt, token, COMMA, scope, eroc);
             if (eroc)
@@ -1674,34 +1674,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     error(*inner, "Run-time Error: Expected ; before return.");
                     return EXIT_FAILURE;
                 }
-                int n = std::next(inner) - stmt.begin();
-                auto nd = std::next(inner);
-                int nested = 0;
-                while (true) {
-                    nd++;
-                    n++;
-                    if (stmt[n].typ() == RIGHT_PAREN && nested == 0) {
-                        break;
-                    } else {
-                        if (stmt[n].typ() == LEFT_PAREN) {
-                            nested++;
-                        } else if (stmt[n].typ() == RIGHT_PAREN) {
-                            nested--;
-                        } else if (nd == stmt.end()) {
-                            error(stmt.back(), "Run-time Error: Unclosed parentheses");
-                            return 44;
-                        }
-                    }
-                }
-                n++;
-                if (stmt[n].typ() != SEMICOLON && strict) {
-                    error((*inner), "Run-time Strict Error: It's prudent to postfix the statement with a semicolon.");
-                    return EXIT_FAILURE;
-                }
-                if (stmt[n].typ() != SEMICOLON && !disable_warnings) {
-                    error((*inner), "Warning: It's prudent to postfix the statement with a semicolon.");
-                }
-                std::vector<Token> segmented(std::next(inner), nd);
+                std::vector<Token> segmented(std::next(inner), stmt.begin() + (stmt.size()-1));
                 bool boolean = false;
                 for (auto its = segmented.begin(); its < segmented.end(); its++) {
                     if ((*its).typ() == LEFT_PAREN)
