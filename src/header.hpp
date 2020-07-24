@@ -33,7 +33,7 @@ enum Type {
   LENGTH, RPRINT, FPRINT, RFPRINT, THROW, EVAL, CONTINUE,
   RAND, AT, ARROW, DISPOSE, SET_SCOPE, SAVE_SCOPE, STR, TOKEN_INT,
   IS_STRING, IS_NUMBER, IS_BOOL, SOLVE, TRY, CATCH, GETCONTENTS, USE,
-  DISABLE, PASTE, CUTBACK
+  DISABLE, PASTE, CUTBACK, Ok, Err
 };
 
 template <class T>
@@ -103,14 +103,26 @@ class Token {
         std::string str() {
             return lexeme;
         }
+        void setStr(std::string newline) {
+            lexeme = newline;
+        }
         std::string actual_line() {
             return lin;
+        }
+        void setAcLine(std::string newline) {
+            lin = newline;
         }
         int lines() {
             return line;
         }
+        void setLineNum(int newline) {
+            line = newline;
+        }
         int col() {
             return column;
+        }
+        void setCol(int newline) {
+            column = newline;
         }
         Type typ() {
             return type;
@@ -126,7 +138,7 @@ class Token {
         }
         std::string filename() {
             return file;
-        };
+        }
 };
 
 struct Scope {

@@ -118,6 +118,8 @@ Type keyword(std::string full) {
     else if (full == "disable") return DISABLE;
     else if (full == "paste") return PASTE;
     else if (full == "cutback") return CUTBACK;
+    else if (full == "Ok") return Ok;
+    else if (full == "Err") return Err;
 }
 
 std::vector<std::string> get_lexemes(std::vector<Token> tokens) {
@@ -275,7 +277,7 @@ std::string getVarVal(Token token, Scope scope,  bool *error_occurred) {//
                 if (in(token.str(), ops)) {
                     return token.str();
                 } else {
-                    if (token.typ() == IDENTIFIER) {//token.str().at(0) != '"' && token.str().at(0) != '0' && token.str().at(0) != '1' && token.str().at(0) != '2' && token.str().at(0) != '3' && token.str().at(0) != '4' && token.str().at(0) != '5' && token.str().at(0) != '6' && token.str().at(0) != '7' && token.str().at(0) != '8' && token.str().at(0) != '9' && token.str() != "true" && token.str() != "false" && (token.str().at(0) != '-')
+                    if (token.typ() == IDENTIFIER) {
                         if (assume && scope.names.size() > 0) {
                             int best_i = 0;
                             int current_best_num = INT_MAX;

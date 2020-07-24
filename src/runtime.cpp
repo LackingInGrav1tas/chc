@@ -89,6 +89,11 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 if (in((*token).str(), scope.aware_functions))
                     scope = nscope;
+                for (int index = 0; index < return_val.size(); index++) {
+                    return_val[index].setAcLine(token_copy.actual_line());
+                    return_val[index].setCol(token_copy.col());
+                    return_val[index].setLineNum(token_copy.lines());
+                }
                 int ct = token - stmt.begin();
                 int nested = 0;
                 while (true) {
@@ -106,9 +111,9 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                 if (return_val.empty())
                     stmt.insert(stmt.begin()+ct, Token("_ _void_func_holder_ _", token_copy.lines(), token_copy.col(), token_copy.typ(), token_copy.actual_line(), token_copy.filename()));
                 else {
-                    if (return_val.size() == 1)
+                    if (return_val.size() == 1) {
                         stmt.insert(stmt.begin()+ct, return_val.back());
-                    else {
+                    } else {
                         std::string return_type = "non-boolean";
                         std::vector<Type> bool_operators = { EQUAL_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL, EXC_EQUAL };
                         for (auto ret = return_val.rbegin(); ret < return_val.rend(); ret++) {
@@ -662,12 +667,12 @@ int handle_functions(std::vector<Token> &stmt, Scope &scope, int limit, int prec
                     return EXIT_FAILURE;
                 }
                 std::string solved = solve(call_params[0], scope, &e, precision);
-                if (solved.at(0) != '"' && solved != "true" && solved == "false") {
+                if (solved.at(0) != '"' && solved != "true" && solved == "false" && solved != "Ok" && solved != "Err") {
                     error(*token, "Run-time Error: Expected non-number as an input.");
                     return EXIT_FAILURE;
-                } else if (solved == "true") {
+                } else if (solved == "true" || solved == "Err") {
                     solved = "1";
-                } else if (solved == "false") {
+                } else if (solved == "false" || solved == "Ok") {
                     solved = "0";
                 } else {
                     solved = solved.substr(1, solved.length()-2);
@@ -1888,6 +1893,14 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     } else if (!disable_warnings) {
                         error(*std::next(inner), "Warning: Expected a semicolon.");
                     }
+                }
+                break;
+            } else if (((*inner).typ() == Ok || (*inner).typ() == Err)) {
+                if (strict) {
+                    error(*inner, "Run-time Strict Error: Unhandled error.");
+                    return EXIT_FAILURE;
+                } else if (!disable_warnings) {
+                    error(*inner, "Warning: Unhandled error.");
                 }
                 break;
             }
