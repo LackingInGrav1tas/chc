@@ -233,13 +233,16 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision,
     if (result == 1)
         return 1;
     if (stmt.size() == 1) {
-        if (getVarVal(stmt[0], scope, error_occurred) == "true")
+        std::string gvv = getVarVal(stmt[0], scope, error_occurred);
+        if (gvv == "true")
             return true;
-        else if (getVarVal(stmt[0], scope, error_occurred) == "false")
+        else if (gvv == "false")
             return false;
-        else if (getVarVal(stmt[0], scope, error_occurred) == "0")
+        else if (gvv == "0")
             return false;
-        else if (getVarVal(stmt[0], scope, error_occurred) != "" && getVarVal(stmt[0], scope, error_occurred) != R"("")")
+        else if (gvv == "Ok")
+            return true;
+        else if (gvv != "" && gvv != R"("")")
             return true;
         else
             return false;
@@ -302,7 +305,9 @@ bool boolsolve(std::vector<Token> tokens, Scope scope, int limit, int precision,
             } else if (oper.typ() == OR) {
                 final.insert(final.begin(), left || right);
             } else {
-                std::cout << "OH GOD OH NO PANIC PANIC PANIC!\nsomething has gone very wrong.";
+                std::cout.clear();
+                std::cout << "OH GOD OH NO PANIC PANIC PANIC!!!!!\nsomething has gone very wrong, probably a corruption of the chc executable.";
+                exit(INT_MAX);
                 *error_occurred = true;
             }
         }

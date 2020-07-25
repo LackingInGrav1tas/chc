@@ -882,7 +882,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
         int size = 0;
         for (auto inner = stmt.begin(); inner < stmt.end(); inner++) {
             if (outer < statements.end()-1) {
-                if ((*std::next(outer))[0].typ() == CUTBACK) {
+                if ((*std::next(outer))[0].typ() == CUTBACK && stmt[0].typ() != PASTE) {
                     break;
                 }
             }
@@ -1895,7 +1895,7 @@ int runtime(std::vector<std::vector<Token>> statements, Scope &scope, bool *erro
                     }
                 }
                 break;
-            } else if (((*inner).typ() == Ok || (*inner).typ() == Err)) {
+            } else if ((*inner).typ() == Err) {
                 if (strict) {
                     error(*inner, "Run-time Strict Error: Unhandled error.");
                     return EXIT_FAILURE;
