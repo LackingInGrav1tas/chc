@@ -1,6 +1,6 @@
 # chc #
 
-CHC is a simple interpreted language. It utilizes lazy evaluation and is written completely in C++.
+CHC is a simple interpreted language. It utilizes lazy evaluation and is (messily) written completely in C++.
 
 ### SYNTAX ###
 
