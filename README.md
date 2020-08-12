@@ -14,8 +14,8 @@ print("text") #incorrect
 CHC is case sensitive. Ex:
 ```
 variable = 10;
-print(var); # 10
-print(VAR); # Scoping error
+print(variable); # 10
+print(VARIABLE); # Scoping error
 ```
 **WHITESPACE:**
 CHC disregards whitespace. Ex:
